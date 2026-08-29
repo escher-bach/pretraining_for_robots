@@ -41,7 +41,7 @@ fn ambiguous_action_query() -> LearningToken {
 #[test]
 fn the_new_format_is_opt_in_and_the_legacy_version_is_unchanged() {
     assert_eq!(LEGACY_TOKEN_ABI_VERSION, "physical-event-abi-0.2.0");
-    assert_eq!(PROFILED_TOKEN_ABI_VERSION, "physical-event-abi-0.3.0");
+    assert_eq!(PROFILED_TOKEN_ABI_VERSION, "physical-event-abi-0.3.1");
     assert_eq!(Role::COUNT, 11, "the learner role table did not change");
     assert_eq!(
         pretraining_world::PAYLOAD_DIM,
@@ -248,7 +248,9 @@ fn malformed_or_implicit_sequences_are_rejected() {
 
     let mut malformed = unknown.clone();
     malformed[0].public.key = InterpretationProfile::ChannelValuesWithRequestedSpan.code();
-    malformed[0].public.payload[2] = 1.0;
+    // Slot 3 is fixed at zero by the tag signature; slot 2 now carries the
+    // `0.3.1` patch number, so perturbing it would no longer be a malformation.
+    malformed[0].public.payload[3] = 1.0;
     assert_eq!(
         declared_profile(&malformed),
         Err(EnvelopeError::MalformedProfileHeader)
@@ -289,14 +291,25 @@ fn padding_condition_records_gaps_and_overflow_cannot_enter_the_envelope() {
         Err(EnvelopeError::PaddingToken { index: 0 })
     );
 
-    let mut condition = ambiguous_action_query();
-    condition.public.role = Role::Condition;
+    // `0.3.0` refused every condition record. `0.3.1` refuses exactly the
+    // records a validator could mistake for a header, so an ordinary condition
+    // — which the finite G0 families emit as their `reveal` construct — travels.
+    let mut ordinary_condition = ambiguous_action_query();
+    ordinary_condition.public.role = Role::Condition;
+    assert!(tag_legacy_episode(
+        InterpretationProfile::FiniteG0Discrete,
+        &[ordinary_condition.clone()]
+    )
+    .is_ok());
+
+    let mut header_shaped = ordinary_condition;
+    header_shaped.public.payload = PROFILE_TAG_PAYLOAD;
     assert_eq!(
         tag_legacy_episode(
             InterpretationProfile::ChannelValuesWithRequestedSpan,
-            &[condition]
+            &[header_shaped]
         ),
-        Err(EnvelopeError::ReservedConditionRole { index: 0 })
+        Err(EnvelopeError::HeaderSignatureInBody { index: 0 })
     );
 
     let mut gap = ambiguous_action_query();
@@ -454,16 +467,21 @@ fn a_tagged_episode_is_refused_by_the_canonical_decoder_rather_than_silently_rea
     )
     .expect("tags");
 
-    // A consumer that skips the envelope gets an error, not a reading. The
-    // declaration is not decodable as a public fact under any profile.
+    // A consumer that skips the envelope gets an error, not a reading. Two
+    // different mechanisms enforce that, and both are named here because
+    // `0.3.1` moved one of them: the legacy profiles emit no condition record
+    // at all, while `FiniteG0` does and instead refuses the header's malformed
+    // quantity. Losing either would let a header be read as a public fact.
     for canonical in pretraining_canonical_event::Profile::ALL {
+        let refusal = decode_episode(canonical, &rows(&tagged));
         assert!(
             matches!(
-                decode_episode(canonical, &rows(&tagged)),
+                refusal,
                 Err(pretraining_canonical_event::DecodeError::ProfileDoesNotEmit { .. })
+                    | Err(pretraining_canonical_event::DecodeError::UnexpectedSlotValue { .. })
             ),
-            "a tagged episode must not decode under {}",
-            canonical.schema_hash()
+            "a tagged episode must not decode under {}: got {refusal:?}",
+            canonical.as_str()
         );
     }
 
@@ -517,4 +535,53 @@ fn a_legacy_episode_that_fills_the_group_index_is_valid_but_cannot_be_wrapped() 
     assert_eq!(tagged.last().expect("non-empty").public.event, u16::MAX);
     let (_, recovered) = strip_profile_tag(&tagged).expect("strips");
     assert_eq!(recovered, room);
+}
+
+/// The narrowed body guard is safe by construction, not by inspection.
+///
+/// `0.3.1` admits condition records into an envelope body. That is only sound
+/// if no renderable condition record can carry the header's signature. The
+/// header declares a lower bound of `3.0` above an upper bound of `1.0`, and the
+/// canonical renderer refuses a condition whose quantity is not well formed, so
+/// the collision is unreachable. This checks the refusal rather than trusting
+/// the arithmetic.
+#[test]
+fn header_signature_is_unreachable_for_a_well_formed_condition() {
+    use pretraining_canonical_event::EventGroup;
+    use pretraining_canonical_event::{
+        ConditionCode, KeyNamespace, LocalKey, Profile, PublicEpisode, PublicRecord, Quantity,
+    };
+
+    let header_shaped = Quantity::normalized(
+        f64::from(PROFILE_TAG_PAYLOAD[0]),
+        f64::from(PROFILE_TAG_PAYLOAD[1]),
+        f64::from(PROFILE_TAG_PAYLOAD[2]),
+    );
+    assert!(
+        !header_shaped.is_well_formed(),
+        "the tag payload states lower {} above upper {}",
+        header_shaped.lower,
+        header_shaped.upper
+    );
+
+    let record = PublicRecord::new(
+        LocalKey::new(KeyNamespace::Observation, 0),
+        PublicFact::Condition {
+            namespace: KeyNamespace::Observation,
+            code: ConditionCode(0),
+            quantity: header_shaped,
+        },
+    )
+    .expect("the namespaces agree");
+    let episode = PublicEpisode::new(
+        Profile::FiniteG0,
+        vec![EventGroup {
+            group: 0,
+            records: vec![record],
+        }],
+    );
+    assert!(
+        render_public(&episode).is_err(),
+        "a condition that would collide with the header must not render"
+    );
 }

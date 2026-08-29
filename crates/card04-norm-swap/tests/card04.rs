@@ -1,8 +1,9 @@
 use pretraining_card04_norm_swap::{
     absorption_leaves_ceiling_fixed, all_sequences, ambiguity_gap, audit_report, card_cases,
-    contract_hash, goal_conditioning_contrast, optimal_first_actions, orbit_verdicts, run_policy,
-    score_policy, state_only_baseline, value_bounds, Action, CaseKind, Contract,
-    GoalConditionedExact, GreedyProgress, HazardKind, LastGoal, PlanOnce, HORIZON,
+    contract_hash, goal_conditioning_contrast, optimal_first_actions, orbit_verdicts, run,
+    run_policy, score_policy, state_only_baseline, value_bounds, Action, CaseKind, Contract,
+    GoalConditionedExact, GreedyProgress, HazardKind, LastGoal, PlanOnce, Switch, SwitchMode,
+    GOAL_REWARD, HORIZON, MOVE_COST, RING,
 };
 
 fn rate(
@@ -249,4 +250,104 @@ fn last_goal_follows_a_superseding_switch_and_is_not_the_switch_negative() {
     let scores = score_policy(&LastGoal);
     assert_eq!(rate(&scores, CaseKind::WitnessSwitch), 1.0);
     assert_eq!(rate(&score_policy(&PlanOnce), CaseKind::WitnessSwitch), 0.0);
+}
+
+/// The kernel-composed evaluator means exactly what the hand-written one meant.
+///
+/// `run` was rewritten to evaluate a `Norm` term and a `Restriction` from the
+/// shared kernel instead of open-coding the same rules. That is a change to an
+/// already-audited family, so it is checked against an independent transcription
+/// of the original rules over the whole enumeration rather than against the
+/// audit's summary numbers, which could agree while individual cases moved.
+#[test]
+fn composing_the_card_from_the_shared_kernel_did_not_move_one_outcome() {
+    fn reference(contract: &Contract, actions: &[Action]) -> (i32, bool) {
+        let mut cell = contract.start;
+        let mut trajectory = vec![cell];
+        let mut violated = false;
+        let mut absorbed = false;
+        let mut visited_first_goal = cell == contract.goal;
+
+        for action in actions.iter().copied() {
+            if absorbed {
+                trajectory.push(cell);
+                continue;
+            }
+            let next = match action {
+                Action::Retreat => (cell + RING - 1) % RING,
+                Action::Hold => cell,
+                Action::Advance => (cell + 1) % RING,
+            };
+            if Some(next) == contract.no_go {
+                violated = true;
+            }
+            match contract.hazard {
+                Some((hazard_cell, HazardKind::Absorbing)) if next == hazard_cell => {
+                    cell = next;
+                    absorbed = true;
+                }
+                Some((hazard_cell, HazardKind::Reset)) if next == hazard_cell => {
+                    cell = contract.start;
+                }
+                _ => cell = next,
+            }
+            if cell == contract.goal {
+                visited_first_goal = true;
+            }
+            trajectory.push(cell);
+        }
+
+        let target = contract.active_goal(actions.len());
+        let settle = (0..trajectory.len())
+            .find(|index| trajectory[*index..].iter().all(|entry| *entry == target));
+        let composed = match contract.switch {
+            Some(switch) if matches!(switch.mode, SwitchMode::Compose) => visited_first_goal,
+            _ => true,
+        };
+        let solved = !violated && !absorbed && composed && settle.is_some();
+        let value = match settle {
+            Some(steps) if solved => GOAL_REWARD - MOVE_COST * steps as i32,
+            _ => 0,
+        };
+        (value, solved)
+    }
+
+    let mut checked = 0usize;
+    for case in card_cases() {
+        for sequence in all_sequences() {
+            let composed = run(&case.contract, &sequence);
+            assert_eq!(
+                (composed.value, composed.solved),
+                reference(&case.contract, &sequence),
+                "{} diverged on {sequence:?}",
+                case.kind.label()
+            );
+            checked += 1;
+        }
+    }
+    // Both readings of the composing switch are covered too, even though no
+    // case uses it: it is the card's meaning-changing transformation, and a
+    // divergence there would move an orbit verdict rather than a case.
+    for case in card_cases() {
+        let Some(switch) = case.contract.switch else {
+            continue;
+        };
+        let composing = Contract {
+            switch: Some(Switch {
+                mode: SwitchMode::Compose,
+                ..switch
+            }),
+            ..case.contract.clone()
+        };
+        for sequence in all_sequences() {
+            let composed = run(&composing, &sequence);
+            assert_eq!(
+                (composed.value, composed.solved),
+                reference(&composing, &sequence),
+                "the composing reading diverged on {sequence:?}"
+            );
+            checked += 1;
+        }
+    }
+    assert_eq!(checked, 20 * 27 + 4 * 27);
 }

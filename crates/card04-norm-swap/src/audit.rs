@@ -7,16 +7,18 @@
 //! witness, and which fields the frozen-history contrast must hold fixed.
 
 use pretraining_g0_contract::{
-    analyse_bracket, check_orbit, BaselineEvidence, BracketStructure, KindScore, OrbitVerdict,
-    Symmetry,
+    analyse_bracket, check_orbit, BaselineEvidence, BracketStructure, KernelUse, KindScore,
+    OrbitVerdict, Symmetry,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ambiguity_gap, card_cases, contract_hash, goal_conditioning_contrast, optimal_first_actions,
-    run_policy, score_policy, state_only_baseline, value_bounds, Action, Case, CaseKind, Contract,
-    GoalConditionedExact, GreedyProgress, HazardKind, LastGoal, NormSwap, PlanOnce, PublicPolicy,
-    Switch, SwitchMode, CONFIGURATION, HORIZON, RING,
+    ambiguity_gap, card_cases, contract_hash, goal_conditioning_contrast, kernel_use, norm_of,
+    optimal_first_actions, published_first_actions, render_audit, run_policy, score_policy,
+    state_only_baseline, unannounced_reveal_cost, value_bounds, Action, Case, CaseKind, Contract,
+    GoalConditionedExact, GreedyProgress, HazardKind, LastGoal, NormSwap, PlanOnce,
+    PublicGoalConditioned, PublicPolicy, RenderAudit, Switch, SwitchMode, CONFIGURATION, HORIZON,
+    RING,
 };
 
 /// Move a contract through one element of the ring symmetry group.
@@ -220,6 +222,124 @@ pub struct CaseBracket {
     pub ambiguity_gap: i32,
 }
 
+/// What the card's two information views actually differ by.
+///
+/// The card's prose says public and privileged information coincide and the gap
+/// is zero everywhere. That is true of four of the five witnesses and false of
+/// the fifth: an *unannounced* second goal is by construction not published
+/// until it fires, so a solver reading the contract outperforms every policy
+/// restricted to what has been said.
+///
+/// The original audit could not see this. [`ambiguity_gap`] compares
+/// `privileged_value` with `value`, and this card does not override the former,
+/// so it was comparing a quantity with itself. That number is kept below and
+/// reported as vacuous rather than deleted, because the same shared primitive is
+/// informative for a card that does override it.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct InformationBoundary {
+    pub kind: String,
+    pub start: usize,
+    pub goal: usize,
+    /// The enumerated ceiling, which reads every contract field.
+    pub privileged_ceiling: i32,
+    /// What the exact policy for the norm *as published* attains.
+    pub published_norm_value: i32,
+    /// Their difference: what the unannounced reveal costs.
+    pub unannounced_reveal_cost: i32,
+    /// The first action a privileged solver takes.
+    pub privileged_first_actions: Vec<String>,
+    /// The first action published information justifies. These differ exactly
+    /// where the reveal costs something.
+    pub published_first_actions: Vec<String>,
+    /// `ambiguity_gap` on this case, which is zero by construction and is
+    /// reported so the vacuity is visible rather than reassuring.
+    pub vacuous_value_function_gap: i32,
+}
+
+fn information_boundary(case: &Case) -> InformationBoundary {
+    let privileged = value_bounds(&case.contract).0;
+    let cost = unannounced_reveal_cost(&case.contract);
+    InformationBoundary {
+        kind: case.kind.label().to_string(),
+        start: case.contract.start,
+        goal: case.contract.goal,
+        privileged_ceiling: privileged,
+        published_norm_value: privileged - cost,
+        unannounced_reveal_cost: cost,
+        privileged_first_actions: optimal_first_actions(&case.contract)
+            .into_iter()
+            .map(|action| action.name().to_string())
+            .collect(),
+        published_first_actions: published_first_actions(&case.contract)
+            .into_iter()
+            .map(|action| action.name().to_string())
+            .collect(),
+        vacuous_value_function_gap: ambiguity_gap(&case.contract),
+    }
+}
+
+/// Whether the composition matches the coverage table in `EMBODIED-PROCESS.md`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct KernelCoverage {
+    pub declared: KernelUse,
+    pub composed: KernelUse,
+    pub matches_declaration: bool,
+    /// The norm connectives the card's *cases* contain, gathered from the norm
+    /// terms rather than from this file's prose.
+    pub norm_connectives: Vec<String>,
+    /// The connectives that appear only under a meaning-changing transformation.
+    ///
+    /// Conjunction lands here rather than above, and that is the card as
+    /// specified: `CARDS.md` lists a *superseding* second goal as a variant and
+    /// the composing reading as a transformation that changes the norm. Reported
+    /// separately so "card 04 exercises the norm algebra" cannot be read as
+    /// "card 04 trains on all three connectives".
+    pub norm_connectives_only_under_transformation: Vec<String>,
+}
+
+fn kernel_coverage() -> KernelCoverage {
+    let declared = KernelUse::declared("04").expect("card 04 is in the coverage table");
+    let composed = kernel_use();
+    let mut connectives: Vec<String> = card_cases()
+        .iter()
+        .flat_map(|case| {
+            norm_of(&case.contract)
+                .connectives()
+                .into_iter()
+                .map(str::to_string)
+        })
+        .collect();
+    connectives.sort();
+    connectives.dedup();
+    let mut transformed: Vec<String> = card_cases()
+        .iter()
+        .filter(|case| case.contract.switch.is_some())
+        .flat_map(|case| {
+            let composing = Contract {
+                switch: case.contract.switch.map(|switch| Switch {
+                    mode: SwitchMode::Compose,
+                    ..switch
+                }),
+                ..case.contract.clone()
+            };
+            norm_of(&composing)
+                .connectives()
+                .into_iter()
+                .map(str::to_string)
+        })
+        .filter(|name| !connectives.contains(name))
+        .collect();
+    transformed.sort();
+    transformed.dedup();
+    KernelCoverage {
+        matches_declaration: declared == composed,
+        declared,
+        composed,
+        norm_connectives: connectives,
+        norm_connectives_only_under_transformation: transformed,
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AuditReport {
     pub card: String,
@@ -235,6 +355,12 @@ pub struct AuditReport {
     pub baselines: Vec<BaselineReport>,
     pub bracket_structure: BracketStructure,
     pub not_claimed: Vec<String>,
+    /// The corrected information-boundary report. See [`InformationBoundary`].
+    pub information_boundary: Vec<InformationBoundary>,
+    /// The card's prose claim, evaluated instead of repeated.
+    pub published_information_suffices_everywhere: bool,
+    pub kernel_coverage: KernelCoverage,
+    pub rendering: RenderAudit,
 }
 
 /// Build the complete audit. No learner is constructed anywhere in this path.
@@ -257,6 +383,7 @@ pub fn audit_report() -> AuditReport {
 
     let baselines = vec![
         baseline_report(&GoalConditionedExact, "goal_conditioned_exact"),
+        baseline_report(&PublicGoalConditioned, "public_goal_conditioned"),
         baseline_report(&state_only_baseline(), "state_only_goal_predictable"),
         baseline_report(
             &crate::state_only_for(CaseKind::NegativeSingleGoal),
@@ -273,7 +400,15 @@ pub fn audit_report() -> AuditReport {
             name: report.name.clone(),
             scores: report.scores.clone(),
             optimal_on_negatives: report.optimal_on_negatives.clone(),
-            is_ceiling: report.name == "goal_conditioned_exact",
+            // Both ceilings are excluded from the failing-baseline analysis.
+            // A ceiling is not a failure mode: including the public one would
+            // let it "isolate" the announced-switch negative, which would be a
+            // statement about the information boundary dressed up as a
+            // statement about a bracket.
+            is_ceiling: matches!(
+                report.name.as_str(),
+                "goal_conditioned_exact" | "public_goal_conditioned"
+            ),
         })
         .collect();
     let pairing: Vec<(String, String)> = CaseKind::NEGATIVES
@@ -286,6 +421,7 @@ pub fn audit_report() -> AuditReport {
         })
         .collect();
 
+    let boundary: Vec<InformationBoundary> = cases.iter().map(information_boundary).collect();
     AuditReport {
         card: "04-norm-swap".to_string(),
         trunk: "T3".to_string(),
@@ -299,13 +435,22 @@ pub fn audit_report() -> AuditReport {
         orbit: orbit_verdicts(),
         bracket_structure: analyse_bracket(&evidence, &pairing),
         baselines,
+        published_information_suffices_everywhere: boundary
+            .iter()
+            .all(|entry| entry.unannounced_reveal_cost == 0),
+        information_boundary: boundary,
+        kernel_coverage: kernel_coverage(),
+        rendering: render_audit().expect("the card renders through the shared boundary"),
         not_claimed: vec![
             "No learner was constructed, loaded, trained, or evaluated.".to_string(),
             "This is one card built as a world. It is not a capability result.".to_string(),
             "No GPU, remote, or multi-world run is authorized or implied.".to_string(),
             "The hazard variant shows the ceiling is unchanged by absorption; it does not show that any learner degrades.".to_string(),
             "The M12 node is not established. Establishing it requires a learner contrast this crate cannot perform.".to_string(),
-            "This card does not render onto the profiled event path, so it is not yet a portfolio family under the seed gate.".to_string(),
+            "`ambiguity_gap_is_zero_everywhere` is vacuous for this card: it compares the value function with itself, because the fragment does not override `privileged_value`. The non-vacuous quantity is `information_boundary`.".to_string(),
+            "The card's prose claim that public and privileged information coincide is false on the two unannounced-switch witnesses, where the reveal costs one move. It holds on the other eighteen cases.".to_string(),
+            "`published_norm_value` is the value of the exact policy for the norm as published. It is not a ceiling over every prior a scheduler might hold about pending switches; this family declares no such prior.".to_string(),
+            "Rendering through the shared boundary makes this family learner-facing. It is not yet a frontier family: that needs a bounded pilot with a usable progress signal.".to_string(),
         ],
     }
 }

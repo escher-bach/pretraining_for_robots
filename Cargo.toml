@@ -8,5 +8,6 @@ members = [
     "crates/eviction-world",
     "crates/profiled-event",
     "crates/g0-contract",
+    "crates/g0-render",
     "crates/card04-norm-swap",
 ]

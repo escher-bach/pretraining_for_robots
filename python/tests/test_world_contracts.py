@@ -57,7 +57,7 @@ class WorldContractTests(unittest.TestCase):
             num_hidden_layers=2,
             attention_heads=4,
             max_position_embeddings=193,
-            token_abi_version="physical-event-abi-0.3.0",
+            token_abi_version="physical-event-abi-0.3.1",
         )
         assert_world_model_compatibility(config, profiled=True)
         with self.assertRaises(RuntimeError):
@@ -78,7 +78,7 @@ class WorldContractTests(unittest.TestCase):
             profiled=True,
             **WORLD,
         )
-        self.assertEqual(profiled["token_abi_version"], "physical-event-abi-0.3.0")
+        self.assertEqual(profiled["token_abi_version"], "physical-event-abi-0.3.1")
         self.assertEqual(profiled["lengths"], [length + 1 for length in legacy["lengths"]])
         self.assertTrue(all(role == 4 for role in (row[0] for row in profiled["role_ids"])))
         self.assertTrue(all(key == 1 for key in (row[0] for row in profiled["key_ids"])))

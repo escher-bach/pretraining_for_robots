@@ -106,7 +106,7 @@ def _run_serialization(
     started = time.perf_counter()
     while not rollout.all_done():
         raw = rollout.learner_batch()
-        if raw["token_abi_version"] != "physical-event-abi-0.3.0":
+        if raw["token_abi_version"] != "physical-event-abi-0.3.1":
             raise RuntimeError("container evaluation requires the public profile declaration")
         tensors = tensorize(raw, device)
         with torch.no_grad():
@@ -144,10 +144,10 @@ def evaluate_model(
 ) -> dict[str, Any]:
     """Evaluate one checkpoint; do not infer transfer from this result alone."""
     device = torch.device(device)
-    if model.config.token_abi_version != "physical-event-abi-0.3.0":
+    if model.config.token_abi_version != "physical-event-abi-0.3.1":
         raise ValueError(
             "container evaluation needs a model explicitly configured for "
-            "physical-event-abi-0.3.0"
+            "physical-event-abi-0.3.1"
         )
     model = model.to(device)
     canonical = _run_serialization(

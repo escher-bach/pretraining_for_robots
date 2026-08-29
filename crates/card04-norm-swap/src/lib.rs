@@ -14,11 +14,16 @@
 //! skill rather than information.
 
 mod audit;
+mod render;
 pub use audit::*;
+pub use render::*;
 
 use std::collections::BTreeMap;
 
-use pretraining_g0_contract::{ContractHasher, Fragment, Ring};
+use pretraining_g0_contract::{
+    BoundaryEffect, ContractHasher, Fragment, Guard, GuardContext, IndexSet, KernelUse, Norm,
+    Restriction, Reveal, Ring,
+};
 use serde::{Deserialize, Serialize};
 
 pub use pretraining_g0_contract::{BracketStructure, Isolation, KindScore, OrbitVerdict, Symmetry};
@@ -196,19 +201,112 @@ pub struct Outcome {
     pub final_cell: usize,
 }
 
-/// Execute a complete action sequence against a contract.
+/// The card's norm, composed from the shared algebra.
 ///
-/// Value is `GOAL_REWARD` minus one `MOVE_COST` per non-hold action, and zero
-/// whenever the norm was broken. Success and value are returned separately: a
-/// binary success rate and a cost-aware contract value answer different
-/// questions and are never merged into one number.
-pub fn run(contract: &Contract, actions: &[Action]) -> Outcome {
+/// Every connective this card claims in `EMBODIED-PROCESS.md`'s coverage table
+/// appears here as a real operator rather than as a branch inside an evaluator:
+/// supersession carries the mid-episode goal event, conjunction carries the
+/// composing reading of that event, and priority carries the prohibition and
+/// the viability boundary. `run` evaluates *this*, so a later edit that changes
+/// the card's meaning has to change a norm term.
+pub fn norm_of(contract: &Contract) -> Norm {
+    let outcome = match contract.switch {
+        Some(switch) => {
+            let after = match switch.mode {
+                SwitchMode::Supersede => Norm::Settle { cell: switch.goal },
+                // Composition is conjunction, not replacement: the first goal
+                // must still have been visited.
+                SwitchMode::Compose => Norm::both(
+                    Norm::Visit {
+                        cell: contract.goal,
+                    },
+                    Norm::Settle { cell: switch.goal },
+                ),
+            };
+            Norm::supersede(
+                Norm::Settle {
+                    cell: contract.goal,
+                },
+                after,
+                Guard::AfterStep(switch.after_step),
+            )
+        }
+        None => Norm::Settle {
+            cell: contract.goal,
+        },
+    };
+    // Priority, not conjunction. A prohibition breached cannot be offset by
+    // reaching the goal, and the two connectives differ exactly there.
+    let with_prohibition = match contract.no_go {
+        Some(cell) => Norm::priority(Norm::Avoid { cell }, outcome),
+        None => outcome,
+    };
+    match contract.hazard {
+        // A reset boundary is a dynamics fact and carries no norm term: the
+        // configuration is returned to the start and the episode continues.
+        Some((cell, HazardKind::Absorbing)) => {
+            Norm::priority(Norm::Avoid { cell }, with_prohibition)
+        }
+        _ => with_prohibition,
+    }
+}
+
+/// The viability restriction a hazard imposes on the configuration space.
+pub fn viability_of(contract: &Contract) -> Option<Restriction> {
+    contract.hazard.map(|(cell, kind)| Restriction::Viability {
+        inadmissible: IndexSet::from_indices([cell]),
+        effect: match kind {
+            HazardKind::Absorbing => BoundaryEffect::Absorbing,
+            HazardKind::Reset => BoundaryEffect::Reset,
+        },
+    })
+}
+
+/// The reveal that publishes a second goal, and the guard it fires on.
+pub fn reveal_of(contract: &Contract) -> Option<Reveal<usize>> {
+    contract.switch.map(|switch| {
+        Reveal::new(
+            if switch.announced {
+                Guard::AtStart
+            } else {
+                Guard::AfterStep(switch.after_step)
+            },
+            switch.goal,
+        )
+    })
+}
+
+/// Which kernel constructs this card actually composes.
+///
+/// Reported from the case set rather than declared, so the coverage table in
+/// `EMBODIED-PROCESS.md` can be checked against the code instead of trusted.
+pub fn kernel_use() -> KernelUse {
+    KernelUse {
+        directed_wiring: true,
+        // The unannounced goal event displaces the running pursuit; the body
+        // resumes from the cell it had reached rather than restarting, which is
+        // why `interrupt` and not only the norm algebra is claimed.
+        interrupt: card_cases()
+            .iter()
+            .any(|case| case.contract.switch.is_some()),
+        restrict: card_cases()
+            .iter()
+            .any(|case| case.contract.hazard.is_some()),
+        reveal: card_cases()
+            .iter()
+            .any(|case| case.contract.switch.is_some()),
+        norm_algebra: true,
+        shared_coupling: false,
+    }
+}
+
+/// Walk the configuration forward under the viability restriction.
+fn walk(contract: &Contract, actions: &[Action]) -> (Vec<usize>, bool, bool) {
+    let viability = viability_of(contract);
     let mut cell = contract.start;
     let mut trajectory = vec![cell];
     let mut violated = false;
     let mut absorbed = false;
-    let mut visited_first_goal = cell == contract.goal;
-
     for action in actions.iter().copied() {
         if absorbed {
             trajectory.push(cell);
@@ -218,45 +316,57 @@ pub fn run(contract: &Contract, actions: &[Action]) -> Outcome {
         if Some(next) == contract.no_go {
             violated = true;
         }
-        match contract.hazard {
-            Some((hazard_cell, HazardKind::Absorbing)) if next == hazard_cell => {
-                cell = next;
-                absorbed = true;
-            }
-            Some((hazard_cell, HazardKind::Reset)) if next == hazard_cell => {
-                cell = contract.start;
+        match viability.as_ref() {
+            Some(restriction) if !restriction.admits_cell(next) => {
+                match restriction.boundary_effect() {
+                    Some(BoundaryEffect::Absorbing) => {
+                        cell = next;
+                        absorbed = true;
+                    }
+                    Some(BoundaryEffect::Reset) => cell = contract.start,
+                    None => cell = next,
+                }
             }
             _ => cell = next,
         }
-        if cell == contract.goal {
-            visited_first_goal = true;
-        }
         trajectory.push(cell);
     }
+    (trajectory, violated, absorbed)
+}
 
-    let target = contract.active_goal(actions.len());
-    // Cost is the number of steps before the configuration settles on the
-    // target and stays there. Charging per move instead would let a policy that
-    // waits and then goes tie with one that goes immediately, which blunts the
-    // paired first-action contrast the whole card rests on.
-    let settle =
-        (0..trajectory.len()).find(|index| trajectory[*index..].iter().all(|cell| *cell == target));
-    let composed = match contract.switch {
-        Some(switch) if matches!(switch.mode, SwitchMode::Compose) => visited_first_goal,
-        _ => true,
-    };
-    let solved = !violated && !absorbed && composed && settle.is_some();
-    let value = match settle {
-        Some(steps) if solved => GOAL_REWARD - MOVE_COST * steps as i32,
+/// Execute a complete action sequence against a contract.
+///
+/// Value is `GOAL_REWARD` minus one `MOVE_COST` per step before the
+/// configuration settles, and zero whenever the norm was broken. Success and
+/// value are returned separately: a binary success rate and a cost-aware
+/// contract value answer different questions and are never merged into one
+/// number.
+///
+/// Cost counts steps before settling rather than moves made. Charging per move
+/// would let a policy that waits and then goes tie with one that goes
+/// immediately, which blunts the paired first-action contrast the card rests on.
+pub fn run(contract: &Contract, actions: &[Action]) -> Outcome {
+    let (trajectory, violated, absorbed) = walk(contract, actions);
+    let final_cell = *trajectory.last().expect("a trajectory contains its start");
+    let verdict = norm_of(contract).evaluate(
+        &trajectory,
+        GuardContext {
+            executed: actions.len(),
+            last_action: None,
+            cell: final_cell,
+        },
+    );
+    let value = match verdict.settle_steps {
+        Some(steps) if verdict.met => GOAL_REWARD - MOVE_COST * steps as i32,
         _ => 0,
     };
 
     Outcome {
         value,
-        solved,
+        solved: verdict.met,
         violated_no_go: violated,
         absorbed,
-        final_cell: cell,
+        final_cell,
     }
 }
 

@@ -103,6 +103,9 @@ name = "pretraining-card04-norm-swap"
 version = "0.1.0"
 dependencies = [
  "pretraining-g0-contract",
+ "pretraining-g0-render",
+ "pretraining-profiled-event",
+ "pretraining-world",
  "serde",
  "serde_json",
 ]
@@ -122,6 +125,17 @@ dependencies = [
 name = "pretraining-g0-contract"
 version = "0.1.0"
 dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "pretraining-g0-render"
+version = "0.1.0"
+dependencies = [
+ "pretraining-canonical-event",
+ "pretraining-g0-contract",
+ "pretraining-profiled-event",
+ "pretraining-world",
  "serde",
 ]
 

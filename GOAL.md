@@ -12,7 +12,7 @@ generated world families.
 A core pretrained across admitted abstract worlds should learn a held-out
 abstract or grounded world faster than:
 
-- an identically initialized scratch core; and
+- an identically initialized scratch core; 
 - the same core given a matched amount of alternative pretraining.
 
 The three arms must use the same downstream observations, action adapter, data,

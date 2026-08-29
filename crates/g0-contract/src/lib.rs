@@ -8,24 +8,53 @@
 //! what keeps a later cross-card claim from being confounded with world
 //! difficulty.
 //!
-//! Three things live here, and deliberately nothing else:
+//! Five things live here, and deliberately nothing else:
 //!
 //! 1. an **environment** — a finite configuration space with an adjacency
 //!    structure and its symmetry group, shared across cards;
-//! 2. a **fragment** — the trait a card implements to become exhaustively
-//!    auditable; and
-//! 3. the **audit machinery** — enumeration, ceilings, ambiguity gap, orbit
-//!    verdicts, and the bracket/isolation analysis, all generic.
+//! 2. a **process kernel** ([`kernel`]) — the five operators and the norm
+//!    algebra `EMBODIED-PROCESS.md` declares, as shared executable data rather
+//!    than as labels each card re-derives privately;
+//! 3. a **fragment** — the trait a card implements to become exhaustively
+//!    auditable;
+//! 4. the **audit machinery** — enumeration, ceilings, ambiguity gap, orbit
+//!    verdicts, and the bracket/isolation analysis, all generic; and
+//! 5. the **query algebra** ([`query`]) — identification, public and privileged
+//!    ceilings, epistemic value, matched controls, non-interference, and
+//!    history ablation, all derived from one ambiguity-set object.
 //!
-//! What is *not* here is any card's contract shape. Card 04 publishes a goal, a
-//! prohibition, a hazard, a distractor, and a switch; card 03 will publish
+//! Items 2 and 5 were added when cards 02, 03, 05, and 06 arrived. Card 04 alone
+//! needed neither: it has no hidden state, so its query answers are trivial, and
+//! a single card can open-code its own norm without anything to be consistent
+//! with. Both layers exist for the same reason the environment does — the moment
+//! a second card claims the same construct, a copy makes a later cross-card
+//! claim a claim about two different objects.
+//!
+//! What is *not* here is any card's contract shape, nor a general interpreter
+//! that executes an arbitrary composition. Card 04 publishes a goal, a
+//! prohibition, a hazard, a distractor, and a switch; card 03 publishes
 //! reachability and reveals. Fixing a single contract struct here would force
 //! every later card through card 04's ontology, which is the opposite of a
-//! shared layer.
+//! shared layer; and an interpreter would have to fix exactly that struct to
+//! have a state to interpret.
 
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
+
+pub mod kernel;
+pub mod query;
+
+pub use kernel::{
+    BoundaryEffect, Coupling, CouplingRule, Displaced, Guard, GuardContext, IndexSet, KernelUse,
+    Norm, NormVerdict, ResourceScope, Restriction, Resume, Reveal,
+};
+pub use query::{
+    ablated_policy_value, ambiguity_report, epistemic_value, identification_diameter, identify,
+    matched_control_verdict, noninterference_check, privileged_value_bound, public_policy_value,
+    public_policy_value_and_first_actions, ActionValue, AmbiguityReport, AmbiguitySet,
+    MatchedControlVerdict, NonInterference, PubliclyObservable, VALUE_EPSILON,
+};
 
 /// A finite ring of cells: the configuration structure cards 04 and 03 share.
 ///

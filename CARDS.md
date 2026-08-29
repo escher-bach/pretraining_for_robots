@@ -183,7 +183,8 @@ pretraining. Equal curves falsify it.
 ## Card 04: Norm Swap
 
 **Trunk:** T3 norm structure and selective control. **Fragment:** G0. **State:**
-semantic family audited; learner rendering is the next repository action.
+semantic family audited and rendered through the shared finite-G0 learner
+boundary. Frontier admission still needs a bounded pilot.
 
 **Claim.** With the public state and history fixed, changing the requested
 outcome changes the correct action. Goal maintenance, inhibition, switching,
@@ -206,15 +207,28 @@ distractor order may be permuted. Changing the predicate denoted by a goal,
 moving the prohibited state, or changing a second goal from superseding to
 composing changes the norm and therefore the correct action.
 
-**Boundary and bracket.** Public and privileged information coincide and the
-ambiguity gap is zero. The existing audit enumerates 20 cases and all 27
-three-action sequences per case, checks a full dihedral orbit, and establishes a
-state-only ceiling of `0.5`. Compare state-only, last-goal, greedy-progress, and
-exact goal-conditioned policies. Isolation requires that each control has at
-least one baseline that is optimal there and fails its paired witness.
+**Boundary and bracket.** Public and privileged information coincide on
+eighteen of the twenty cases. They do **not** coincide on the two unannounced
+switch witnesses: the second goal is by construction unpublished until it fires,
+so a solver reading the contract reaches `98` where the exact policy for the
+published norm reaches `97`, and the two take opposite first actions. This
+correction came from rendering the family, not from the semantic audit, because
+the audit's ambiguity gap compared the value function with itself. The audit
+enumerates 20 cases and all 27 three-action sequences per case, checks a full
+dihedral orbit, and establishes a state-only ceiling of `0.5`. Compare
+state-only, last-goal, greedy-progress, plan-once, the exact goal-conditioned
+policy, and the published-norm policy; the last two are both ceilings and are
+excluded from the failure-mode bracket. Isolation requires that each control has
+at least one baseline that is optimal there and fails its paired witness.
 
-**Admission and transfer.** Semantic admission is complete. Frontier admission
-still requires profiled event rendering and a bounded learner pilot. The
+The learner is taught by the published-norm policy, never by the privileged
+one. Twenty rendered episodes carry sixteen distinct public fingerprints,
+because four case labels name contracts that are literally identical and differ
+only in which family they are scored inside; a training mixture must count
+episodes, not labels.
+
+**Admission and transfer.** Semantic admission and learner rendering are
+complete. Frontier admission still requires a bounded learner pilot. The
 transfer prediction is faster acquisition of Card 07 segment selection than
 from single-goal pretraining. Equal Card 07 curves falsify it.
 

@@ -125,18 +125,145 @@ Every piece of work names one row.
 | R1 | Common world/training apparatus | Complete | Rust generation and rollout, PyO3 tensors, maintained model body, Trainer checkpoint/resume, and Kaggle control plane exist. |
 | R2 | Typed mixed-family event boundary | Complete for existing families | Canonical record plus explicit interpretation profile round-trip existing producers. |
 | R3 | Shared finite G0 audit layer | Complete | Enumeration, bounds, ambiguity, invariance orbit, isolation bracket, and contract hash are reusable. |
+| R3a | Executable process kernel and query algebra | Complete | The five operators and the norm algebra are shared data in `pretraining-g0-contract::kernel`; identification, public/privileged policy ceilings, epistemic value, matched controls, non-interference, and history ablation are shared in `::query`. Card 04's evaluator is composed from them with a byte-identical audit. |
+| R3b | One learner event boundary | Complete | `pretraining-g0-render` turns a card's public transcript into a canonical episode and then into profiled tokens. One profile serves the whole portfolio, so the envelope never publishes family identity. |
 | R4 | Card 04 semantic family | Audited | Exact 20-case audit, 27 action sequences per case, zero ambiguity gap, and full orbit tests. |
-| R5 | Card 04 learner-facing family | **Next** | Render through the profiled event boundary and pass boundary/integration tests. |
+| R5 | Card 04 learner-facing family | Complete | All 20 cases render through the shared finite-G0 profile on `physical-event-abi-0.3.1`, decode back exactly, and are taught by a published-information policy. The rendering found that the audited optimal first action on the two unannounced-switch witnesses was privileged; the corrected boundary is reported per case. |
 | R6 | Card 03 affordance family | **Next** | Implement on G0, audit reachability/reveal/identification, then add learner rendering. |
 | R7 | Card 02 predictive-state family | Pending R6 machinery | Exact history-ablation and ambiguity audit plus learner rendering. |
 | R8 | Card 05 active-experimentation family | Pending R7 machinery | Exact value-of-information and matched-cost control plus learner rendering. |
 | R9 | Card 06 perceptual-organization family | Pending R8 machinery | Source-binding controls and preserving/changing orbit plus learner rendering. |
 | R10 | Four-trunk seed portfolio | Blocked by R5–R9 | Bounded per-family pilots and all seven seed-gate conditions. |
-| R11 | Multi-world learner lineage | Blocked by R10 and GPU authorization | Matched fixed mixture and adaptive sessions with immutable checkpoints, retention, full cost, and stop rules. |
+| R11 | Multi-world learner lineage | Blocked by R10 and GPU authorization | Matched fixed-mixture and direct hill-climbing sessions over immutable checkpoints, with concurrent preparation permitted, retention, full cost, and stop rules. |
 | R12 | Held-out transfer claim | Blocked by R11 | Learning-curve advantage over scratch and alternative pretraining with retention. |
 | R13 | Dependent composition, prompting, and grounding | Evidence-gated | Cards 01/07/08 and visual or physical descendants opened by R11–R12 evidence. |
 
 ## Learner lineage after the seed gate
+
+### Next steps through the first R11 lineage
+
+The first R11 artifact is an abstract-pretrained checkpoint lineage. R12, not
+R11, determines whether a retained checkpoint transfers to a held-out abstract
+or grounded family.
+
+R5--R9 are not invitations to add unrelated handwritten task generators. For
+each card, first state the witness and controls as compositions of the process
+kernel's shared environment, body, norm, disturbance, scaffold, and operators.
+Implement the smallest missing reusable composition seam, compile or adapt that
+composition into a versioned family contract, and then audit and render it. A
+row is not complete when its process-algebra coverage exists only as a label in
+`CARDS.md`; the corresponding seam must be executable and reused wherever two
+cards claim the same construct.
+
+Proceed in this order:
+
+1. **R5 — finish Card 04 rendering.** Render the audited norm-swap contract
+   through the profiled event boundary and pass the boundary and integration
+   checks needed to expose it to the common learner.
+2. **R6 — implement Card 03.** Reuse the shared G0 environment, add the
+   affordance/reachability contract, audit identification and reveal semantics,
+   and add learner rendering.
+3. **R7 — implement Card 02.** Add the predictive-state family, exact history
+   ablation and ambiguity audit, and learner rendering.
+4. **R8 — implement Card 05.** Add the active-experimentation family, exact
+   value-of-information comparison, matched-cost non-informative control, and
+   learner rendering.
+5. **R9 — implement Card 06.** Add the perceptual-organization family, source
+   binding controls, exact small-instance posterior, preserving/changing orbit,
+   and learner rendering.
+6. **R10 — close the seed gate.** Run one bounded learner pilot per family,
+   retain only families with usable progress signals, and fix the admitted
+   contract hashes, source sentinels, fixed-mixture comparator, mixture
+   accounting, checkpoint cadence, total budget, and stop rules.
+7. **R11 — start matched lineages.** Initialize the adaptive and fixed-mixture
+   arms from the same checkpoint. Use the same admitted family versions,
+   learner objective, episode accounting, optimizer budget, and evaluation
+   support. Emit immutable checkpoints and retain the evidence needed to replay
+   every transition.
+
+R5--R10 are the bootstrap required before the first multi-world lineage exists.
+They do not require Cards 01, 07, or 08. Once R11 is active, preparation of
+additional candidate families need not wait for the current training block to
+finish.
+
+### R11 as direct checkpoint hill climbing
+
+R11 is a greedy, local optimization over checkpoint states, not an attempt to
+solve a complete curriculum in advance. Define a checkpoint state as:
+
+```text
+C[k] = (
+    weights,
+    admitted_family_contracts,
+    source_sentinel_evidence,
+    retention_state,
+    remaining_budget,
+    progress_chart
+)
+```
+
+Before R11 begins, fix a source score from the declared capability sentinels and
+retention penalties. For any bounded candidate action `A` from checkpoint
+`C[k]`, its realized local utility is:
+
+```text
+utility(A | C[k]) =
+    (source_score(Candidate[k+1]) - source_score(C[k]))
+    / total_cost(A)
+```
+
+The score, weights, retention bounds, cost accounting, and tie rule are part of
+the R10 run contract; they cannot be changed after inspecting a candidate. A
+sealed R12 transfer family is never a scheduler sentinel and cannot influence
+this hill climb.
+
+At each immutable checkpoint boundary:
+
+1. freeze `C[k]` and evaluate its declared source sentinels;
+2. admit any fully audited and piloted family versions that are ready, without
+   requiring that they be trained immediately;
+3. form bounded neighbouring actions from the admitted pool, such as more
+   exposure to a new family, replay of an earlier family, or a changed fixed
+   mixture;
+4. fix each candidate's parent checkpoint, contract hashes, mixture, seeds,
+   update budget, monitors, cost accounting, and stop rule;
+5. select the candidate with the highest predicted positive local utility,
+   using a bounded matched branch only when sentinels cannot rank two live
+   candidates cheaply;
+6. execute that one training block, evaluate the resulting candidate
+   checkpoint, and measure its realized utility and retention;
+7. retain the candidate as `C[k+1]` only when it satisfies the declared
+   improvement and retention rules; otherwise keep `C[k]` as the parent for the
+   next bounded attempt; and
+8. compare the adaptive lineage with the matched fixed-mixture lineage at the
+   declared cadence. Retain the adaptive method only if its capability gain per
+   total cost is better.
+
+This is direct hill climbing because each accepted training block must improve
+the declared local checkpoint objective from its immutable parent. It does not
+claim global curriculum optimality.
+
+### Concurrent family and instance generation during R11
+
+Two kinds of concurrency are permitted:
+
+- **Family preparation:** while an R11 block trains on immutable admitted
+  contracts, other work may implement, audit, render, and prepare candidate
+  families. A learner pilot may also run concurrently when separate compute is
+  available; otherwise it runs in a checkpoint gap. A candidate becomes
+  scheduler-eligible only after its audit and pilot complete, and it can enter
+  only at the next checkpoint boundary. A new family that realizes an existing
+  card does not require a new card; a new behavioural contrast does.
+- **Instance generation:** after the scheduler fixes a training mixture, seeded
+  instances from those admitted contract versions may be generated in parallel
+  with GPU optimization and placed in a bounded prefetch queue. This is an
+  execution optimization, not a scheduler decision and not a semantic family
+  change.
+
+Concurrent work must not mutate a contract used by the active block, inspect a
+sealed transfer family, change public/privileged boundaries, or escape total
+cost accounting. A semantic change produces a new contract hash and waits for a
+later admission boundary.
 
 At each immutable checkpoint select one bounded action:
 

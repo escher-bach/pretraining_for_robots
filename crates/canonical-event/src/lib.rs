@@ -78,12 +78,28 @@ pub enum KeyNamespace {
 }
 
 impl KeyNamespace {
+    pub const ALL: [Self; 3] = [Self::Observation, Self::Actuator, Self::Episode];
+
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Observation => "observation",
             Self::Actuator => "actuator",
             Self::Episode => "episode",
         }
+    }
+
+    /// The numeric encoding used by condition records, which are the only
+    /// records whose namespace is not recoverable from the role.
+    fn code(self) -> f64 {
+        match self {
+            Self::Observation => 0.0,
+            Self::Actuator => 1.0,
+            Self::Episode => 2.0,
+        }
+    }
+
+    fn from_code(code: f64) -> Option<Self> {
+        Self::ALL.into_iter().find(|entry| entry.code() == code)
     }
 }
 
@@ -260,6 +276,35 @@ impl BoundarySubtype {
     }
 }
 
+/// A contract-local categorical name for what a condition record asserts.
+///
+/// It is deliberately opaque, like a key name. Naming the classes here — a
+/// prohibition, a hazard, a restored actuator, a revealed gate — would move
+/// card ontology into the record layer, and the finite families disagree about
+/// which classes exist. What the layer does fix is that the code is
+/// categorical: it is a `u16` in the record and only becomes a number inside
+/// the renderer, which is the same treatment [`BoundarySubtype`] receives.
+///
+/// The rendered layout still puts it in a numeric slot, so a learner embedding
+/// that slot sees an ordered line where the contract declares an unordered set.
+/// That is a recorded property of `physical-event-abi-0.2.0`, not a claim that
+/// the ordering means anything.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct ConditionCode(pub u16);
+
+impl ConditionCode {
+    /// The largest code that survives the render/decode round trip exactly.
+    ///
+    /// `f32` represents every integer below `2^24`; the bound is stated rather
+    /// than assumed so a family that grows its condition vocabulary fails here
+    /// instead of silently rounding two classes together.
+    pub const MAX: u16 = 4096;
+
+    pub fn is_representable(self) -> bool {
+        self.0 <= Self::MAX
+    }
+}
+
 /// Which of the two channel kinds a schema record declares.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum ChannelRole {
@@ -358,6 +403,10 @@ impl EventKind {
     }
 
     /// The namespace of the key this kind names.
+    ///
+    /// [`EventKind::Condition`] is the one kind whose namespace is not fixed by
+    /// its role; the value returned here is only its default. Read
+    /// [`PublicFact::namespace`] instead when a fact is available.
     pub fn namespace(self) -> KeyNamespace {
         match self {
             Self::SchemaObservation
@@ -402,7 +451,16 @@ pub enum PublicFact {
     Boundary {
         subtype: BoundarySubtype,
     },
+    /// A publicly revealed condition on a named key.
+    ///
+    /// The namespace travels with the fact rather than being implied by the
+    /// role, because the finite families reveal conditions about all three: a
+    /// prohibited configuration cell, a restored actuator, and an episode-scalar
+    /// gate. A single implied namespace would force two of those three to lie
+    /// about what they name.
     Condition {
+        namespace: KeyNamespace,
+        code: ConditionCode,
         quantity: Quantity,
     },
     Goal {
@@ -447,8 +505,16 @@ impl PublicFact {
         }
     }
 
+    /// The namespace this fact names.
+    ///
+    /// Every kind except [`PublicFact::Condition`] takes it from the role. A
+    /// condition carries its own, which is why this is a method on the fact and
+    /// not only on the kind.
     pub fn namespace(&self) -> KeyNamespace {
-        self.kind().namespace()
+        match self {
+            Self::Condition { namespace, .. } => *namespace,
+            _ => self.kind().namespace(),
+        }
     }
 }
 
@@ -520,7 +586,16 @@ fn fact_order_payload(fact: &PublicFact) -> (u8, Vec<f64>) {
             (0, numbers)
         }
         PublicFact::Boundary { subtype } => (1, vec![subtype.code()]),
-        PublicFact::Condition { quantity } => (2, quantity_numbers(quantity)),
+        PublicFact::Condition {
+            namespace,
+            code,
+            quantity,
+        } => {
+            let mut numbers = quantity_numbers(quantity);
+            numbers.push(*namespace as u8 as f64);
+            numbers.push(f64::from(code.0));
+            (2, numbers)
+        }
         PublicFact::Goal { content } => (3, content_numbers(content)),
         PublicFact::Observation { content } => (4, content_numbers(content)),
         PublicFact::ActionQuery { command, horizon } => {
@@ -886,6 +961,29 @@ pub enum Profile {
     CalibratedMonomial,
     /// `pretraining-goal-conditioned-world`'s finite goal diagnostic.
     GoalConditionedDiagnostic,
+    /// The shared reading used by every finite G0 capability-card family.
+    ///
+    /// One profile, not one per card. The seed gate requires that the portfolio
+    /// families express different process relations *through one
+    /// self-describing learner event boundary*; a per-family profile code would
+    /// hand the learner family identity for free and defeat the identification
+    /// content of trunk T1. So this profile fixes what the slots mean and says
+    /// nothing about which family produced a row — the family has to be
+    /// inferred from the schema and the events, which is the point.
+    ///
+    /// It differs from the two legacy profiles in three ways, each forced by a
+    /// portfolio requirement rather than chosen:
+    ///
+    /// 1. goal and observation records carry a **content-kind flag**, because
+    ///    card 06 needs channel values while cards 02–05 need key selections and
+    ///    both must decode under one profile;
+    /// 2. the action query carries **its own horizon**, because the families
+    ///    have different budgets and a profile-level horizon constant is exactly
+    ///    the non-self-describing property the canonical audit found; and
+    /// 3. condition records are emitted, carrying a namespace and a
+    ///    contract-local code, because `reveal` is a live construct for cards
+    ///    03, 04, and 05.
+    FiniteG0,
 }
 
 /// What one payload slot means for one kind under one profile.
@@ -905,13 +1003,24 @@ pub struct KindSchema {
 }
 
 impl Profile {
-    pub const ALL: [Self; 2] = [Self::CalibratedMonomial, Self::GoalConditionedDiagnostic];
+    pub const ALL: [Self; 3] = [
+        Self::CalibratedMonomial,
+        Self::GoalConditionedDiagnostic,
+        Self::FiniteG0,
+    ];
 
     pub fn as_str(self) -> &'static str {
         match self {
             Self::CalibratedMonomial => "calibrated-monomial-0.2.0",
             Self::GoalConditionedDiagnostic => "goal-conditioned-continuous-control-0.1.0",
+            Self::FiniteG0 => "finite-g0-discrete-0.1.0",
         }
+    }
+
+    /// Whether goal and observation records under this profile declare their
+    /// content kind in the row rather than inheriting it from the profile.
+    pub fn content_kind_is_declared(self) -> bool {
+        matches!(self, Self::FiniteG0)
     }
 
     /// The complete, explicit field schema.
@@ -942,6 +1051,17 @@ impl Profile {
                 kind,
                 EventKind::Condition | EventKind::FutureQuery | EventKind::Feedback
             ),
+            // The finite families emit no future query and no feedback. Both
+            // omissions are deliberate. A future target for a family with
+            // hidden state would have to be read off privileged state, which
+            // the information boundary forbids as supervision; and terminal
+            // outcome feedback would publish, after the fact, exactly the
+            // hidden mode or gate that cards 02 and 05 are built to withhold.
+            // Emitting either for some families and not others would also make
+            // supervision density a family correlate, which the mixture
+            // accounting must not have. The action head carries the whole
+            // learner signal for this profile.
+            Self::FiniteG0 => !matches!(kind, EventKind::FutureQuery | EventKind::Feedback),
         }
     }
 
@@ -991,6 +1111,10 @@ impl Profile {
             (Self::GoalConditionedDiagnostic, EventKind::Goal | EventKind::Observation) => {
                 "presence indicator; the content is the key identity"
             }
+            (Self::FiniteG0, EventKind::Goal | EventKind::Observation) => {
+                "channel value, or a selection indicator; slot 3 says which"
+            }
+            (Self::FiniteG0, EventKind::Condition) => "normalized value of the revealed condition",
             (Self::CalibratedMonomial, EventKind::Feedback) => "half the maximum public error",
             (_, EventKind::SchemaObservation) => "schema reference value for the channel",
             (_, EventKind::SchemaActuator) => "schema reference command, always 0.0",
@@ -1018,6 +1142,16 @@ impl Profile {
             (Self::GoalConditionedDiagnostic, EventKind::ActionQuery) => {
                 "control steps remaining as a fraction of the episode horizon"
             }
+            (Self::FiniteG0, EventKind::SchemaActuator | EventKind::ActionExecuted) => {
+                "actuator marker, always 1.0"
+            }
+            (Self::FiniteG0, EventKind::Goal | EventKind::Observation) => {
+                "content kind: 0.0 is a channel value, 1.0 is a key selection"
+            }
+            (Self::FiniteG0, EventKind::Condition) => "contract-local condition code",
+            (Self::FiniteG0, EventKind::ActionQuery) => {
+                "control steps remaining as a fraction of the action head"
+            }
             _ => "unused, always 0.0",
         }
     }
@@ -1028,6 +1162,12 @@ impl Profile {
                 Self::CalibratedMonomial,
                 EventKind::SchemaActuator | EventKind::ActionQuery | EventKind::ActionExecuted,
             ) => "requested command steps as a fraction of the action head",
+            (Self::FiniteG0, EventKind::ActionQuery) => {
+                "this episode's control horizon as a fraction of the action head"
+            }
+            (Self::FiniteG0, EventKind::Condition) => {
+                "namespace of the named key: 0.0 observation, 1.0 actuator, 2.0 episode"
+            }
             _ => "unused, always 0.0",
         }
     }
@@ -1239,7 +1379,7 @@ pub fn render_public(episode: &PublicEpisode) -> Result<Vec<PublicRow>, RenderEr
                     ),
                 });
             }
-            if record.key.namespace != kind.namespace() {
+            if record.key.namespace != record.fact.namespace() {
                 return Err(RenderError::Unsupported {
                     detail: format!(
                         "a {} fact names a {} key",
@@ -1303,36 +1443,76 @@ fn render_fact(profile: Profile, fact: &PublicFact) -> Result<[f32; PAYLOAD_DIM]
         PublicFact::Boundary { subtype } => {
             render_payload(subtype.code(), -1.0, 1.0, 0.0, 0.0, "boundary")
         }
-        PublicFact::Condition { quantity } => render_payload(
-            quantity.value,
-            quantity.lower,
-            quantity.upper,
-            0.0,
-            0.0,
-            "condition",
-        ),
-        PublicFact::Goal { content } | PublicFact::Observation { content } => {
-            let expects_selection = matches!(profile, Profile::GoalConditionedDiagnostic);
-            let is_selection = matches!(content, ChannelContent::Selection { .. });
-            if is_selection != expects_selection {
+        PublicFact::Condition {
+            namespace,
+            code,
+            quantity,
+        } => {
+            // A condition shares its role with the `0.3.x` profile declaration,
+            // and that declaration's payload states a lower bound above its
+            // upper bound. Requiring a well-formed quantity here is therefore
+            // not housekeeping: it is what makes the header signature
+            // unreachable for any renderable condition record, so the envelope
+            // can admit conditions without admitting an ambiguity.
+            if !quantity.is_well_formed() {
                 return Err(RenderError::Unsupported {
                     detail: format!(
-                        "profile {} reads goal and observation records as {}",
-                        profile.as_str(),
-                        if expects_selection {
-                            "key selections"
-                        } else {
-                            "channel values"
-                        }
+                        "a condition quantity must be finite with lower <= value <= upper,                          got value {} in [{}, {}]",
+                        quantity.value, quantity.lower, quantity.upper
                     ),
                 });
             }
+            if !code.is_representable() {
+                return Err(RenderError::Unsupported {
+                    detail: format!(
+                        "condition code {} exceeds the exactly representable bound {}",
+                        code.0,
+                        ConditionCode::MAX
+                    ),
+                });
+            }
+            render_payload(
+                quantity.value,
+                quantity.lower,
+                quantity.upper,
+                f64::from(code.0),
+                namespace.code(),
+                "condition",
+            )
+        }
+        PublicFact::Goal { content } | PublicFact::Observation { content } => {
+            let is_selection = matches!(content, ChannelContent::Selection { .. });
+            let aux0 = if profile.content_kind_is_declared() {
+                // The row says which reading applies, so one profile can carry
+                // both. This is the only place the two readings coexist.
+                if is_selection {
+                    1.0
+                } else {
+                    0.0
+                }
+            } else {
+                let expects_selection = matches!(profile, Profile::GoalConditionedDiagnostic);
+                if is_selection != expects_selection {
+                    return Err(RenderError::Unsupported {
+                        detail: format!(
+                            "profile {} reads goal and observation records as {}",
+                            profile.as_str(),
+                            if expects_selection {
+                                "key selections"
+                            } else {
+                                "channel values"
+                            }
+                        ),
+                    });
+                }
+                0.0
+            };
             let quantity = content.quantity();
             render_payload(
                 quantity.value,
                 quantity.lower,
                 quantity.upper,
-                0.0,
+                aux0,
                 0.0,
                 "channel_content",
             )
@@ -1345,6 +1525,25 @@ fn render_fact(profile: Profile, fact: &PublicFact) -> Result<[f32; PAYLOAD_DIM]
                 ) => (remaining.fraction(), 0.0),
                 (Profile::CalibratedMonomial, QueryHorizon::ActuatorSpan { marker, requested }) => {
                     (if *marker { 1.0 } else { 0.0 }, requested.fraction())
+                }
+                (Profile::FiniteG0, QueryHorizon::RemainingFraction { remaining }) => {
+                    // Both numbers are expressed against the action head rather
+                    // than against the episode horizon, so the row is decodable
+                    // without a per-family constant. That constant is the
+                    // non-self-describing property the canonical audit found in
+                    // the legacy diagnostic profile.
+                    if usize::from(remaining.of_horizon) > ACTION_HORIZON {
+                        return Err(RenderError::Unsupported {
+                            detail: format!(
+                                "a finite-G0 episode horizon of {} exceeds the action head",
+                                remaining.of_horizon
+                            ),
+                        });
+                    }
+                    (
+                        f64::from(remaining.steps) / ACTION_HORIZON as f64,
+                        f64::from(remaining.of_horizon) / ACTION_HORIZON as f64,
+                    )
                 }
                 _ => {
                     return Err(RenderError::Unsupported {
@@ -1370,7 +1569,7 @@ fn render_fact(profile: Profile, fact: &PublicFact) -> Result<[f32; PAYLOAD_DIM]
         } => {
             let aux1 = match profile {
                 Profile::CalibratedMonomial => 1.0 / ACTION_HORIZON as f64,
-                Profile::GoalConditionedDiagnostic => 0.0,
+                Profile::GoalConditionedDiagnostic | Profile::FiniteG0 => 0.0,
             };
             render_payload(
                 command.value,
@@ -1535,12 +1734,16 @@ pub fn decode_episode(profile: Profile, rows: &[PublicRow]) -> Result<PublicEpis
             }
         }
         let fact = decode_fact(profile, kind, index, row)?;
+        // The namespace comes from the fact rather than the kind, because a
+        // condition record carries its own and every other kind's fact reports
+        // the role's namespace unchanged.
+        let namespace = fact.namespace();
         groups
             .last_mut()
             .expect("a group was just opened")
             .records
             .push(PublicRecord {
-                key: LocalKey::new(kind.namespace(), row.key),
+                key: LocalKey::new(namespace, row.key),
                 fact,
             });
     }
@@ -1641,7 +1844,7 @@ fn decode_fact(
                     aux1,
                     ACTION_HORIZON as u16,
                 )?),
-                Profile::GoalConditionedDiagnostic => {
+                Profile::GoalConditionedDiagnostic | Profile::FiniteG0 => {
                     expect_zero(index, SLOT_AUX1, aux1)?;
                     None
                 }
@@ -1666,21 +1869,62 @@ fn decode_fact(
             Ok(PublicFact::Boundary { subtype })
         }
         EventKind::Condition => {
-            expect_zero(index, SLOT_AUX0, aux0)?;
-            expect_zero(index, SLOT_AUX1, aux1)?;
+            let code = f64::from(aux0);
+            if code < 0.0 || code.fract() != 0.0 || code > f64::from(ConditionCode::MAX) {
+                return Err(DecodeError::UnexpectedSlotValue {
+                    index,
+                    slot: SLOT_AUX0,
+                    value: format!("{aux0}"),
+                    expected: "a whole condition code within the declared bound",
+                });
+            }
+            let namespace = KeyNamespace::from_code(f64::from(aux1)).ok_or(
+                DecodeError::UnexpectedSlotValue {
+                    index,
+                    slot: SLOT_AUX1,
+                    value: format!("{aux1}"),
+                    expected: "0.0, 1.0, or 2.0, a key namespace",
+                },
+            )?;
+            let quantity = quantity_from(row);
+            // Symmetric with the renderer, and load-bearing rather than tidy.
+            // The `0.3.x` profile declaration shares this role and states a
+            // lower bound above its upper bound, so refusing a malformed
+            // quantity here is what keeps a consumer that skipped the envelope
+            // from silently reading a header as a public condition.
+            if !quantity.is_well_formed() {
+                return Err(DecodeError::UnexpectedSlotValue {
+                    index,
+                    slot: SLOT_LOWER,
+                    value: format!("{}", row.payload[SLOT_LOWER]),
+                    expected: "a finite lower bound at or below the value and its upper bound",
+                });
+            }
             Ok(PublicFact::Condition {
-                quantity: quantity_from(row),
+                namespace,
+                code: ConditionCode(code as u16),
+                quantity,
             })
         }
         EventKind::Goal | EventKind::Observation => {
-            expect_zero(index, SLOT_AUX0, aux0)?;
             expect_zero(index, SLOT_AUX1, aux1)?;
             let quantity = quantity_from(row);
-            let content = match profile {
-                Profile::CalibratedMonomial => ChannelContent::Value(quantity),
-                Profile::GoalConditionedDiagnostic => ChannelContent::Selection {
-                    indicator: quantity,
-                },
+            let content = if profile.content_kind_is_declared() {
+                if expect_flag(index, SLOT_AUX0, aux0)? {
+                    ChannelContent::Selection {
+                        indicator: quantity,
+                    }
+                } else {
+                    ChannelContent::Value(quantity)
+                }
+            } else {
+                expect_zero(index, SLOT_AUX0, aux0)?;
+                match profile {
+                    Profile::CalibratedMonomial => ChannelContent::Value(quantity),
+                    _ => ChannelContent::Selection {
+                        indicator: quantity,
+                    },
+                }
             };
             Ok(if kind == EventKind::Goal {
                 PublicFact::Goal { content }
@@ -1705,6 +1949,29 @@ fn decode_fact(
                         )?,
                     }
                 }
+                Profile::FiniteG0 => {
+                    let head = ACTION_HORIZON as u16;
+                    let horizon = span_from_fraction(index, SLOT_AUX1, aux1, head)?;
+                    if horizon.steps == 0 {
+                        return Err(DecodeError::UnexpectedSlotValue {
+                            index,
+                            slot: SLOT_AUX1,
+                            value: format!("{aux1}"),
+                            expected: "a non-zero episode control horizon",
+                        });
+                    }
+                    let remaining = span_from_fraction(index, SLOT_AUX0, aux0, head)?;
+                    QueryHorizon::RemainingFraction {
+                        remaining: StepSpan::new(remaining.steps, horizon.steps).map_err(|_| {
+                            DecodeError::UnexpectedSlotValue {
+                                index,
+                                slot: SLOT_AUX0,
+                                value: format!("{aux0}"),
+                                expected: "remaining steps within this episode's horizon",
+                            }
+                        })?,
+                    }
+                }
             };
             Ok(PublicFact::ActionQuery {
                 command: quantity_from(row),
@@ -1717,7 +1984,9 @@ fn decode_fact(
                 Profile::CalibratedMonomial => {
                     span_from_fraction(index, SLOT_AUX1, aux1, ACTION_HORIZON as u16)?;
                 }
-                Profile::GoalConditionedDiagnostic => expect_zero(index, SLOT_AUX1, aux1)?,
+                Profile::GoalConditionedDiagnostic | Profile::FiniteG0 => {
+                    expect_zero(index, SLOT_AUX1, aux1)?
+                }
             }
             Ok(PublicFact::ActionExecuted {
                 command: quantity_from(row),

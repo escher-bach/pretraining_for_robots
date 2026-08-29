@@ -25,7 +25,7 @@ def tiny_profiled_config() -> PretrainingConfig:
         num_roles=11,
         payload_dim=8,
         action_horizon=16,
-        token_abi_version="physical-event-abi-0.3.0",
+        token_abi_version="physical-event-abi-0.3.1",
     )
 
 
@@ -36,7 +36,7 @@ class EvictionLearnerBoundaryTests(unittest.TestCase):
             serialization_order="canonical",
         ).learner_batch()
         tensors = tensorize(raw)
-        self.assertEqual(raw["token_abi_version"], "physical-event-abi-0.3.0")
+        self.assertEqual(raw["token_abi_version"], "physical-event-abi-0.3.1")
         self.assertEqual(tuple(tensors["role_ids"].shape), (9, 64))
         self.assertTrue(torch.all(tensors["role_ids"][:, 0] == 4))
         self.assertTrue(torch.all(tensors["key_ids"][:, 0] == 2))
@@ -159,7 +159,7 @@ class EvictionLearnerBoundaryTests(unittest.TestCase):
             profiled=True,
         ).learner_batch()
         self.assertEqual(legacy["token_abi_version"], "physical-event-abi-0.2.0")
-        self.assertEqual(profiled["token_abi_version"], "physical-event-abi-0.3.0")
+        self.assertEqual(profiled["token_abi_version"], "physical-event-abi-0.3.1")
         self.assertEqual(profiled["lengths"], [length + 1 for length in legacy["lengths"]])
         self.assertEqual(
             profiled["query_positions"],

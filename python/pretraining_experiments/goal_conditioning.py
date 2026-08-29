@@ -304,7 +304,7 @@ def main() -> None:
     parser.add_argument(
         "--profiled",
         action="store_true",
-        help="prefix the learner-visible 0.3.0 interpretation declaration",
+        help="prefix the learner-visible 0.3.1 interpretation declaration",
     )
     parser.add_argument(
         "--representation-probe",

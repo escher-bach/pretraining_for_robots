@@ -320,7 +320,7 @@ def assert_selected_profile(config: PretrainingConfig) -> None:
         raise AssertionError(f"selected architecture drift: expected {expected}, got {actual}")
     supported_token_abis = {
         "physical-event-abi-0.2.0",
-        "physical-event-abi-0.3.0",
+        "physical-event-abi-0.3.1",
     }
     if config.token_abi_version not in supported_token_abis:
         raise AssertionError(

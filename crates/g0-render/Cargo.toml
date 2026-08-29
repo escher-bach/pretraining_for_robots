@@ -1,0 +1,11 @@
+[package]
+name = "pretraining-g0-render"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pretraining-canonical-event = { path = "../canonical-event" }
+pretraining-g0-contract = { path = "../g0-contract" }
+pretraining-profiled-event = { path = "../profiled-event" }
+pretraining-world = { path = "../world" }
+serde = { version = "1.0", features = ["derive"] }
