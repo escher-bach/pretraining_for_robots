@@ -1,7 +1,8 @@
 # Repository Working Agreement
 
-Read `GOAL.md`, `META-PROCESS.md`, `DEVELOPMENT-PATH.md`, and `CARDS.md` before
-selecting work. Use `APPARATUS.md` for code and run commands.
+Read `GOAL.md`, `META-PROCESS.md`, `EMBODIED-PROCESS.md`,
+`DEVELOPMENT-PATH.md`, and `CARDS.md` before selecting work. Use `APPARATUS.md`
+for code and run commands.
 
 - Map every action to one progress-chart row and update that row when its state
   changes.

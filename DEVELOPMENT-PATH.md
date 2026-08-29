@@ -1,5 +1,8 @@
 # Development Path
 
+`EMBODIED-PROCESS.md` defines the capability graph and process semantics. This
+document applies them to the current implementation route and progress state.
+
 ## Working vocabulary
 
 | Term | Meaning |
@@ -22,10 +25,12 @@ World = Body || Environment || Norm || Disturbance || OtherAgents || Scaffold
 Body  = Morphology || Actuation || Sensorium
 ```
 
-The learner connects through typed observation and action ports. Components may
-be coupled, sequenced, hidden, revealed, renamed, restricted, delayed, fed back,
-repeated, or interrupted. These operators are introduced only when a card needs
-their semantics; there is no general-purpose language to build in advance.
+The learner connects through typed observation and action ports. The process
+kernel supports directed wiring, declared shared-variable coupling, interruption
+with explicit resume semantics, typed restriction, and guarded reveal. Norms
+support conjunction, supersession, and priority. Hiding is the default port
+view, delay is a buffer component, renaming belongs to invariance tests, and the
+feedback loop closes through the learner rather than inside the world.
 
 Every family declares three information views:
 
@@ -33,10 +38,11 @@ Every family declares three information views:
 - **privileged:** instantiated hidden state for verification and upper bounds;
 - **generator:** seeds and construction metadata for coverage and replay.
 
-The reusable semantic questions are monitoring, identification or
-distinguishability, reachability, value bounds, strategy where supported, and
-metamorphic invariance. Small finite families use exact enumeration. Harder
-families return bounds or monitor-only status; no universal solver is assumed.
+The six reusable semantic questions are monitoring, identification,
+reachability, value bounds, strategy where supported, and agent-centred
+equivalence. Auditor-only operations check metamorphic invariance and
+non-interference. Small finite families use exact enumeration. Harder families
+return bounds or monitor-only status; no universal solver is assumed.
 
 ## Capability decomposition
 
@@ -115,7 +121,7 @@ Every piece of work names one row.
 
 | Row | State transition | Status | Completion evidence |
 |---|---|---|---|
-| R0 | Standalone repository and neutral namespace | Complete | Goal, process, path, all eight card contracts, apparatus, and passing Rust/Python suites are available from this root. |
+| R0 | Standalone repository and neutral namespace | Complete | Goal, meta-process, embodied process and capability graph, path, all eight card contracts, apparatus, and passing Rust/Python suites are available from this root. |
 | R1 | Common world/training apparatus | Complete | Rust generation and rollout, PyO3 tensors, maintained model body, Trainer checkpoint/resume, and Kaggle control plane exist. |
 | R2 | Typed mixed-family event boundary | Complete for existing families | Canonical record plus explicit interpretation profile round-trip existing producers. |
 | R3 | Shared finite G0 audit layer | Complete | Enumeration, bounds, ambiguity, invariance orbit, isolation bracket, and contract hash are reusable. |

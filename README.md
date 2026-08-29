@@ -7,11 +7,13 @@ The repository has one route through the project:
 
 1. [GOAL.md](GOAL.md) defines the claim and the capability target.
 2. [META-PROCESS.md](META-PROCESS.md) defines how work is selected.
-3. [DEVELOPMENT-PATH.md](DEVELOPMENT-PATH.md) defines the worlds, cards,
+3. [EMBODIED-PROCESS.md](EMBODIED-PROCESS.md) defines the world model,
+   process algebra, capability graph, and transfer boundary.
+4. [DEVELOPMENT-PATH.md](DEVELOPMENT-PATH.md) defines the worlds, cards,
    admission gates, current position, and next path.
-4. [CARDS.md](CARDS.md) specifies every card's witness, controls, information
+5. [CARDS.md](CARDS.md) specifies every card's witness, controls, information
    boundary, baselines, admission rule, and transfer falsifier.
-5. [APPARATUS.md](APPARATUS.md) explains the code and exact commands.
+6. [APPARATUS.md](APPARATUS.md) explains the code and exact commands.
 
 The executable surface is deliberately small:
 
