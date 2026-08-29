@@ -9,7 +9,9 @@ The repository has one route through the project:
 2. [META-PROCESS.md](META-PROCESS.md) defines how work is selected.
 3. [DEVELOPMENT-PATH.md](DEVELOPMENT-PATH.md) defines the worlds, cards,
    admission gates, current position, and next path.
-4. [APPARATUS.md](APPARATUS.md) explains the code and exact commands.
+4. [CARDS.md](CARDS.md) specifies every card's witness, controls, information
+   boundary, baselines, admission rule, and transfer falsifier.
+5. [APPARATUS.md](APPARATUS.md) explains the code and exact commands.
 
 The executable surface is deliberately small:
 

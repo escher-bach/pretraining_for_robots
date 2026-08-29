@@ -56,6 +56,10 @@ Cards are candidate instruments, not mandatory curriculum stages. The first
 seed portfolio uses Cards 04, 03, 02, 05, and 06 because together they cover T1
 through T4 with finite, CPU-auditable machinery.
 
+`CARDS.md` is the implementation authority for each card's witness, controls,
+transformations, information boundary, baselines, admission rule, and transfer
+falsifier. The table below is only the route through those specifications.
+
 | Card | Intended result | Fragment | Path role |
 |---|---|---|---|
 | 01 Regulation | Feedback rejects disturbance and recovers; a fixed action plan does not. | G1 continuous/noisy | Open after the finite seed unless T1 evidence requires it sooner. |
@@ -111,7 +115,7 @@ Every piece of work names one row.
 
 | Row | State transition | Status | Completion evidence |
 |---|---|---|---|
-| R0 | Standalone repository and neutral namespace | Complete | Rust and Python suites pass from this root. |
+| R0 | Standalone repository and neutral namespace | Complete | Goal, process, path, all eight card contracts, apparatus, and passing Rust/Python suites are available from this root. |
 | R1 | Common world/training apparatus | Complete | Rust generation and rollout, PyO3 tensors, maintained model body, Trainer checkpoint/resume, and Kaggle control plane exist. |
 | R2 | Typed mixed-family event boundary | Complete for existing families | Canonical record plus explicit interpretation profile round-trip existing producers. |
 | R3 | Shared finite G0 audit layer | Complete | Enumeration, bounds, ambiguity, invariance orbit, isolation bracket, and contract hash are reusable. |
