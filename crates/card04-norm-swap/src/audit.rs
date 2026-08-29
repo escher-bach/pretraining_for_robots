@@ -450,6 +450,7 @@ pub fn audit_report() -> AuditReport {
             "`ambiguity_gap_is_zero_everywhere` is vacuous for this card: it compares the value function with itself, because the fragment does not override `privileged_value`. The non-vacuous quantity is `information_boundary`.".to_string(),
             "The card's prose claim that public and privileged information coincide is false on the two unannounced-switch witnesses, where the reveal costs one move. It holds on the other eighteen cases.".to_string(),
             "`published_norm_value` is the value of the exact policy for the norm as published. It is not a ceiling over every prior a scheduler might hold about pending switches; this family declares no such prior.".to_string(),
+            "Four case labels name one contract and two name another, so twenty episodes carry sixteen distinct public fingerprints. A training mixture must count episodes rather than labels.".to_string(),
             "Rendering through the shared boundary makes this family learner-facing. It is not yet a frontier family: that needs a bounded pilot with a usable progress signal.".to_string(),
         ],
     }

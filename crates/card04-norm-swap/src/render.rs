@@ -30,7 +30,7 @@
 //! That is what makes the announced negative solvable by planning once, which is
 //! the contrast it exists to provide.
 
-use pretraining_g0_contract::{Fragment, Guard, Reveal};
+use pretraining_g0_contract::{cell_after, optimal_actions_from, Guard, Reveal};
 use pretraining_g0_render::{
     boundary_check, rendering_report, step_fraction, BoundaryEvidence, BoundarySubtype, Content,
     G0Episode, G0Fact, G0Group, KeyNamespace, Port, PortSchema, RenderFault, RenderingReport,
@@ -243,6 +243,20 @@ fn switch_facts(switch: &crate::Switch, effective_after: usize) -> Vec<G0Fact> {
     ]
 }
 
+/// The actions the published norm makes correct at one decision.
+///
+/// The whole set, not one member. Where the published norm is indifferent the
+/// contract is indifferent, and singling one out would teach a tie-break the
+/// world does not have.
+///
+/// It re-solves the *published* contract against the absolute step clock, so an
+/// unannounced switch is invisible here until it fires and nothing has to be
+/// rebased.
+pub fn taught_actions(contract: &Contract, prefix: &[Action]) -> Vec<Action> {
+    let published = contract.published(prefix.len());
+    optimal_actions_from(&crate::NormSwap, &published, prefix)
+}
+
 /// Render one contract as a learner-visible episode taught by the public policy.
 pub fn learner_episode(contract: &Contract) -> G0Episode {
     let mut groups = vec![G0Group::one(G0Fact::Boundary(BoundarySubtype::TaskReset))];
@@ -258,6 +272,7 @@ pub fn learner_episode(contract: &Contract) -> G0Episode {
     groups.push(G0Group::new(opening));
 
     let fragment = crate::NormSwap;
+    let mut prefix: Vec<Action> = Vec::with_capacity(HORIZON);
     let mut cell = contract.start;
     groups.push(G0Group::one(observation(cell)));
 
@@ -266,25 +281,26 @@ pub fn learner_episode(contract: &Contract) -> G0Episode {
         if absorbed {
             break;
         }
-        let chosen = PublicGoalConditioned.act(&PublicView {
-            contract,
-            cell,
-            executed,
-        });
+        let correct = taught_actions(contract, &prefix);
+        // The executed action is the lowest-indexed correct one. That is a
+        // presentation choice and it is deliberately *not* the supervision:
+        // every correct action is marked.
+        let chosen = correct.first().copied().unwrap_or(Action::Hold);
         groups.push(G0Group::new(
             Action::ALL
                 .into_iter()
                 .map(|action| G0Fact::ActionQuery {
                     actuator: action.actuator_key(),
                     remaining: HORIZON - executed,
-                    selected: action == chosen,
+                    selected: correct.contains(&action),
                 })
                 .collect(),
         ));
         groups.push(G0Group::one(G0Fact::ActionExecuted {
             actuator: chosen.actuator_key(),
         }));
-        let next = fragment.step(contract, cell, executed, chosen);
+        prefix.push(chosen);
+        let next = cell_after(&fragment, contract, &prefix);
         absorbed =
             matches!(contract.hazard, Some((hazard, HazardKind::Absorbing)) if next == hazard);
         cell = next;
@@ -568,18 +584,13 @@ mod tests {
         }
     }
 
+    /// What the rendering actually teaches: the lowest-indexed correct action at
+    /// each decision, chosen from the whole correct set.
     fn taught_sequence(contract: &Contract) -> Vec<Action> {
-        let fragment = crate::NormSwap;
-        let mut cell = contract.start;
         let mut actions = Vec::with_capacity(HORIZON);
-        for executed in 0..HORIZON {
-            let action = PublicGoalConditioned.act(&PublicView {
-                contract,
-                cell,
-                executed,
-            });
-            actions.push(action);
-            cell = fragment.step(contract, cell, executed, action);
+        for _ in 0..HORIZON {
+            let correct = taught_actions(contract, &actions);
+            actions.push(correct.first().copied().unwrap_or(Action::Hold));
         }
         actions
     }

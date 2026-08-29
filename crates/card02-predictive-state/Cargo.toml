@@ -1,0 +1,19 @@
+[package]
+name = "pretraining-card02-predictive-state"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_card02_predictive_state"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+pretraining-g0-contract = { path = "../g0-contract" }
+pretraining-g0-render = { path = "../g0-render" }
+pretraining-profiled-event = { path = "../profiled-event" }
+pretraining-world = { path = "../world" }
+
+[[bin]]
+name = "card02-audit"
+path = "src/bin/card02-audit.rs"

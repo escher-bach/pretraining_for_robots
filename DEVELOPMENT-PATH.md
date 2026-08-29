@@ -130,8 +130,8 @@ Every piece of work names one row.
 | R4 | Card 04 semantic family | Audited | Exact 20-case audit, 27 action sequences per case, zero ambiguity gap, and full orbit tests. |
 | R5 | Card 04 learner-facing family | Complete | All 20 cases render through the shared finite-G0 profile on `physical-event-abi-0.3.1`, decode back exactly, and are taught by a published-information policy. The rendering found that the audited optimal first action on the two unannounced-switch witnesses was privileged; the corrected boundary is reported per case. |
 | R6 | Card 03 affordance family | Complete | Nine-cell ring, two scored decisions, twelve cases. Calibration identifies the body exactly, the scored-phase ambiguity gap is zero, making calibration uninformative reopens it, both negatives isolate, all eleven orbit verdicts hold, and every case renders and round-trips. |
-| R7 | Card 02 predictive-state family | **Next** | Exact history-ablation and ambiguity audit plus learner rendering. |
-| R8 | Card 05 active-experimentation family | Pending R7 machinery | Exact value-of-information and matched-cost control plus learner rendering. |
+| R7 | Card 02 predictive-state family | Complete | Seven-cell ring, three decisions, ten cases. Ablating the latch costs exactly half the ceiling on the witness and nothing on either control; the required memory span is sharp at three; the aliasing interval separates no two modes under any probe; all sixteen value-orbit and four information-orbit verdicts hold. |
+| R8 | Card 05 active-experimentation family | **Next** | Exact value-of-information and matched-cost control plus learner rendering. |
 | R9 | Card 06 perceptual-organization family | Pending R8 machinery | Source-binding controls and preserving/changing orbit plus learner rendering. |
 | R10 | Four-trunk seed portfolio | Blocked by R5–R9 | Bounded per-family pilots and all seven seed-gate conditions. |
 | R11 | Multi-world learner lineage | Blocked by R10 and GPU authorization | Matched fixed-mixture and direct hill-climbing sessions over immutable checkpoints, with concurrent preparation permitted, retention, full cost, and stop rules. |

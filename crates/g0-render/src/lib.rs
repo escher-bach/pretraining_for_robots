@@ -103,6 +103,8 @@ pub enum RenderFault {
     DuplicateActuator { group: usize, actuator: u16 },
     /// A decision offered no alternatives, so the choice is not a choice.
     SingleAlternative { group: usize },
+    /// A decision asserted no correct action, so it supervises nothing.
+    NoSelectedAction { group: usize },
     /// The declared control horizon does not fit the action head.
     HorizonExceedsActionHead { horizon: usize },
     /// Remaining steps exceeded the declared horizon.
@@ -138,6 +140,10 @@ impl std::fmt::Display for RenderFault {
             Self::SingleAlternative { group } => write!(
                 formatter,
                 "group {group} offers one action, so the decision is not a choice"
+            ),
+            Self::NoSelectedAction { group } => write!(
+                formatter,
+                "group {group} marks no action correct, so it supervises nothing"
             ),
             Self::HorizonExceedsActionHead { horizon } => write!(
                 formatter,
@@ -273,8 +279,15 @@ pub enum G0Fact {
     },
     /// One alternative offered at this decision.
     ///
-    /// `selected` is the teacher's choice, not the learner's; it becomes a
-    /// supervision entry and never a payload slot.
+    /// `selected` says the teacher asserts this action is **correct**, not that
+    /// it is the one that will be executed. More than one may be selected in a
+    /// decision, and that is the point: where several actions attain the
+    /// ceiling the contract is indifferent between them, and marking one would
+    /// teach a preference the world does not have. It also made two
+    /// structurally different card 02 cases render byte-identically, because
+    /// the tie-break happened to agree.
+    ///
+    /// It becomes a supervision entry and never a payload slot.
     ActionQuery {
         actuator: u16,
         remaining: usize,
@@ -333,25 +346,30 @@ impl G0Episode {
             .count()
     }
 
-    /// The actuator the teacher selected at each decision, in order.
-    pub fn selected_actuators(&self) -> Vec<Option<u16>> {
+    /// The actuators the teacher marked correct at each decision, in order.
+    ///
+    /// A set per decision rather than one actuator, because a contract may be
+    /// indifferent between several. A pilot scores membership in this set, not
+    /// equality with one member.
+    pub fn selected_actuators(&self) -> Vec<Vec<u16>> {
         self.groups
             .iter()
             .filter_map(|group| {
-                let queried: Vec<&G0Fact> = group
+                let selected: Vec<u16> = group
                     .facts
                     .iter()
-                    .filter(|fact| matches!(fact, G0Fact::ActionQuery { .. }))
+                    .filter_map(|fact| match fact {
+                        G0Fact::ActionQuery {
+                            actuator, selected, ..
+                        } if *selected => Some(*actuator),
+                        _ => None,
+                    })
                     .collect();
-                if queried.is_empty() {
-                    return None;
-                }
-                Some(queried.into_iter().find_map(|fact| match fact {
-                    G0Fact::ActionQuery {
-                        actuator, selected, ..
-                    } if *selected => Some(*actuator),
-                    _ => None,
-                }))
+                let queried = group
+                    .facts
+                    .iter()
+                    .any(|fact| matches!(fact, G0Fact::ActionQuery { .. }));
+                queried.then_some(selected)
             })
             .collect()
     }
@@ -366,14 +384,16 @@ fn validate(episode: &G0Episode) -> Result<(), RenderFault> {
     let mut any_query = false;
     for (index, group) in episode.groups.iter().enumerate() {
         let mut actuators: Vec<u16> = Vec::new();
+        let mut selected_count = 0usize;
         for fact in &group.facts {
             match fact {
                 G0Fact::ActionQuery {
                     actuator,
                     remaining,
-                    ..
+                    selected,
                 } => {
                     any_query = true;
+                    selected_count += usize::from(*selected);
                     if !episode.schema.declares_actuator(*actuator) {
                         return Err(RenderFault::UndeclaredActuator {
                             actuator: *actuator,
@@ -410,6 +430,9 @@ fn validate(episode: &G0Episode) -> Result<(), RenderFault> {
         }
         if actuators.len() == 1 {
             return Err(RenderFault::SingleAlternative { group: index });
+        }
+        if !actuators.is_empty() && selected_count == 0 {
+            return Err(RenderFault::NoSelectedAction { group: index });
         }
     }
     if !any_query {
@@ -711,9 +734,17 @@ pub struct RenderingReport {
     ///
     /// A count below `episodes` is not automatically a defect: two case labels
     /// can name the same world and differ only in which family they are scored
-    /// inside. It *is* something a training mixture has to account for, because
-    /// identical episodes are duplicated data rather than additional coverage.
+    /// inside, or in a counterfactual no on-policy episode reveals. It *is*
+    /// something a training mixture has to account for, because identical
+    /// episodes are duplicated data rather than additional coverage.
     pub distinct_fingerprints: usize,
+    /// The episode indices that render to the same public stream, grouped.
+    ///
+    /// Reported rather than left to be inferred from the count, because *which*
+    /// episodes collide is the interesting part: two labels naming one contract
+    /// is bookkeeping, while a control that collides with its own witness means
+    /// the control's evidence is off-policy and cannot come from the corpus.
+    pub colliding_episodes: Vec<Vec<usize>>,
 }
 
 /// Summarize the rendering of a whole family.
@@ -729,6 +760,14 @@ pub fn rendering_report(episodes: &[G0Episode]) -> Result<RenderingReport, Rende
         decisions += evidence.decisions;
         fingerprints.push(evidence.fingerprint);
     }
+    let mut groups: std::collections::BTreeMap<u64, Vec<usize>> = std::collections::BTreeMap::new();
+    for (index, fingerprint) in fingerprints.iter().enumerate() {
+        groups.entry(*fingerprint).or_default().push(index);
+    }
+    let colliding: Vec<Vec<usize>> = groups
+        .into_values()
+        .filter(|indices| indices.len() > 1)
+        .collect();
     fingerprints.sort_unstable();
     fingerprints.dedup();
     Ok(RenderingReport {
@@ -741,6 +780,7 @@ pub fn rendering_report(episodes: &[G0Episode]) -> Result<RenderingReport, Rende
         total_decisions: decisions,
         every_episode_round_trips: true,
         distinct_fingerprints: fingerprints.len(),
+        colliding_episodes: colliding,
     })
 }
 
@@ -822,8 +862,8 @@ mod tests {
                 .map(|t| t.supervision.clone())
                 .collect::<Vec<_>>(),
         );
-        assert_eq!(episode.selected_actuators(), vec![Some(0)]);
-        assert_eq!(flipped.selected_actuators(), vec![Some(1)]);
+        assert_eq!(episode.selected_actuators(), vec![vec![0]]);
+        assert_eq!(flipped.selected_actuators(), vec![vec![1]]);
     }
 
     #[test]
@@ -900,6 +940,24 @@ mod tests {
             Err(RenderFault::SingleAlternative { group: 2 })
         );
 
+        let mut unselected = minimal();
+        unselected.groups[2] = G0Group::new(vec![
+            G0Fact::ActionQuery {
+                actuator: 0,
+                remaining: 2,
+                selected: false,
+            },
+            G0Fact::ActionQuery {
+                actuator: 1,
+                remaining: 2,
+                selected: false,
+            },
+        ]);
+        assert_eq!(
+            legacy_tokens(&unselected),
+            Err(RenderFault::NoSelectedAction { group: 2 })
+        );
+
         let mut duplicated = minimal();
         duplicated.groups[2] = G0Group::new(vec![
             G0Fact::ActionQuery {
@@ -962,8 +1020,70 @@ mod tests {
         let report = rendering_report(&episodes).expect("renders");
         assert_eq!(report.episodes, 2);
         assert_eq!(report.distinct_fingerprints, 1);
+        assert_eq!(report.colliding_episodes, vec![vec![0, 1]]);
         assert_eq!(report.envelope_abi, "physical-event-abi-0.3.1");
         assert_eq!(report.canonical_profile, "finite-g0-discrete-0.1.0");
         assert!(report.every_episode_round_trips);
+    }
+}
+
+#[cfg(test)]
+mod indifference_tests {
+    use super::*;
+
+    /// A decision the contract is indifferent about marks every correct action.
+    #[test]
+    fn several_actions_may_be_correct_at_one_decision() {
+        let episode = G0Episode::new(
+            PortSchema {
+                observations: vec![Port::unit(0)],
+                actuators: vec![Port::signed(0), Port::signed(1), Port::signed(2)],
+            },
+            1,
+            vec![
+                G0Group::one(G0Fact::Boundary(BoundarySubtype::TaskReset)),
+                G0Group::one(G0Fact::Observation {
+                    key: 0,
+                    content: Content::Selection,
+                }),
+                G0Group::new(vec![
+                    G0Fact::ActionQuery {
+                        actuator: 0,
+                        remaining: 1,
+                        selected: true,
+                    },
+                    G0Fact::ActionQuery {
+                        actuator: 1,
+                        remaining: 1,
+                        selected: true,
+                    },
+                    G0Fact::ActionQuery {
+                        actuator: 2,
+                        remaining: 1,
+                        selected: false,
+                    },
+                ]),
+                G0Group::one(G0Fact::ActionExecuted { actuator: 0 }),
+                G0Group::one(G0Fact::Boundary(BoundarySubtype::EpisodeEnd)),
+            ],
+        );
+        let evidence = boundary_check(&episode).expect("renders");
+        assert!(evidence.round_trips);
+        assert_eq!(episode.selected_actuators(), vec![vec![0, 1]]);
+
+        let tokens = legacy_tokens(&episode).expect("renders");
+        let targets: Vec<f32> = tokens
+            .iter()
+            .filter(|token| token.public.role == Role::ActionQuery)
+            .map(|token| token.supervision.action_target[SCORED_ACTION_SLOT])
+            .collect();
+        assert_eq!(
+            targets,
+            vec![
+                SELECTED_TARGET as f32,
+                SELECTED_TARGET as f32,
+                REJECTED_TARGET as f32
+            ]
+        );
     }
 }

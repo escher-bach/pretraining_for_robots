@@ -496,71 +496,143 @@ pub fn noninterference_check<F: PubliclyObservable>(
     }
 }
 
-/// The ceiling of the best policy that ignores a declared part of its history.
+/// A transform's effect on the *information* structure rather than on the value
+/// function.
 ///
-/// Card 02 needs "the public ceiling after ablating the latch". Ablation is
-/// expressed as a coarsening of the public trace, so the same recursion serves
-/// it: the policy still adapts, it just cannot see what the coarsening removed.
+/// `check_orbit` compares ceilings and optimal action sets, and several declared
+/// transformations move neither. Making card 03's calibration uninformative
+/// leaves the world untouched and a contract-holding solver unbothered; card
+/// 02's "end the aliasing interval early" likewise. Running those through the
+/// value orbit produces a verdict that looks like a pass and means nothing.
+///
+/// What they move is what a learner restricted to the public trace can attain,
+/// and how many hidden realizations remain compatible with what it has seen. So
+/// they are checked against those two quantities instead.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct InformationVerdict {
+    pub transform: String,
+    pub semantics_preserving: bool,
+    pub public_ceiling_before: f64,
+    pub public_ceiling_after: f64,
+    pub diameter_before: usize,
+    pub diameter_after: usize,
+    pub ceiling_unchanged: bool,
+    pub diameter_unchanged: bool,
+    pub verdict_holds: bool,
+}
+
+/// Check one information transform against an ambiguity set.
+///
+/// A preserving transform must leave both the public ceiling and the
+/// identification diameter fixed. A changing one must move at least one of them;
+/// a transform that moves neither is testing nothing, and both halves are
+/// checked so a vacuous transform cannot pass as a verdict.
+pub fn check_information_orbit<F, T>(
+    fragment: &F,
+    set: &AmbiguitySet<F::Contract>,
+    name: &str,
+    semantics_preserving: bool,
+    transform: T,
+    horizon: usize,
+) -> InformationVerdict
+where
+    F: PubliclyObservable,
+    F::Contract: Clone,
+    T: Fn(&AmbiguitySet<F::Contract>) -> AmbiguitySet<F::Contract>,
+{
+    let moved = transform(set);
+    let before = public_policy_value(fragment, set, horizon);
+    let after = public_policy_value(fragment, &moved, horizon);
+    let diameter_before = identification_diameter(fragment, set, &[]);
+    let diameter_after = identification_diameter(fragment, &moved, &[]);
+    let ceiling_unchanged = (before - after).abs() <= VALUE_EPSILON;
+    let diameter_unchanged = diameter_before == diameter_after;
+    InformationVerdict {
+        transform: name.to_string(),
+        semantics_preserving,
+        public_ceiling_before: before,
+        public_ceiling_after: after,
+        diameter_before,
+        diameter_after,
+        ceiling_unchanged,
+        diameter_unchanged,
+        verdict_holds: if semantics_preserving {
+            ceiling_unchanged && diameter_unchanged
+        } else {
+            !(ceiling_unchanged && diameter_unchanged)
+        },
+    }
+}
+
+/// A family seen through a coarsened public trace.
+///
+/// Ablating part of the history is a coarsening rather than a separate policy
+/// class, so the same exact recursion serves it: the policy still adapts to
+/// everything else, it just cannot see what was removed. It is public because a
+/// card needs to run other queries against the coarsened view — card 02's "the
+/// aliasing interval ends early" transformation is invisible in the full trace
+/// and shows up only in the ablated one.
+pub struct Coarsened<'a, F, G> {
+    pub inner: &'a F,
+    pub coarsen: G,
+}
+
+impl<'a, F, G> Coarsened<'a, F, G> {
+    pub fn new(inner: &'a F, coarsen: G) -> Self {
+        Self { inner, coarsen }
+    }
+}
+
+impl<F: Fragment, G> Fragment for Coarsened<'_, F, G> {
+    type Action = F::Action;
+    type Contract = F::Contract;
+
+    fn actions(&self) -> Vec<Self::Action> {
+        self.inner.actions()
+    }
+    fn horizon(&self) -> usize {
+        self.inner.horizon()
+    }
+    fn start(&self, contract: &Self::Contract) -> usize {
+        self.inner.start(contract)
+    }
+    fn step(
+        &self,
+        contract: &Self::Contract,
+        cell: usize,
+        executed: usize,
+        action: Self::Action,
+    ) -> usize {
+        self.inner.step(contract, cell, executed, action)
+    }
+    fn value(&self, contract: &Self::Contract, path: &[usize], actions: &[Self::Action]) -> i32 {
+        self.inner.value(contract, path, actions)
+    }
+    fn privileged_value(
+        &self,
+        contract: &Self::Contract,
+        path: &[usize],
+        actions: &[Self::Action],
+    ) -> i32 {
+        self.inner.privileged_value(contract, path, actions)
+    }
+}
+
+impl<F: PubliclyObservable, G: Fn(&[i64]) -> Vec<i64>> PubliclyObservable for Coarsened<'_, F, G> {
+    fn public_trace(&self, contract: &Self::Contract, actions: &[Self::Action]) -> Vec<i64> {
+        (self.coarsen)(&self.inner.public_trace(contract, actions))
+    }
+}
+
+/// The ceiling of the best policy that ignores a declared part of its history.
 pub fn ablated_policy_value<F: PubliclyObservable>(
     fragment: &F,
     set: &AmbiguitySet<F::Contract>,
     horizon: usize,
-    coarsen: impl Fn(&[i64]) -> Vec<i64> + Copy,
+    coarsen: impl Fn(&[i64]) -> Vec<i64>,
 ) -> f64
 where
     F::Contract: Clone,
 {
-    struct Ablated<'a, F, G> {
-        inner: &'a F,
-        coarsen: G,
-    }
-    impl<F: Fragment, G> Fragment for Ablated<'_, F, G> {
-        type Action = F::Action;
-        type Contract = F::Contract;
-        fn actions(&self) -> Vec<Self::Action> {
-            self.inner.actions()
-        }
-        fn horizon(&self) -> usize {
-            self.inner.horizon()
-        }
-        fn start(&self, contract: &Self::Contract) -> usize {
-            self.inner.start(contract)
-        }
-        fn step(
-            &self,
-            contract: &Self::Contract,
-            cell: usize,
-            executed: usize,
-            action: Self::Action,
-        ) -> usize {
-            self.inner.step(contract, cell, executed, action)
-        }
-        fn value(
-            &self,
-            contract: &Self::Contract,
-            path: &[usize],
-            actions: &[Self::Action],
-        ) -> i32 {
-            self.inner.value(contract, path, actions)
-        }
-        fn privileged_value(
-            &self,
-            contract: &Self::Contract,
-            path: &[usize],
-            actions: &[Self::Action],
-        ) -> i32 {
-            self.inner.privileged_value(contract, path, actions)
-        }
-    }
-    impl<F: PubliclyObservable, G: Fn(&[i64]) -> Vec<i64>> PubliclyObservable for Ablated<'_, F, G> {
-        fn public_trace(&self, contract: &Self::Contract, actions: &[Self::Action]) -> Vec<i64> {
-            (self.coarsen)(&self.inner.public_trace(contract, actions))
-        }
-    }
-
-    let ablated = Ablated {
-        inner: fragment,
-        coarsen,
-    };
-    public_policy_value(&ablated, set, horizon)
+    public_policy_value(&Coarsened::new(fragment, coarsen), set, horizon)
 }

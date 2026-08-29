@@ -106,7 +106,8 @@ curves falsify that prediction.
 ## Card 02: Predictive State
 
 **Trunk:** T1 identification and regulation. **Fragment:** G0. **State:**
-specified; seed implementation follows Card 03 shared machinery.
+implemented, audited, and rendered through the shared finite-G0 learner
+boundary. Frontier admission still needs a bounded pilot.
 
 **Claim.** The learner retains exactly the earlier public information that
 changes action-conditioned futures. It does not retain equally salient but
@@ -130,14 +131,33 @@ Decorrelating the latch from the mode, changing the discriminating action, or
 ending the aliasing interval early changes the required state.
 
 **Boundary and bracket.** The public ambiguity becomes zero when the latch is
-observed. Compare against the exact memoryless policy, fixed windows just below
-and above the required span, a full-transcript policy, and public/privileged
-ceilings. Also compute a public ceiling after ablating the latch from history.
-Any mode correlation during the aliasing interval invalidates the instance.
+observed, so the privileged-minus-public gap is zero and vacuous. The
+load-bearing number is the public ceiling after **ablating the latch from
+history**: `97` becomes `48.5` on the witness and on the memory-cost control,
+and is unchanged on the fully-observable and irrelevant-latch controls. Ablating
+the *second* latch costs nothing anywhere. Compare against the exact memoryless
+policy, fixed windows just below and above the required span — the boundary is
+sharp at three — a constant-command policy, a last-latch policy, and the
+mode-conditioned ceiling. No action sequence confined to the aliasing interval
+separates the two modes.
+
+Two implementation facts are not in this card text. The card's observable is the
+**discriminating command, not the first action**: both modes open with the same
+move, so a first-action orbit reports agreement exactly where the card claims a
+difference. And two declared transformations — ending the aliasing interval
+early, and republishing the mode — leave the world's ceiling and correct actions
+untouched, so they are checked against what a latch-ablated learner can attain
+rather than through the value orbit, which would have passed them vacuously.
 
 **Admission and transfer.** Admit only if the learner beats the no-memory
 ceiling on the witness, does not act on the irrelevant latch, and discards the
-unneeded latch under memory cost. The transfer prediction is faster acquisition
+unneeded latch under memory cost. The memory-cost case is not an isolation
+negative: nothing simpler is optimal on it, and what it catches is a policy that
+retains *too much*, so its evidence is a designated-failure table rather than
+the bracket. The variance variant is not implemented — it needs an objective
+under which outcome spread changes the optimal action, and the deterministic G0
+fragment has none, so the `P6 -> M2` dispute stays open and undecided by this
+card. The transfer prediction is faster acquisition
 of Card 05 than from fully observable pretraining. Equal Card 05 curves falsify
 it.
 

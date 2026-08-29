@@ -46,13 +46,14 @@ pub mod kernel;
 pub mod query;
 
 pub use kernel::{
-    BoundaryEffect, Coupling, CouplingRule, Displaced, Guard, GuardContext, IndexSet, KernelUse,
-    Norm, NormVerdict, ResourceScope, Restriction, Resume, Reveal,
+    BoundaryEffect, Coupling, CouplingRule, Displaced, Guard, GuardContext, IndexSet, Interrupt,
+    KernelUse, Norm, NormVerdict, ResourceScope, Restriction, Resume, Reveal,
 };
 pub use query::{
-    ablated_policy_value, ambiguity_report, epistemic_value, identification_diameter, identify,
-    matched_control_verdict, noninterference_check, privileged_value_bound, public_policy_value,
-    public_policy_value_and_first_actions, ActionValue, AmbiguityReport, AmbiguitySet,
+    ablated_policy_value, ambiguity_report, check_information_orbit, epistemic_value,
+    identification_diameter, identify, matched_control_verdict, noninterference_check,
+    privileged_value_bound, public_policy_value, public_policy_value_and_first_actions,
+    ActionValue, AmbiguityReport, AmbiguitySet, Coarsened, InformationVerdict,
     MatchedControlVerdict, NonInterference, PubliclyObservable, VALUE_EPSILON,
 };
 
@@ -282,6 +283,64 @@ pub fn optimal_first_actions<F: Fragment>(fragment: &F, contract: &F::Contract) 
     first
 }
 
+/// The actions that attain the ceiling from a mid-episode prefix.
+///
+/// This is the primitive a step-wise policy should use, and it exists because
+/// the obvious alternative is wrong in a way that is easy to miss. Re-solving
+/// "the remaining episode" hands the solver a fresh contract whose step clock
+/// starts at zero, so anything time-dependent — a restored actuator, an
+/// interval that ends at a stated step — is evaluated at the wrong index. Card
+/// 03 lost its own restoration witness to exactly that before this existed.
+///
+/// Enumerating *completions of the prefix* keeps the absolute clock, because the
+/// value function receives the whole action sequence. Nothing needs rebasing,
+/// so nothing can be rebased incorrectly.
+///
+/// The whole set is returned, not one member. Where several actions attain the
+/// ceiling the world is indifferent between them, and a caller that silently
+/// took the first would be asserting a preference the contract does not have.
+pub fn optimal_actions_from<F: Fragment>(
+    fragment: &F,
+    contract: &F::Contract,
+    prefix: &[F::Action],
+) -> Vec<F::Action> {
+    let horizon = fragment.horizon();
+    if prefix.len() >= horizon {
+        return Vec::new();
+    }
+    let actions = fragment.actions();
+    let mut best = i32::MIN;
+    let mut chosen = Vec::new();
+    for suffix in sequences_of_length(&actions, horizon - prefix.len()) {
+        let mut sequence = prefix.to_vec();
+        sequence.extend(suffix);
+        let path = trajectory(fragment, contract, &sequence);
+        let value = fragment.value(contract, &path, &sequence);
+        let next = sequence[prefix.len()];
+        if value > best {
+            best = value;
+            chosen.clear();
+        }
+        if value == best && !chosen.contains(&next) {
+            chosen.push(next);
+        }
+    }
+    chosen.sort();
+    chosen.dedup();
+    chosen
+}
+
+/// The configuration reached by following a prefix, with the absolute clock.
+pub fn cell_after<F: Fragment>(
+    fragment: &F,
+    contract: &F::Contract,
+    prefix: &[F::Action],
+) -> usize {
+    *trajectory(fragment, contract, prefix)
+        .last()
+        .expect("a trajectory contains its start")
+}
+
 /// The gap between what a privileged solver and a public one can reach.
 ///
 /// Computed rather than assumed, so a later edit that hides a field is caught
@@ -315,6 +374,12 @@ pub struct OrbitVerdict {
 /// corresponding optimal set fixed. A semantics-changing one must move at least
 /// one of them — a transform that changes nothing is testing nothing, and both
 /// halves are checked so a vacuous transform cannot pass as a verdict.
+///
+/// The action set compared is the optimal *first* actions. That is the right
+/// observable for a card whose contrast is at the first decision and the wrong
+/// one for a card whose contrast is later: card 02's first move is the same in
+/// both modes and its whole claim lives at the third. Use [`check_orbit_with`]
+/// there, rather than reading agreement where the card claims a difference.
 pub fn check_orbit<F, T, M>(
     fragment: &F,
     contracts: &[F::Contract],
@@ -328,6 +393,33 @@ where
     T: Fn(&F::Contract) -> F::Contract,
     M: Fn(F::Action) -> F::Action,
 {
+    check_orbit_with(
+        fragment,
+        contracts,
+        name,
+        semantics_preserving,
+        transform,
+        map_action,
+        optimal_first_actions,
+    )
+}
+
+/// [`check_orbit`] against a stated action observable.
+pub fn check_orbit_with<F, T, M, O>(
+    fragment: &F,
+    contracts: &[F::Contract],
+    name: &str,
+    semantics_preserving: bool,
+    transform: T,
+    map_action: M,
+    observable: O,
+) -> OrbitVerdict
+where
+    F: Fragment,
+    T: Fn(&F::Contract) -> F::Contract,
+    M: Fn(F::Action) -> F::Action,
+    O: Fn(&F, &F::Contract) -> Vec<F::Action>,
+{
     let mut ceiling_unchanged = true;
     let mut actions_correspond = true;
     for contract in contracts {
@@ -336,13 +428,16 @@ where
         let (moved_ceiling, _) = value_bounds(fragment, &moved);
         ceiling_unchanged &= base_ceiling == moved_ceiling;
 
-        let mut expected: Vec<F::Action> = optimal_first_actions(fragment, contract)
+        let mut expected: Vec<F::Action> = observable(fragment, contract)
             .into_iter()
             .map(&map_action)
             .collect();
         expected.sort();
         expected.dedup();
-        actions_correspond &= expected == optimal_first_actions(fragment, &moved);
+        let mut found = observable(fragment, &moved);
+        found.sort();
+        found.dedup();
+        actions_correspond &= expected == found;
     }
     let verdict_holds = if semantics_preserving {
         ceiling_unchanged && actions_correspond

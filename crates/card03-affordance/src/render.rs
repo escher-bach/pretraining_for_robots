@@ -28,9 +28,11 @@ use pretraining_g0_render::{
 };
 use serde::{Deserialize, Serialize};
 
+use pretraining_g0_contract::{cell_after, optimal_actions_from};
+
 use crate::{
-    card_cases, goal_is_reachable, optimal_first_actions, Action, Calibration, Case, CaseKind,
-    Contract, ExactPostCalibration, PublicPolicy, PublicView, HORIZON, RING,
+    card_cases, goal_is_reachable, optimal_first_actions, Action, Affordance, Calibration, Case,
+    CaseKind, Contract, ExactPostCalibration, PublicPolicy, PublicView, HORIZON, RING,
 };
 
 /// The named actuator is supported from the carried decision index onward.
@@ -114,26 +116,26 @@ pub fn learner_episode(contract: &Contract) -> Result<G0Episode, RenderFault> {
     }
     groups.push(G0Group::new(opening));
 
-    cell = contract.start;
+    let mut prefix: Vec<Action> = Vec::with_capacity(HORIZON);
     for executed in 0..HORIZON {
-        let chosen = ExactPostCalibration.act(&PublicView {
-            contract,
-            cell,
-            executed,
-        });
+        // The whole correct set, re-solved against the absolute step clock so
+        // an announced restoration lands at the decision it was announced for.
+        let correct = optimal_actions_from(&Affordance, contract, &prefix);
+        let chosen = correct.first().copied().unwrap_or(Action::Hold);
         groups.push(G0Group::new(
             Action::ALL
                 .into_iter()
                 .map(|action| G0Fact::ActionQuery {
                     actuator: action.index() as u16,
                     remaining: HORIZON - executed,
-                    selected: action == chosen,
+                    selected: correct.contains(&action),
                 })
                 .collect(),
         ));
         groups.push(G0Group::one(G0Fact::ActionExecuted {
             actuator: chosen.index() as u16,
         }));
+        prefix.push(chosen);
         if chosen == Action::Fallback {
             // The fallback is absorbing, so there is no further decision to
             // offer. Continuing to query would publish choices that cannot
@@ -141,7 +143,7 @@ pub fn learner_episode(contract: &Contract) -> Result<G0Episode, RenderFault> {
             // of exactly the arm the card cares most about.
             break;
         }
-        cell = contract.advance(cell, executed, chosen);
+        cell = cell_after(&Affordance, contract, &prefix);
         groups.push(G0Group::one(observation(cell)));
     }
 

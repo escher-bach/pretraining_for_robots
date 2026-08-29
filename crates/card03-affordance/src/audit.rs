@@ -484,6 +484,7 @@ pub fn audit_report() -> AuditReport {
             "The absorbing-wasted-budget variant named in CARDS.md is not implemented. It is a variant of the witness rather than part of it, and no admission decision in R6 or R10 turns on it.".to_string(),
             "The invariance group checked here is the ring's rotations, not its dihedral group. A reflection is not a symmetry of a body whose commands are 0, +1, +2, and -1.".to_string(),
             "Calibration is scaffold: mandatory, free, and outside the scored budget. The card's zero scored-phase ambiguity gap is a consequence of that choice and would not survive making calibration optional.".to_string(),
+            "Two case labels name identical contracts: the no-restore negative *is* the unreachable-fallback witness, differing only in which family it is scored inside. Ten of twelve episodes are distinct, and a training mixture must count episodes rather than labels.".to_string(),
             "`M3` is not established. The card supplies the instrument; establishing the node needs a learner contrast this crate cannot perform.".to_string(),
         ],
     }
