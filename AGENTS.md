@@ -2,7 +2,8 @@
 
 Read `GOAL.md`, `META-PROCESS.md`, `EMBODIED-PROCESS.md`,
 `DEVELOPMENT-PATH.md`, and `CARDS.md` before selecting work. Use `APPARATUS.md`
-for code and run commands.
+for code and run commands, and `HANDOFF.md` for where the current work stopped
+and what building it found.
 
 - Map every action to one progress-chart row and update that row when its state
   changes.
