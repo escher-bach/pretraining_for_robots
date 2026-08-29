@@ -44,7 +44,9 @@ class EvictionLearnerBoundaryTests(unittest.TestCase):
         self.assertTrue(
             torch.equal(
                 tensors["payloads"][0, 0],
-                torch.tensor([0.0, 3.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0]),
+                # Slots 0..2 are the envelope's semantic version tuple, so the
+                # 0.3.1 bump moves the patch number into slot 2.
+                torch.tensor([0.0, 3.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0]),
             )
         )
         self.assertEqual(float(tensors["action_target_mask"][:, 0].sum()), 0.0)

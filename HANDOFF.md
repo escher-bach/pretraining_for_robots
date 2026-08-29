@@ -21,8 +21,22 @@ was learned building it, and what to do next.
 | R10 seed gate | Not started | — |
 
 `cargo test --workspace --locked` passes: 39 test targets, 0 failures.
-`cargo fmt --all -- --check` is clean. Nothing is left half-applied, and no
-GPU or remote run has been launched or authorized.
+`cargo fmt --all -- --check` is clean. The Python suite passes too — 37 tests —
+but **only after rebuilding the PyO3 wheel**, because the `0.3.1` envelope bump
+changed a constant the installed extension carries:
+
+```bash
+python -m maturin build --release --locked --manifest-path crates/world-py/Cargo.toml --out dist
+```
+
+then force-reinstall the wheel from `dist/` and set `PYTHONPATH` to `python/`.
+A stale wheel makes four tests fail with an ABI-version mismatch that looks like
+a code defect and is not. Note also that the environment has
+`transformers 5.3.0` where `requirements-kaggle.txt` pins `4.57.6`; the suite
+passes on both, but a Kaggle run uses the pin.
+
+Nothing is left half-applied, and no GPU or remote run has been launched or
+authorized.
 
 Four audit binaries emit JSON on stdout:
 
@@ -63,8 +77,7 @@ what exists (one boundary; valid baseline/ceiling brackets with no direct
 leakage), and the rest need work:
 
 1. a bounded CPU learner pilot per family. Local Python has `torch 2.10.0+cpu`
-   and `transformers 5.3.0` — note that is **not** the pinned `4.57.6`, so the
-   existing Python suite may need attention before it runs here;
+   and `transformers 5.3.0`, and the existing suite passes on it;
 2. the five families need a PyO3 surface. `crates/world-py` currently exposes
    only the two legacy worlds. One batching entry point taking a family name and
    returning padded profiled tensors would serve all five;
