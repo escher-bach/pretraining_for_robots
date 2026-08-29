@@ -284,7 +284,7 @@ pub fn learner_episode(contract: &Contract) -> G0Episode {
         groups.push(G0Group::one(G0Fact::ActionExecuted {
             actuator: chosen.actuator_key(),
         }));
-        let next = fragment.step(contract, cell, chosen);
+        let next = fragment.step(contract, cell, executed, chosen);
         absorbed =
             matches!(contract.hazard, Some((hazard, HazardKind::Absorbing)) if next == hazard);
         cell = next;
@@ -579,7 +579,7 @@ mod tests {
                 executed,
             });
             actions.push(action);
-            cell = fragment.step(contract, cell, action);
+            cell = fragment.step(contract, cell, executed, action);
         }
         actions
     }

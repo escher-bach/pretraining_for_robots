@@ -129,8 +129,8 @@ Every piece of work names one row.
 | R3b | One learner event boundary | Complete | `pretraining-g0-render` turns a card's public transcript into a canonical episode and then into profiled tokens. One profile serves the whole portfolio, so the envelope never publishes family identity. |
 | R4 | Card 04 semantic family | Audited | Exact 20-case audit, 27 action sequences per case, zero ambiguity gap, and full orbit tests. |
 | R5 | Card 04 learner-facing family | Complete | All 20 cases render through the shared finite-G0 profile on `physical-event-abi-0.3.1`, decode back exactly, and are taught by a published-information policy. The rendering found that the audited optimal first action on the two unannounced-switch witnesses was privileged; the corrected boundary is reported per case. |
-| R6 | Card 03 affordance family | **Next** | Implement on G0, audit reachability/reveal/identification, then add learner rendering. |
-| R7 | Card 02 predictive-state family | Pending R6 machinery | Exact history-ablation and ambiguity audit plus learner rendering. |
+| R6 | Card 03 affordance family | Complete | Nine-cell ring, two scored decisions, twelve cases. Calibration identifies the body exactly, the scored-phase ambiguity gap is zero, making calibration uninformative reopens it, both negatives isolate, all eleven orbit verdicts hold, and every case renders and round-trips. |
+| R7 | Card 02 predictive-state family | **Next** | Exact history-ablation and ambiguity audit plus learner rendering. |
 | R8 | Card 05 active-experimentation family | Pending R7 machinery | Exact value-of-information and matched-cost control plus learner rendering. |
 | R9 | Card 06 perceptual-organization family | Pending R8 machinery | Source-binding controls and preserving/changing orbit plus learner rendering. |
 | R10 | Four-trunk seed portfolio | Blocked by R5–R9 | Bounded per-family pilots and all seven seed-gate conditions. |

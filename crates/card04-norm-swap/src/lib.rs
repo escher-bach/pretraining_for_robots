@@ -390,7 +390,7 @@ impl Fragment for NormSwap {
         contract.start
     }
 
-    fn step(&self, contract: &Contract, cell: usize, action: Action) -> usize {
+    fn step(&self, contract: &Contract, cell: usize, _executed: usize, action: Action) -> usize {
         let next = action.apply(cell);
         match contract.hazard {
             Some((hazard, HazardKind::Absorbing)) if cell == hazard => hazard,

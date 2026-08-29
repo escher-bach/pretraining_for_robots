@@ -99,6 +99,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "pretraining-card03-affordance"
+version = "0.1.0"
+dependencies = [
+ "pretraining-g0-contract",
+ "pretraining-g0-render",
+ "pretraining-profiled-event",
+ "pretraining-world",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "pretraining-card04-norm-swap"
 version = "0.1.0"
 dependencies = [

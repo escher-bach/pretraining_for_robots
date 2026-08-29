@@ -9,5 +9,6 @@ members = [
     "crates/profiled-event",
     "crates/g0-contract",
     "crates/g0-render",
+    "crates/card03-affordance",
     "crates/card04-norm-swap",
 ]

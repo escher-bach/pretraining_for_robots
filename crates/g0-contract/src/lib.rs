@@ -171,7 +171,20 @@ pub trait Fragment {
     fn actions(&self) -> Vec<Self::Action>;
     fn horizon(&self) -> usize;
     fn start(&self, contract: &Self::Contract) -> usize;
-    fn step(&self, contract: &Self::Contract, cell: usize, action: Self::Action) -> usize;
+    /// The configuration after `action` is taken with `executed` actions already
+    /// behind it.
+    ///
+    /// The step index is part of the signature because a family may restore or
+    /// withdraw an effect mid-episode — card 03 publicly restores an actuator —
+    /// and folding that into the cell would make the configuration space carry
+    /// the clock. A family with a time-invariant transition simply ignores it.
+    fn step(
+        &self,
+        contract: &Self::Contract,
+        cell: usize,
+        executed: usize,
+        action: Self::Action,
+    ) -> usize;
     /// Score a complete rollout. `trajectory[0]` is the starting cell.
     fn value(
         &self,
@@ -219,8 +232,8 @@ pub fn trajectory<F: Fragment>(
 ) -> Vec<usize> {
     let mut cell = fragment.start(contract);
     let mut path = vec![cell];
-    for action in actions {
-        cell = fragment.step(contract, cell, *action);
+    for (executed, action) in actions.iter().enumerate() {
+        cell = fragment.step(contract, cell, executed, *action);
         path.push(cell);
     }
     path

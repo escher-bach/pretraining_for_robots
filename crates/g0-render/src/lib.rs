@@ -115,6 +115,16 @@ pub enum RenderFault {
     Canonical { detail: String },
     /// Rendering and decoding disagreed.
     NotInvertible { detail: String },
+    /// The transcript would have to be taught by a policy reading unpublished
+    /// state.
+    ///
+    /// A shared fault rather than a card-local one, because every family faces
+    /// the same rule: `AGENTS.md` forbids privileged state from becoming
+    /// learner input *or supervision*, and a teacher is supervision. Card 04
+    /// found this the hard way — its audited optimal first action on the
+    /// unannounced-switch witness was privileged — so the boundary carries a
+    /// way to refuse rather than leaving each card to remember.
+    TeacherWouldLeak { detail: String },
 }
 
 impl std::fmt::Display for RenderFault {
@@ -148,6 +158,10 @@ impl std::fmt::Display for RenderFault {
             }
             Self::Canonical { detail } => write!(formatter, "{detail}"),
             Self::NotInvertible { detail } => write!(formatter, "{detail}"),
+            Self::TeacherWouldLeak { detail } => write!(
+                formatter,
+                "the teacher for this transcript would read unpublished state: {detail}"
+            ),
         }
     }
 }

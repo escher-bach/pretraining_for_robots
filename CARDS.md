@@ -144,7 +144,8 @@ it.
 ## Card 03: Affordance and Reachability
 
 **Trunk:** T1 identification and regulation. **Fragment:** G0. **State:**
-specified and next for implementation after the Card 04 learner adapter.
+implemented, audited, and rendered through the shared finite-G0 learner
+boundary. Frontier admission still needs a bounded pilot.
 
 **Claim.** Before a failed attempt, the learner changes its action allocation
 according to what this body can bring about in this environment.
@@ -169,14 +170,35 @@ Changing which edges are unsupported, which channels are coupled, or making
 calibration uninformative changes the reachable set or its identifiability.
 
 **Boundary and bracket.** After calibration, support identification and
-reachability are exact, so the public and privileged ceilings coincide. Pulse
-order must be independent of the goal. Compare against always-attempt,
-frequency-matched random fallback, try-once-then-fallback, and the exact
-post-calibration policy.
+reachability are exact, so the public and privileged ceilings coincide; the
+implemented family reports both and the gap is zero on every case. That holds
+*because* calibration is mandatory, free, and exact — making it uninformative
+reopens the gap, which is how the scaffold is shown to be load-bearing. Pulse
+order is a constant and the audit checks its independence from the goal across
+every cell. Compare against always-attempt, ignore-support,
+try-once-then-fallback, plan-at-calibration, and the exact post-calibration
+policy.
+
+Three implementation facts are not in this card text and were found by
+enumeration. The ring has nine cells and the budget is two decisions, because a
+smaller ring leaves no goal that a fully capable body cannot reach and so
+deletes the frequency-matched control. The invariance group is the ring's
+*rotations* only: this body's commands are `0`, `+1`, `+2`, and `-1`, and a
+reflection has no image for `+2`, so a reflection is checked as
+meaning-changing. The calibration scaffold pulses `Leap` twice so that it leaves
+the region the scored phase can reach; without that the body/environment swap
+produced byte-identical public traces and its invariance verdict compared an
+episode with itself. Three of six swappable contracts are publicly visible, and
+the audit reports that count rather than claiming the transform bites
+everywhere.
 
 **Admission and transfer.** Admit only if unreachable goals cause fallback on
 the first scored decision, frequency matching does not reproduce that choice,
 the body/environment swap is invariant, and restored support changes behaviour.
+The restoration is *announced* at episode start: the fallback is absorbing, so an
+unannounced restoration would arrive after a correctly ended episode and could
+not require any behaviour to update. The absorbing-wasted-budget variant is not
+implemented and no admission decision turns on it.
 The transfer prediction is faster acquisition of Card 05 than from fixed-body
 pretraining. Equal curves falsify it.
 

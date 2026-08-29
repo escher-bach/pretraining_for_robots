@@ -138,11 +138,16 @@ where
 
 /// The exact value of the best policy measurable in the public trace.
 ///
-/// The recursion carries a weighted belief over candidates. After each action
-/// it partitions the belief by the public observation, because that partition
-/// is precisely what a learner may condition on. At the horizon each surviving
-/// candidate contributes its own realized value under the actions actually
-/// taken.
+/// The recursion carries a weighted belief over candidates and alternates
+/// **observe, then act**, which is the order a learner actually experiences.
+/// Partitioning only *after* each action would force the first move to be
+/// common to every candidate, and that silently understates the ceiling for any
+/// family whose scaffold speaks before the first decision — card 03's
+/// calibration is exactly such a scaffold, and it made a family with a
+/// provably-zero information gap report a positive one.
+///
+/// At the horizon each surviving candidate contributes its own realized value
+/// under the actions actually taken.
 pub fn public_policy_value<F: PubliclyObservable>(
     fragment: &F,
     set: &AmbiguitySet<F::Contract>,
@@ -158,7 +163,7 @@ where
         .filter(|(_, weight)| **weight > 0.0)
         .map(|(index, weight)| (index, *weight))
         .collect();
-    public_value_recursive(fragment, set, &belief, &mut Vec::new(), horizon).0
+    observe_then_act(fragment, set, &belief, &mut Vec::new(), horizon).0
 }
 
 /// The public ceiling together with the first action attaining it.
@@ -177,7 +182,7 @@ where
         .filter(|(_, weight)| **weight > 0.0)
         .map(|(index, weight)| (index, *weight))
         .collect();
-    public_value_recursive(fragment, set, &belief, &mut Vec::new(), horizon)
+    observe_then_act(fragment, set, &belief, &mut Vec::new(), horizon)
 }
 
 /// Tolerance for comparing two exactly-computed rational-valued ceilings.
@@ -187,7 +192,48 @@ where
 /// of a repeated float sum.
 pub const VALUE_EPSILON: f64 = 1e-9;
 
-fn public_value_recursive<F: PubliclyObservable>(
+/// Split a belief by what the learner can currently see.
+fn partition<F: PubliclyObservable>(
+    fragment: &F,
+    set: &AmbiguitySet<F::Contract>,
+    belief: &[(usize, f64)],
+    actions: &[F::Action],
+) -> Vec<Vec<(usize, f64)>> {
+    let mut classes: BTreeMap<Vec<i64>, Vec<(usize, f64)>> = BTreeMap::new();
+    for (index, weight) in belief {
+        let trace = fragment.public_trace(&set.candidates[*index], actions);
+        classes.entry(trace).or_default().push((*index, *weight));
+    }
+    classes.into_values().collect()
+}
+
+/// Observe first, then act. The returned actions are those optimal in the
+/// belief class the *realized* candidate is in, which is the class containing
+/// candidate zero.
+fn observe_then_act<F: PubliclyObservable>(
+    fragment: &F,
+    set: &AmbiguitySet<F::Contract>,
+    belief: &[(usize, f64)],
+    actions: &mut Vec<F::Action>,
+    remaining: usize,
+) -> (f64, Vec<F::Action>)
+where
+    F::Contract: Clone,
+{
+    let mut total = 0.0;
+    let mut realized = Vec::new();
+    for class in partition(fragment, set, belief, actions) {
+        let holds_realized = class.iter().any(|(index, _)| *index == 0);
+        let (value, best) = act_then_observe(fragment, set, &class, actions, remaining);
+        total += value;
+        if holds_realized {
+            realized = best;
+        }
+    }
+    (total, realized)
+}
+
+fn act_then_observe<F: PubliclyObservable>(
     fragment: &F,
     set: &AmbiguitySet<F::Contract>,
     belief: &[(usize, f64)],
@@ -213,17 +259,7 @@ where
     let mut best_actions = Vec::new();
     for action in fragment.actions() {
         actions.push(action);
-        // Partition the belief by what the learner sees next. Candidates that
-        // remain in one class are the ones it still cannot tell apart.
-        let mut classes: BTreeMap<Vec<i64>, Vec<(usize, f64)>> = BTreeMap::new();
-        for (index, weight) in belief {
-            let trace = fragment.public_trace(&set.candidates[*index], actions);
-            classes.entry(trace).or_default().push((*index, *weight));
-        }
-        let mut value = 0.0;
-        for class in classes.values() {
-            value += public_value_recursive(fragment, set, class, actions, remaining - 1).0;
-        }
+        let value = observe_then_act(fragment, set, belief, actions, remaining - 1).0;
         actions.pop();
 
         if value > best + VALUE_EPSILON {
@@ -339,7 +375,7 @@ where
         }
         let mut value = 0.0;
         for class in classes.values() {
-            value += public_value_recursive(
+            value += observe_then_act(
                 fragment,
                 set,
                 class,
@@ -490,8 +526,14 @@ where
         fn start(&self, contract: &Self::Contract) -> usize {
             self.inner.start(contract)
         }
-        fn step(&self, contract: &Self::Contract, cell: usize, action: Self::Action) -> usize {
-            self.inner.step(contract, cell, action)
+        fn step(
+            &self,
+            contract: &Self::Contract,
+            cell: usize,
+            executed: usize,
+            action: Self::Action,
+        ) -> usize {
+            self.inner.step(contract, cell, executed, action)
         }
         fn value(
             &self,
