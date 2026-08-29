@@ -1,0 +1,79 @@
+schema_version = 1
+
+[seed_gate]
+root_seed = 20260829
+family_order = ["card04", "card03", "card02", "card05", "card06"]
+r9_finalized = true
+padding_strategy = "family_max_profiled_length_under_cap"
+evaluation_steps = [0, 16, 32, 48, 64]
+per_family_timeout_seconds = 120
+total_timeout_seconds = 720
+timing_updates = 4
+timing_updates_max_seconds = 10
+timing_eval_max_seconds = 10
+required_macro_argmax = 0.80
+required_improvement = 0.25
+required_primary_case_kind_argmax = 0.60
+
+[seed_gate.distinct_episode_counts]
+card04 = 16
+card03 = 10
+card02 = 9
+card05 = 7
+card06 = 32
+
+[seed_gate.contract_hashes]
+card04 = "d975c3a646591ccf"
+card03 = "2442b372a18e1d66"
+card02 = "74b2d0da16ad3b31"
+card05 = "cbe39880124b9d2d"
+card06 = "76a08f38947c8cae"
+
+[seed_gate.family_seeds.card04]
+init = 2026082901
+train = 2026083001
+eval = 2026083101
+
+[seed_gate.family_seeds.card03]
+init = 2026082902
+train = 2026083002
+eval = 2026083102
+
+[seed_gate.family_seeds.card02]
+init = 2026082903
+train = 2026083003
+eval = 2026083103
+
+[seed_gate.family_seeds.card05]
+init = 2026082904
+train = 2026083004
+eval = 2026083104
+
+[seed_gate.family_seeds.card06]
+init = 2026082905
+train = 2026083005
+eval = 2026083105
+
+[run]
+name = "r10-seed-gate-t4"
+purpose = "run the fixed five-family R10 seed gate on one T4"
+checkpoint_label = "r10-seed-gate"
+entrypoint = "seed_gate"
+max_wall_clock_seconds = 4800
+seed_gate_phase_timeout_seconds = 900
+seed = 20260829
+device = "cuda"
+mixed_precision = "fp16"
+max_updates = 64
+per_device_batch_size = 4
+gradient_accumulation_steps = 1
+learning_rate = 0.0003
+weight_decay = 0.1
+warmup_updates = 4
+max_grad_norm = 1.0
+log_every = 16
+
+[model]
+config = "artifacts/icrt-derived-small/model_config.json"
+sequence_length = 192
+token_abi_version = "physical-event-abi-0.3.1"

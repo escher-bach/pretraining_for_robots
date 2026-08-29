@@ -1,4 +1,4 @@
-"""CPU-only R10 finite-G0 seed-gate pilots and their immutable receipts.
+"""R10 finite-G0 seed-gate pilots and their immutable receipts.
 
 This module is deliberately a source-family measurement surface.  It neither
 loads nor scores the sealed transfer diagnostic, and a passing receipt is an
@@ -61,7 +61,7 @@ def load_seed_gate_config(path: Path) -> dict[str, Any]:
 
 
 def validate_seed_gate_config(config: dict[str, Any]) -> None:
-    """Reject any drift from the predeclared CPU seed-gate contract."""
+    """Reject drift from the fixed R10 scientific and execution contracts."""
     gate = config.get("seed_gate", {})
     run = config.get("run", {})
     model = config.get("model", {})
@@ -74,14 +74,8 @@ def validate_seed_gate_config(config: dict[str, Any]) -> None:
         "weight_decay": 0.1,
         "warmup_updates": 4,
         "sequence_length": 192,
-        "mixed_precision": "no",
-        "device": "cpu",
         "evaluation_steps": [0, 16, 32, 48, 64],
-        "per_family_timeout_seconds": 90,
-        "total_timeout_seconds": 540,
         "timing_updates": 4,
-        "timing_updates_max_seconds": 3,
-        "timing_eval_max_seconds": 10,
         "required_macro_argmax": 0.80,
         "required_improvement": 0.25,
         "required_primary_case_kind_argmax": 0.60,
@@ -96,14 +90,8 @@ def validate_seed_gate_config(config: dict[str, Any]) -> None:
         "weight_decay": run.get("weight_decay"),
         "warmup_updates": run.get("warmup_updates"),
         "sequence_length": model.get("sequence_length"),
-        "mixed_precision": run.get("mixed_precision"),
-        "device": run.get("device"),
         "evaluation_steps": gate.get("evaluation_steps"),
-        "per_family_timeout_seconds": gate.get("per_family_timeout_seconds"),
-        "total_timeout_seconds": gate.get("total_timeout_seconds"),
         "timing_updates": gate.get("timing_updates"),
-        "timing_updates_max_seconds": gate.get("timing_updates_max_seconds"),
-        "timing_eval_max_seconds": gate.get("timing_eval_max_seconds"),
         "required_macro_argmax": gate.get("required_macro_argmax"),
         "required_improvement": gate.get("required_improvement"),
         "required_primary_case_kind_argmax": gate.get("required_primary_case_kind_argmax"),
@@ -111,6 +99,28 @@ def validate_seed_gate_config(config: dict[str, Any]) -> None:
     }
     if actual != expected:
         raise ValueError(f"R10 seed-gate contract drift: expected {expected}, got {actual}")
+    execution = {
+        "device": run.get("device"),
+        "mixed_precision": run.get("mixed_precision"),
+        "per_family_timeout_seconds": gate.get("per_family_timeout_seconds"),
+        "total_timeout_seconds": gate.get("total_timeout_seconds"),
+        "timing_updates_max_seconds": gate.get("timing_updates_max_seconds"),
+        "timing_eval_max_seconds": gate.get("timing_eval_max_seconds"),
+    }
+    allowed_execution = {
+        "cpu": {
+            "device": "cpu", "mixed_precision": "no",
+            "per_family_timeout_seconds": 90, "total_timeout_seconds": 540,
+            "timing_updates_max_seconds": 3, "timing_eval_max_seconds": 10,
+        },
+        "cuda": {
+            "device": "cuda", "mixed_precision": "fp16",
+            "per_family_timeout_seconds": 120, "total_timeout_seconds": 720,
+            "timing_updates_max_seconds": 10, "timing_eval_max_seconds": 10,
+        },
+    }
+    if execution not in allowed_execution.values():
+        raise ValueError(f"R10 seed-gate execution contract drift: {execution}")
     if gate.get("distinct_episode_counts") != DISTINCT_EPISODE_COUNTS:
         raise ValueError("R10 distinct public episode accounting drift")
     if gate.get("contract_hashes") != CONTRACT_HASHES:
@@ -340,16 +350,21 @@ def classify_seed_gate_pilot(
 
 
 def seed_gate_timing_preflight(config: dict[str, Any], output_root: Path) -> dict[str, Any]:
-    """Measure the two fixed CPU timing bounds before a family can be scored."""
+    """Measure the fixed timing bounds before a family can be scored."""
     validate_seed_gate_config(config)
     gate, run, model_section = config["seed_gate"], config["run"], config["model"]
     family = FAMILIES[0]
     model_config = _seed_gate_model_config(model_section)
     assert_world_model_compatibility(model_config, profiled=True)
+    use_cpu = str(run["device"]) == "cpu"
+    if not use_cpu and not torch.cuda.is_available():
+        raise RuntimeError("R10 CUDA seed-gate contract requires an available CUDA device")
     sequence_cap = int(model_section["sequence_length"])
     manifest, actual_tokens = compact_g0_corpus_manifest(family, sequence_cap)
     set_seed(int(gate["family_seeds"][family]["init"]))
     model = PretrainingForTrajectoryPrediction(model_config)
+    if not use_cpu:
+        model.to("cuda")
 
     started_eval = time.perf_counter()
     evaluate_g0_corpus(model, manifest)
@@ -363,7 +378,7 @@ def seed_gate_timing_preflight(config: dict[str, Any], output_root: Path) -> dic
         output_dir=output_root / "timing-preflight", run=run,
         max_steps=int(gate["timing_updates"]),
         per_device_batch_size=int(run["per_device_batch_size"]),
-        warmup_steps=int(run["warmup_updates"]), save=False, use_cpu=True,
+        warmup_steps=int(run["warmup_updates"]), save=False, use_cpu=use_cpu,
     )
     Trainer(model=model, args=arguments, train_dataset=dataset).train()
     update_seconds = time.perf_counter() - started_updates
@@ -374,6 +389,7 @@ def seed_gate_timing_preflight(config: dict[str, Any], output_root: Path) -> dic
     result = {
         "passed": passed,
         "family": family,
+        "device": str(run["device"]),
         "padding_strategy": gate["padding_strategy"],
         "sequence_cap": sequence_cap,
         "actual_tokens": actual_tokens,
@@ -427,7 +443,7 @@ def run_all_seed_gate_pilots(config: dict[str, Any], output_root: Path) -> dict[
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run the CPU-only R10 finite-G0 seed gate")
+    parser = argparse.ArgumentParser(description="Run the fixed-contract R10 finite-G0 seed gate")
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
     parser.add_argument("--preflight-only", action="store_true")
@@ -460,7 +476,7 @@ def main() -> None:
 def run_seed_gate_pilot(
     config: dict[str, Any], family: str, output_root: Path, *, timeout_seconds: float | None = None
 ) -> dict[str, Any]:
-    """Run one independently initialized selected-core, CPU-only family pilot."""
+    """Run one independently initialized selected-core family pilot."""
     validate_seed_gate_config(config)
     if family not in FAMILIES:
         raise ValueError(f"unknown R10 family {family!r}")
@@ -469,6 +485,9 @@ def run_seed_gate_pilot(
     model_config = _seed_gate_model_config(model_section)
     assert_selected_parameter_report(parameter_report(PretrainingForTrajectoryPrediction(model_config)))
     assert_world_model_compatibility(model_config, profiled=True)
+    use_cpu = str(run["device"]) == "cpu"
+    if not use_cpu and not torch.cuda.is_available():
+        raise RuntimeError("R10 CUDA seed-gate contract requires an available CUDA device")
     sequence_cap = int(model_section["sequence_length"])
     manifest, actual_tokens = compact_g0_corpus_manifest(family, sequence_cap)
     manifest_families = _episode_metadata(manifest, "families", len(manifest["role_ids"]))
@@ -485,6 +504,8 @@ def run_seed_gate_pilot(
     output_root.mkdir(parents=True, exist_ok=True)
     set_seed(int(family_seed["init"]))
     model = PretrainingForTrajectoryPrediction(model_config)
+    if not use_cpu:
+        model.to("cuda")
     dataset = DistinctEpisodeDataset(family, int(family_seed["train"]), actual_tokens)
     started = time.perf_counter()
     evaluations = {0: evaluate_g0_corpus(model, manifest)}
@@ -496,7 +517,7 @@ def run_seed_gate_pilot(
     arguments = training_arguments(
         output_dir=output_root / family, run=run, max_steps=int(run["max_updates"]),
         per_device_batch_size=int(run["per_device_batch_size"]), warmup_steps=int(run["warmup_updates"]),
-        save=False, use_cpu=True,
+        save=False, use_cpu=use_cpu,
     )
     trainer = Trainer(model=model, args=arguments, train_dataset=dataset, callbacks=[callback])
     trainer.train()
@@ -505,6 +526,7 @@ def run_seed_gate_pilot(
         evaluations[int(run["max_updates"])] = evaluate_g0_corpus(model, manifest)
     result: dict[str, Any] = {
         "family": family, "contract_hash": CONTRACT_HASHES[family], "classification": "pending",
+        "device": str(run["device"]),
         "seeds": dict(family_seed), "evaluation_support": "full_distinct_public_corpus",
         "padding_strategy": gate["padding_strategy"],
         "sequence_cap": sequence_cap, "actual_tokens": actual_tokens,

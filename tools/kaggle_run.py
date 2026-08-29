@@ -336,10 +336,10 @@ def collect(kernel: str) -> Path:
     destination.mkdir(parents=True, exist_ok=True)
     pattern = (
         r"(^|/)(summary|training-result|architecture-gate-progress|cpu-benchmark|world-validation|"
-        r"trivial-policy-baselines|phase_status|environment|audit-manifest)\.json$"
+        r"trivial-policy-baselines|seed-gate-receipt|timing-preflight-receipt|phase_status|environment|audit-manifest)\.json$"
         r"|(^|/)logs/(pip-install|rustup-download|rustup-install|rust-toolchain|maturin-build|"
         r"world-wheel-install|rust-tests|python-tests|world-validation|cpu-benchmark|"
-        r"trivial-policy-baselines|gpu-training)\.log$"
+        r"trivial-policy-baselines|gpu-training|seed-gate)\.log$"
     )
     command_run(
         [
@@ -383,6 +383,7 @@ def collect(kernel: str) -> Path:
     training_result = (
         json.loads(training_files[0].read_text(encoding="utf-8")) if len(training_files) == 1 else {}
     )
+    seed_gate = summary.get("seed_gate")
     receipt = {
         "schema_version": 1,
         "run_id": versioned_kernel,
@@ -415,7 +416,7 @@ def collect(kernel: str) -> Path:
         "recovery_artifact": summary.get("recovery_artifact"),
         "architecture_gate_passed": summary.get("architecture_gate_passed"),
         "architecture_gate_progress": summary.get("architecture_gate_progress"),
-        "scientific_report": None,
+        "scientific_report": seed_gate,
         "audit_verified": True,
         "verified_manifest_entries": verified_entries,
         "remote_manifest_sha256": hashlib.sha256(

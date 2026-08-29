@@ -97,8 +97,13 @@ python -m pretraining_experiments.seed_gate `
 
 The current local receipt is unscored: four selected-core updates at the
 per-family maximum padded length took 8.43 seconds, over the fixed three-second
-limit. Do not run the CPU pilots after that verdict. The next valid route is
-Kaggle after the exact committed source is reachable through `origin`.
+limit. Do not run the CPU pilots after that verdict. The fixed one-T4 execution
+contract is `configs/r10/seed_gate_t4.toml`; launch it through the same exact-SHA
+control plane:
+
+```powershell
+python tools/kaggle_run.py launch --experiment r10-seed-gate
+```
 
 At repository creation, 116 Rust tests and 37 Python tests pass.
 

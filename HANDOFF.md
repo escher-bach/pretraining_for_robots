@@ -7,9 +7,9 @@ was learned building it, and what to do next.
 
 ## Where the work stopped
 
-**R5–R9 are complete. R10 apparatus and run contracts are complete, but the
-five bounded pilots have not run because the fixed CPU timing gate stopped
-unscored and no Git remote is configured for the authorized Kaggle route.**
+**R5–R9 are complete. R10 apparatus and run contracts are complete, and its
+fixed one-T4 Kaggle dispatch is ready. The five bounded pilots have not yet
+produced evidence.**
 
 | Row | State | Crate |
 |---|---|---|
@@ -37,10 +37,9 @@ a code defect and is not. Note also that the environment has
 `transformers 5.3.0` where `requirements-kaggle.txt` pins `4.57.6`; the suite
 passes on both, but a Kaggle run uses the pin.
 
-No GPU or remote run has been launched. The user authorized Kaggle GPU work for
-this run, but `git remote -v` is empty. The compute rule requires the exact
-source commit to be reachable on `origin`, so authorization alone is not enough
-to launch.
+No GPU run had been launched when this handoff paragraph was updated. The user
+authorized Kaggle GPU work, `origin` is now the public HTTPS repository, and
+the R10 registry entry uses the existing exact-SHA launcher.
 
 Five seed-family audit binaries emit JSON on stdout:
 
@@ -91,10 +90,10 @@ not learner evidence: with standard per-family dynamic padding under the fixed
 took 8.43 seconds against the fixed three-second stop. The CPU path therefore
 stopped before scoring any family.
 
-Next action: configure a public HTTP(S)-reachable `origin`, commit and push the
-exact source, add the R10 Kaggle entrypoint if needed, and run the unchanged
-five-family pilot contract on Kaggle. Do not loosen the learner, budgets,
-thresholds, or stops in response to the CPU timing result.
+Next action: commit and push the exact source, then launch
+`python tools/kaggle_run.py launch --experiment r10-seed-gate`. Collect the
+compact receipt after the kernel becomes terminal. Do not loosen the learner,
+budgets, thresholds, or stops in response to either timing result.
 
 ## What building these four families actually found
 

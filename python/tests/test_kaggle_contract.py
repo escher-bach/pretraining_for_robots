@@ -82,6 +82,18 @@ class KaggleContractTests(unittest.TestCase):
         toolchain = (ROOT / "rust-toolchain.toml").read_text(encoding="utf-8")
         self.assertIn('channel = "1.88.0"', toolchain)
 
+    def test_r10_registry_uses_the_fixed_one_t4_seed_gate_contract(self) -> None:
+        control = load_control_plane()
+        data, experiment = control.experiment("r10-seed-gate")
+        self.assertEqual(data["accelerator"], "NvidiaTeslaT4")
+        config_path = ROOT / experiment["config"]
+        self.assertTrue(config_path.is_file())
+        config = __import__("tomllib").loads(config_path.read_text(encoding="utf-8"))
+        self.assertEqual(config["run"]["entrypoint"], "seed_gate")
+        self.assertEqual(config["run"]["device"], "cuda")
+        self.assertEqual(config["seed_gate"]["family_order"], ["card04", "card03", "card02", "card05", "card06"])
+        self.assertEqual(config["seed_gate"]["total_timeout_seconds"], 720)
+
 
 if __name__ == "__main__":
     unittest.main()

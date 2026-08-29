@@ -9,3 +9,9 @@ title = "Single-world apparatus and lineage slice"
 slug_prefix = "pretraining-single-world"
 config = "configs/kaggle/t4x2_single_world.toml"
 purpose = "verify the two-T4 apparatus and produce one bounded single-world candidate"
+
+[experiments.r10-seed-gate]
+title = "R10 five-family finite-G0 seed gate"
+slug_prefix = "pretraining-r10-seed-gate"
+config = "configs/r10/seed_gate_t4.toml"
+purpose = "run the fixed five-family R10 seed gate on one T4"

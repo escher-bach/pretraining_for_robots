@@ -410,6 +410,37 @@ def main() -> None:
         )
         phase_update(phase_path, phases, "correctness_tests", "complete")
 
+        if config["run"].get("entrypoint") == "seed_gate":
+            phase_update(phase_path, phases, "seed_gate", "running")
+            run_logged(
+                [
+                    sys.executable,
+                    "-m",
+                    "pretraining_experiments.seed_gate",
+                    "--config",
+                    str(config_path),
+                    "--output-root",
+                    str(output_root),
+                ],
+                cwd=repo,
+                env=env,
+                log_path=logs / "seed-gate.log",
+                timeout=int(config["run"]["seed_gate_phase_timeout_seconds"]),
+            )
+            receipt_path = output_root / "seed-gate-receipt.json"
+            if not receipt_path.is_file():
+                raise RuntimeError("R10 seed gate finished without its compact receipt")
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            phase_update(
+                phase_path,
+                phases,
+                "seed_gate",
+                "complete",
+                classification=receipt.get("classification"),
+            )
+            status = "complete"
+            return
+
         phase_update(phase_path, phases, "world_validation", "running")
         validation_code = (
             "import json,tomllib,pretraining_world_py; from pathlib import Path; "
@@ -564,6 +595,10 @@ def main() -> None:
         if (output_root / "trivial-policy-baselines.json").exists():
             summary["trivial_policy_baselines"] = json.loads(
                 (output_root / "trivial-policy-baselines.json").read_text(encoding="utf-8")
+            )
+        if (output_root / "seed-gate-receipt.json").exists():
+            summary["seed_gate"] = json.loads(
+                (output_root / "seed-gate-receipt.json").read_text(encoding="utf-8")
             )
         atomic_json(output_root / "summary.json", summary)
 

@@ -39,6 +39,13 @@ class SeedGateTests(unittest.TestCase):
         self.assertEqual(config["run"]["device"], "cpu")
         self.assertEqual(config["run"]["max_updates"], 64)
 
+    def test_t4_config_preserves_the_seed_gate_and_selects_cuda_execution(self) -> None:
+        config = load_seed_gate_config(ROOT / "configs" / "r10" / "seed_gate_t4.toml")
+        self.assertEqual(config["seed_gate"]["contract_hashes"], CONTRACT_HASHES)
+        self.assertEqual(config["run"]["device"], "cuda")
+        self.assertEqual(config["run"]["mixed_precision"], "fp16")
+        self.assertEqual(config["seed_gate"]["per_family_timeout_seconds"], 120)
+
     def test_grouped_argmax_scores_choices_not_individual_query_rows(self) -> None:
         # In each decision only one ActionQuery is selected.  The first group is
         # right and the second deliberately picks a rejected alternative.
