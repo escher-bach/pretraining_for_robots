@@ -1,0 +1,16 @@
+[package]
+name = "pretraining-world-py"
+version = "0.2.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_world_py"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.23.5", features = ["extension-module"] }
+serde_json = "1.0"
+pretraining-eviction-world = { path = "../eviction-world" }
+pretraining-goal-conditioned-world = { path = "../goal-conditioned-world" }
+pretraining-profiled-event = { path = "../profiled-event" }
+pretraining-world = { path = "../world" }

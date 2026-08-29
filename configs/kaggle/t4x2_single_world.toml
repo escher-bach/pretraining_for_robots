@@ -1,0 +1,64 @@
+schema_version = 1
+
+[run]
+name = "pretraining-single-world-slice"
+purpose = "verify the two-T4 apparatus and produce one bounded calibrated-monomial candidate"
+seed = 20260824
+require_two_t4 = true
+mixed_precision = "fp16"
+# Sized for roughly one hour at the previously observed two-T4 throughput.
+# The runner records current throughput and enforces the wall-clock bound.
+max_updates = 35000
+per_device_batch_size = 8
+gradient_accumulation_steps = 1
+learning_rate = 0.0003
+weight_decay = 0.1
+warmup_updates = 700
+max_grad_norm = 1.0
+log_every = 250
+# 512 held-out episodes per evaluation instead of 64. At 64 the success-rate
+# cells were 3 to 12 episodes and too noisy to read; both evaluations cost
+# seconds, so the wider support is nearly free.
+eval_batches = 32
+resume_smoke_update = 4
+overfit_updates = 128
+overfit_warmup_updates = 12
+overfit_per_device_batch_size = 2
+overfit_required_fraction = 0.80
+checkpoint_label = "single-world-candidate"
+# Hard stops, rescaled for an hour-scale run. Expected total is about 64
+# minutes: roughly 4 of build, tests and preflight, and 60 of GPU work. The
+# layers fire innermost first so the most specific one writes evidence:
+# GPU phase 80 min, whole runner 90 min, notebook 100 min. The runner bound
+# is the 1.5 hour ceiling agreed for unattended runs.
+gpu_phase_timeout_seconds = 4800
+max_wall_clock_seconds = 5400
+
+[model]
+config = "artifacts/icrt-derived-small/model_config.json"
+sequence_length = 192
+
+[world]
+d_min = 1
+d_max = 4
+gain_min = 0.75
+gain_max = 1.25
+action_limit = 0.20
+calibration_pulse = 0.10
+max_control_steps = 4
+train_seed = 11001
+validation_seed = 22001
+overfit_seed = 33001
+rollout_seed = 44001
+
+[preflight]
+validation_instances = 4096
+cpu_benchmark_episodes = 4096
+cpu_benchmark_batch_size = 64
+cpu_benchmark_repeats = 5
+rollout_episodes_per_rank = 256
+
+[evaluation]
+error_thresholds = [0.01, 0.025, 0.05, 0.10, 0.20, 0.40]
+trivial_policy_scales = [0.0, 0.25, 0.50, 0.75, 1.0]
+baseline_episodes = 4096

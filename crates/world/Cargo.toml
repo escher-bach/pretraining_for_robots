@@ -1,0 +1,11 @@
+[package]
+name = "pretraining-world"
+version = "0.2.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_world"
+
+[dependencies]
+rand = "0.8.5"
+rand_chacha = "0.3.1"

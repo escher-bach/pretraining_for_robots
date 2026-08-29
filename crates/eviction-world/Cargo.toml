@@ -1,0 +1,19 @@
+[package]
+name = "pretraining-eviction-world"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_eviction_world"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+pretraining-world = { path = "../world" }
+
+# Development dependencies only. The first process is read to prove surface
+# disjointness, and the canonical record is read to check that this process
+# serializes into it. Neither is linked into this crate's library.
+[dev-dependencies]
+pretraining-goal-conditioned-world = { path = "../goal-conditioned-world" }
+pretraining-canonical-event = { path = "../canonical-event" }

@@ -1,0 +1,16 @@
+[package]
+name = "pretraining-card04-norm-swap"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_card04_norm_swap"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+pretraining-g0-contract = { path = "../g0-contract" }
+
+[[bin]]
+name = "card04-audit"
+path = "src/bin/card04-audit.rs"

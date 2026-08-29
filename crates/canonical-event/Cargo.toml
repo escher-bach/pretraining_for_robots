@@ -1,0 +1,18 @@
+[package]
+name = "pretraining-canonical-event"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_canonical_event"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# The production world and diagnostic crates are development dependencies only.
+# This crate renders onto their float layout and is checked against their real
+# output, but it does not link into them and does not migrate them.
+[dev-dependencies]
+pretraining-world = { path = "../world" }
+pretraining-goal-conditioned-world = { path = "../goal-conditioned-world" }

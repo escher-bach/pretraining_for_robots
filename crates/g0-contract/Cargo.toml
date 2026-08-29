@@ -1,0 +1,10 @@
+[package]
+name = "pretraining-g0-contract"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_g0_contract"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }

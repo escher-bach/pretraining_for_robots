@@ -1,0 +1,15 @@
+[package]
+name = "pretraining-profiled-event"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_profiled_event"
+
+[dependencies]
+pretraining-world = { path = "../world" }
+pretraining-canonical-event = { path = "../canonical-event" }
+
+[dev-dependencies]
+pretraining-goal-conditioned-world = { path = "../goal-conditioned-world" }
+pretraining-eviction-world = { path = "../eviction-world" }

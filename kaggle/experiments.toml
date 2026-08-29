@@ -1,0 +1,11 @@
+schema_version = 1
+owner = "aniruddhavarma"
+git_remote = "origin"
+output_root = "/kaggle/working/pretraining-results"
+accelerator = "NvidiaTeslaT4"
+
+[experiments.single-world-apparatus]
+title = "Single-world apparatus and lineage slice"
+slug_prefix = "pretraining-single-world"
+config = "configs/kaggle/t4x2_single_world.toml"
+purpose = "verify the two-T4 apparatus and produce one bounded single-world candidate"
