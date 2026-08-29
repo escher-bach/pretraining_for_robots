@@ -276,8 +276,9 @@ from single-goal pretraining. Equal Card 07 curves falsify it.
 
 ## Card 05: Active Experimentation
 
-**Trunk:** T2 epistemic action. **Fragment:** G0. **State:** specified for the
-finite seed portfolio.
+**Trunk:** T2 epistemic action. **Fragment:** G0. **State:** implemented,
+audited, and rendered through the shared finite-G0 learner boundary. Frontier
+admission still needs a bounded pilot.
 
 **Claim.** The learner pays for information exactly when it changes a later
 decision. Probe frequency alone is not evidence.
@@ -306,13 +307,38 @@ making both commits successful, or changing which gate value a commit favours
 changes the decision value.
 
 **Boundary and bracket.** Before probing, public ambiguity is the gate prior;
-after probing, it is zero. Report privileged, public-with-probe, and
-public-without-probe ceilings. Compare never-probe, always-probe, matched-rate
-random probing, and novelty-driven probing. Every possible gate correlate in
-the ordinary observation stream invalidates the instance.
+after probing, it is zero. The implemented family reports privileged `99`,
+public-with-probe `98`, and public-without-probe `49.5`: the first non-vacuous
+ambiguity gap in the portfolio, and a value-of-information of `48.5`. Compare
+never-probe, always-probe, peek-instead, sham-instead, the exact public policy,
+and a privileged gate-known reference. No action sequence that has not probed
+separates the two gate values.
+
+Three implementation facts are not in this card text. A third non-committing
+action, `Peek`, was added: it buys a second hidden bit that no outcome depends
+on. `Sham` alone cannot separate seeking information from seeking information
+that *changes a decision*, so without it the `M5 -> M11b` dispute would have
+been left unmeasured; with it, `agent_equivalence` reports the two values of
+that bit as observationally distinguishable and outcome-identical. The family
+parameters — gate visibility, whether the commits differ, and what a probe costs
+— are **published**, because without them the witness and the equally-valuable
+control are the same episode up to the first decision and no policy could behave
+differently in them. And admission is judged **in expectation over a case kind**,
+not per case: with the gate hidden the public ceiling is an average that no
+single episode attains, so a per-case test would reject the optimal blind commit
+on every instance where the coin fell the other way.
+
+The novelty-driven baseline and the high-prediction-error variant are not
+implemented. They need a prediction objective to make error measurable, and the
+finite-G0 profile emits no future query, so the `M2 -> M5` dispute is not decided
+by this card.
 
 **Admission and transfer.** Admit only if probe rate is high in the witness and
-low in all three primary controls. The transfer prediction is faster
+low in all three primary controls. Each control breaks exactly one clause of the
+matched-control verdict and the audit names which: publishing the gate breaks
+informativeness, making the probe consume the whole budget breaks cost matching,
+and the equally-valuable control breaks none — there the probe is matched and
+informative and simply worthless. The transfer prediction is faster
 disambiguation in Card 08 than from information-free pretraining. Equal Card 08
 curves falsify it.
 
