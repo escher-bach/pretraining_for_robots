@@ -12,4 +12,5 @@ members = [
     "crates/card02-predictive-state",
     "crates/card03-affordance",
     "crates/card04-norm-swap",
+    "crates/card05-active-experimentation",
 ]

@@ -395,6 +395,115 @@ where
     report
 }
 
+/// The actions optimal under the public belief at a mid-episode prefix.
+///
+/// The counterpart of [`crate::optimal_actions_from`] for a family with hidden
+/// state. That function reads the contract, which is exactly right for a card
+/// whose every port is public and exactly wrong for one whose whole content is
+/// what the learner has not yet been told: card 05's privileged answer is
+/// "commit immediately to the side the gate favours", and teaching it would be
+/// teaching the gate.
+///
+/// The belief is conditioned on the prefix's public trace first — the class
+/// containing the realized candidate — and the returned actions are the ones
+/// that maximize the remaining public-policy value from there.
+pub fn public_optimal_actions_at<F: PubliclyObservable>(
+    fragment: &F,
+    set: &AmbiguitySet<F::Contract>,
+    prefix: &[F::Action],
+    horizon: usize,
+) -> Vec<F::Action>
+where
+    F::Contract: Clone,
+{
+    if prefix.len() >= horizon {
+        return Vec::new();
+    }
+    let mut belief: Vec<(usize, f64)> = set
+        .prior
+        .iter()
+        .enumerate()
+        .filter(|(_, weight)| **weight > 0.0)
+        .map(|(index, weight)| (index, *weight))
+        .collect();
+    // Walk the prefix, keeping only the class the realized candidate is in. A
+    // learner holding this history is inside exactly one class, and the actions
+    // it should take are the ones optimal there.
+    let mut seen: Vec<F::Action> = Vec::with_capacity(prefix.len());
+    for step in 0..=prefix.len() {
+        belief = partition(fragment, set, &belief, &seen)
+            .into_iter()
+            .find(|class| class.iter().any(|(index, _)| *index == 0))
+            .unwrap_or_default();
+        if step < prefix.len() {
+            seen.push(prefix[step]);
+        }
+    }
+    let mut actions = seen;
+    act_then_observe(fragment, set, &belief, &mut actions, horizon - prefix.len()).1
+}
+
+/// Whether two hidden realizations can be told apart by any admissible
+/// intervention.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EquivalenceCertificate {
+    pub sequences_checked: usize,
+    /// No intervention separates their public observations.
+    pub observationally_indistinguishable: bool,
+    /// No intervention gives them different outcomes.
+    pub outcome_indistinguishable: bool,
+    /// Both, which is what `EMBODIED-PROCESS.md` means by agent equivalence.
+    pub equivalent: bool,
+    pub separating_sequence: Option<Vec<String>>,
+}
+
+/// `agent_equivalence(contract, state_a, state_b, interventions, tolerance)`.
+///
+/// Two hidden realizations are equivalent when no admissible future intervention
+/// distinguishes them through public observations, costs, or outcomes. The two
+/// halves are reported separately because they come apart, and the place they
+/// come apart is the point: card 05's inconsequential probe makes two
+/// realizations *observationally* distinguishable while leaving every outcome
+/// identical, which is the `M5 -> M11b` dispute stated as a measurement rather
+/// than as a name.
+pub fn agent_equivalence<F: PubliclyObservable>(
+    fragment: &F,
+    left: &F::Contract,
+    right: &F::Contract,
+    horizon: usize,
+    name: impl Fn(F::Action) -> String,
+) -> EquivalenceCertificate {
+    let mut checked = 0usize;
+    let mut observational = true;
+    let mut outcome = true;
+    let mut separator = None;
+    for length in 0..=horizon {
+        for sequence in sequences_of_length(&fragment.actions(), length) {
+            checked += 1;
+            let traces_agree =
+                fragment.public_trace(left, &sequence) == fragment.public_trace(right, &sequence);
+            let left_path = trajectory(fragment, left, &sequence);
+            let right_path = trajectory(fragment, right, &sequence);
+            let values_agree = fragment.value(left, &left_path, &sequence)
+                == fragment.value(right, &right_path, &sequence);
+            if !traces_agree || !values_agree {
+                if separator.is_none() {
+                    separator = Some(sequence.iter().map(|action| name(*action)).collect());
+                }
+                observational &= traces_agree;
+                outcome &= values_agree;
+            }
+        }
+    }
+    EquivalenceCertificate {
+        sequences_checked: checked,
+        observationally_indistinguishable: observational,
+        outcome_indistinguishable: outcome,
+        equivalent: observational && outcome,
+        separating_sequence: separator,
+    }
+}
+
 /// Whether a declared control action really is the matched non-informative one.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MatchedControlVerdict {

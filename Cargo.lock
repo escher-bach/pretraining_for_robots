@@ -135,6 +135,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "pretraining-card05-active-experimentation"
+version = "0.1.0"
+dependencies = [
+ "pretraining-g0-contract",
+ "pretraining-g0-render",
+ "pretraining-profiled-event",
+ "pretraining-world",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "pretraining-eviction-world"
 version = "0.1.0"
 dependencies = [

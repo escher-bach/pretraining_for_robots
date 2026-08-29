@@ -50,11 +50,12 @@ pub use kernel::{
     KernelUse, Norm, NormVerdict, ResourceScope, Restriction, Resume, Reveal,
 };
 pub use query::{
-    ablated_policy_value, ambiguity_report, check_information_orbit, epistemic_value,
-    identification_diameter, identify, matched_control_verdict, noninterference_check,
-    privileged_value_bound, public_policy_value, public_policy_value_and_first_actions,
-    ActionValue, AmbiguityReport, AmbiguitySet, Coarsened, InformationVerdict,
-    MatchedControlVerdict, NonInterference, PubliclyObservable, VALUE_EPSILON,
+    ablated_policy_value, agent_equivalence, ambiguity_report, check_information_orbit,
+    epistemic_value, identification_diameter, identify, matched_control_verdict,
+    noninterference_check, privileged_value_bound, public_optimal_actions_at, public_policy_value,
+    public_policy_value_and_first_actions, ActionValue, AmbiguityReport, AmbiguitySet, Coarsened,
+    EquivalenceCertificate, InformationVerdict, MatchedControlVerdict, NonInterference,
+    PubliclyObservable, VALUE_EPSILON,
 };
 
 /// A finite ring of cells: the configuration structure cards 04 and 03 share.
