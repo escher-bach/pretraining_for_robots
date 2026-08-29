@@ -8,6 +8,7 @@ use pretraining_eviction_world::{
     optimal_first_commands, standard_eviction_rollouts, transition as eviction_transition, Command,
     EvictionRollout, SerializationOrder as EvictionSerializationOrder, PROCESS_VERSION,
 };
+use pretraining_g0_render::{boundary_check, profiled_tokens, rendering_report, G0Episode};
 use pretraining_goal_conditioned_world::{
     classify_progress, standard_diagnostic_rollouts, teacher_training_records, CheckpointEvidence,
     DiagnosticRollout, ProgressThresholds, SerializationOrder, TrainingPresentationArm,
@@ -22,7 +23,377 @@ use pretraining_world::{
 };
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyModule};
+use pyo3::types::{PyDict, PyList, PyModule};
+
+/// The finite seed families accepted by the R10 learner surface.
+///
+/// This is evaluator-side scheduling metadata only.  A family name is never
+/// rendered into a learner token; all five families already carry the same
+/// `finite-g0-discrete` envelope from `pretraining-g0-render`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum G0Family {
+    Card04,
+    Card03,
+    Card02,
+    Card05,
+    Card06,
+}
+
+impl G0Family {
+    const fn name(self) -> &'static str {
+        match self {
+            Self::Card04 => "card04",
+            Self::Card03 => "card03",
+            Self::Card02 => "card02",
+            Self::Card05 => "card05",
+            Self::Card06 => "card06",
+        }
+    }
+
+    fn parse(value: &str) -> Result<Self, String> {
+        match value {
+            "card04" => Ok(Self::Card04),
+            "card03" => Ok(Self::Card03),
+            "card02" => Ok(Self::Card02),
+            "card05" => Ok(Self::Card05),
+            "card06" => Ok(Self::Card06),
+            _ => Err(format!(
+                "unknown finite-G0 family {value:?}; expected one of card04, card03, card02, card05, card06"
+            )),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct G0CorpusEpisode {
+    /// The public-render fingerprint used by `RenderingReport` to identify a
+    /// duplicate transcript.  It is reporting metadata, not learner input.
+    fingerprint: u64,
+    /// Case labels that name this one public episode.  Aliases retain control
+    /// attribution in evaluation but carry no additional mixture mass.
+    case_kind_aliases: Vec<String>,
+    tokens: Vec<LearningToken>,
+}
+
+#[derive(Debug, Clone)]
+struct G0FamilyCorpus {
+    family: G0Family,
+    contract_hash: String,
+    case_label_count: usize,
+    episodes: Vec<G0CorpusEpisode>,
+}
+
+fn g0_render_error(family: G0Family, error: impl std::fmt::Display) -> String {
+    format!("{} finite-G0 rendering failed: {error}", family.name())
+}
+
+/// Turn one card's already-audited public transcripts into an accounting
+/// corpus.  RenderingReport is deliberately the authority for duplicate
+/// handling: two labels that render one public transcript are aliases, not two
+/// independent training episodes.
+fn build_g0_corpus(
+    family: G0Family,
+    contract_hash: u64,
+    cases: Vec<(String, G0Episode)>,
+) -> Result<G0FamilyCorpus, String> {
+    let raw_episodes: Vec<G0Episode> = cases.iter().map(|(_, episode)| episode.clone()).collect();
+    let report = rendering_report(&raw_episodes).map_err(|error| g0_render_error(family, error))?;
+    let mut fingerprint_to_episode = std::collections::BTreeMap::<u64, usize>::new();
+    let mut episodes = Vec::<G0CorpusEpisode>::new();
+
+    for (case_kind, episode) in cases {
+        let evidence = boundary_check(&episode).map_err(|error| g0_render_error(family, error))?;
+        if let Some(index) = fingerprint_to_episode.get(&evidence.fingerprint).copied() {
+            let aliases = &mut episodes[index].case_kind_aliases;
+            if !aliases.contains(&case_kind) {
+                aliases.push(case_kind);
+            }
+            continue;
+        }
+        let tokens = profiled_tokens(&episode).map_err(|error| g0_render_error(family, error))?;
+        fingerprint_to_episode.insert(evidence.fingerprint, episodes.len());
+        episodes.push(G0CorpusEpisode {
+            fingerprint: evidence.fingerprint,
+            case_kind_aliases: vec![case_kind],
+            tokens,
+        });
+    }
+
+    if episodes.len() != report.distinct_fingerprints {
+        return Err(format!(
+            "{} finite-G0 corpus disagrees with RenderingReport: built {} distinct episodes, report names {}",
+            family.name(),
+            episodes.len(),
+            report.distinct_fingerprints
+        ));
+    }
+    if episodes.is_empty() {
+        return Err(format!(
+            "{} finite-G0 corpus has no public episodes",
+            family.name()
+        ));
+    }
+
+    Ok(G0FamilyCorpus {
+        family,
+        contract_hash: format!("{contract_hash:016x}"),
+        case_label_count: report.episodes,
+        episodes,
+    })
+}
+
+fn all_g0_corpora() -> Result<Vec<G0FamilyCorpus>, String> {
+    let card04 = pretraining_card04_norm_swap::learner_episodes()
+        .into_iter()
+        .map(|(kind, episode)| (kind.label().to_string(), episode))
+        .collect();
+    let card03 = pretraining_card03_affordance::learner_episodes()
+        .map_err(|error| g0_render_error(G0Family::Card03, error))?
+        .into_iter()
+        .map(|(kind, episode)| (kind.label().to_string(), episode))
+        .collect();
+    let card02 = pretraining_card02_predictive_state::learner_episodes()
+        .map_err(|error| g0_render_error(G0Family::Card02, error))?
+        .into_iter()
+        .map(|(kind, episode)| (kind.label().to_string(), episode))
+        .collect();
+    let card05 = pretraining_card05_active_experimentation::learner_episodes()
+        .map_err(|error| g0_render_error(G0Family::Card05, error))?
+        .into_iter()
+        .map(|(kind, episode)| (kind.label().to_string(), episode))
+        .collect();
+    let card06 = pretraining_card06_perceptual_organization::learner_episodes()
+        .map_err(|error| g0_render_error(G0Family::Card06, error))?
+        .into_iter()
+        .map(|(kind, episode)| (kind.label().to_string(), episode))
+        .collect();
+
+    Ok(vec![
+        build_g0_corpus(
+            G0Family::Card04,
+            pretraining_card04_norm_swap::contract_hash(),
+            card04,
+        )?,
+        build_g0_corpus(
+            G0Family::Card03,
+            pretraining_card03_affordance::contract_hash(),
+            card03,
+        )?,
+        build_g0_corpus(
+            G0Family::Card02,
+            pretraining_card02_predictive_state::contract_hash(),
+            card02,
+        )?,
+        build_g0_corpus(
+            G0Family::Card05,
+            pretraining_card05_active_experimentation::contract_hash(),
+            card05,
+        )?,
+        build_g0_corpus(
+            G0Family::Card06,
+            pretraining_card06_perceptual_organization::contract_hash(),
+            card06,
+        )?,
+    ])
+}
+
+fn selected_g0_corpora(families: &[String]) -> Result<Vec<G0FamilyCorpus>, String> {
+    if families.is_empty() {
+        return Err("families must be nonempty".to_string());
+    }
+    let all = all_g0_corpora()?;
+    let mut selected = Vec::with_capacity(families.len());
+    for value in families {
+        let family = G0Family::parse(value)?;
+        if selected
+            .iter()
+            .any(|corpus: &G0FamilyCorpus| corpus.family == family)
+        {
+            return Err(format!(
+                "finite-G0 family {value:?} was declared more than once"
+            ));
+        }
+        selected.push(
+            all.iter()
+                .find(|corpus| corpus.family == family)
+                .expect("every declared family has one corpus")
+                .clone(),
+        );
+    }
+    Ok(selected)
+}
+
+fn validate_g0_schedule(
+    families: &[String],
+    weights: &[u32],
+    batch_size: usize,
+    max_tokens: usize,
+) -> Result<(), String> {
+    if batch_size == 0 || max_tokens == 0 {
+        return Err("batch_size and max_tokens must be nonzero".to_string());
+    }
+    if families.is_empty() {
+        return Err("families must be nonempty".to_string());
+    }
+    if families.len() != weights.len() {
+        return Err("families and weights must have the same length".to_string());
+    }
+    if weights.iter().any(|weight| *weight == 0) {
+        return Err("every finite-G0 family weight must be nonzero".to_string());
+    }
+    let total = weights.iter().try_fold(0u64, |sum, weight| {
+        sum.checked_add(u64::from(*weight))
+            .ok_or("finite-G0 family weights overflow u64")
+    })?;
+    if total == 0 {
+        return Err("finite-G0 family weights must have positive total mass".to_string());
+    }
+    Ok(())
+}
+
+/// Number of occurrences of one contiguous weighted family slot before
+/// `schedule_index`.  This lets a family cycle through its *distinct* episode
+/// pool without materializing a weight-sized schedule or iterating from zero.
+fn occurrences_before(
+    schedule_index: u64,
+    family_start: u64,
+    family_weight: u64,
+    total_weight: u64,
+) -> u64 {
+    let cycles = schedule_index / total_weight;
+    let remainder = schedule_index % total_weight;
+    cycles * family_weight + remainder.saturating_sub(family_start).min(family_weight)
+}
+
+/// Select a deterministic weighted family and a uniformly cycling distinct
+/// episode within that family.  `seed` is a schedule offset, not learner data.
+fn g0_schedule(
+    corpora: &[G0FamilyCorpus],
+    weights: &[u32],
+    seed: u64,
+    start_index: u64,
+    offset: usize,
+) -> Result<(usize, usize), String> {
+    let schedule_index = seed
+        .checked_add(start_index)
+        .and_then(|value| value.checked_add(offset as u64))
+        .ok_or("finite-G0 schedule index overflow")?;
+    let total_weight = weights.iter().map(|weight| u64::from(*weight)).sum::<u64>();
+    let location = schedule_index % total_weight;
+    let mut family_start = 0u64;
+    for (family_index, weight) in weights.iter().copied().enumerate() {
+        let weight = u64::from(weight);
+        if location < family_start + weight {
+            let occurrence = occurrences_before(schedule_index, family_start, weight, total_weight);
+            let episode_index = (occurrence % corpora[family_index].episodes.len() as u64) as usize;
+            return Ok((family_index, episode_index));
+        }
+        family_start += weight;
+    }
+    Err("finite-G0 weighted schedule did not select a family".to_string())
+}
+
+fn g0_manifest_to_dict<'py>(
+    py: Python<'py>,
+    corpora: &[G0FamilyCorpus],
+) -> PyResult<Bound<'py, PyDict>> {
+    let output = PyDict::new(py);
+    output.set_item("token_abi_version", PROFILED_TOKEN_ABI_VERSION)?;
+    output.set_item(
+        "interpretation_profile",
+        InterpretationProfile::FiniteG0Discrete.as_str(),
+    )?;
+    let families = PyList::empty(py);
+    for corpus in corpora {
+        let entry = PyDict::new(py);
+        entry.set_item("family", corpus.family.name())?;
+        entry.set_item("contract_hash", &corpus.contract_hash)?;
+        entry.set_item("case_label_count", corpus.case_label_count)?;
+        entry.set_item("distinct_episode_count", corpus.episodes.len())?;
+        let episodes = PyList::empty(py);
+        for (index, episode) in corpus.episodes.iter().enumerate() {
+            let item = PyDict::new(py);
+            item.set_item("index", index)?;
+            item.set_item("fingerprint", format!("{:016x}", episode.fingerprint))?;
+            item.set_item("case_kind_aliases", &episode.case_kind_aliases)?;
+            item.set_item("profiled_records", episode.tokens.len())?;
+            episodes.append(item)?;
+        }
+        entry.set_item("episodes", episodes)?;
+        families.append(entry)?;
+    }
+    output.set_item("families", families)?;
+    Ok(output)
+}
+
+fn action_decision_groups(records: &[&[LearningToken]], max_tokens: usize) -> Vec<Vec<i64>> {
+    records
+        .iter()
+        .map(|record| {
+            let mut groups = vec![-1i64; max_tokens];
+            for (position, token) in record.iter().enumerate() {
+                if token.public.role == Role::ActionQuery {
+                    groups[position] = token.public.event as i64;
+                }
+            }
+            groups
+        })
+        .collect()
+}
+
+fn add_g0_evaluator_metadata<'py>(
+    output: &Bound<'py, PyDict>,
+    records: &[&[LearningToken]],
+    selected: &[(usize, usize)],
+    corpora: &[G0FamilyCorpus],
+    max_tokens: usize,
+) -> PyResult<()> {
+    let mut families = Vec::with_capacity(selected.len());
+    let mut case_kinds = Vec::with_capacity(selected.len());
+    let mut primary_case_kinds = Vec::with_capacity(selected.len());
+    let mut episode_ids = Vec::with_capacity(selected.len());
+    let mut fingerprints = Vec::with_capacity(selected.len());
+    let mut contract_hashes = Vec::with_capacity(selected.len());
+    let mut corpus_episode_indices = Vec::with_capacity(selected.len());
+    let mut distinct_episode_counts = Vec::with_capacity(selected.len());
+    for (family_index, episode_index) in selected {
+        let corpus = &corpora[*family_index];
+        let episode = &corpus.episodes[*episode_index];
+        let fingerprint = format!("{:016x}", episode.fingerprint);
+        families.push(corpus.family.name());
+        case_kinds.push(episode.case_kind_aliases.clone());
+        primary_case_kinds.push(
+            episode
+                .case_kind_aliases
+                .first()
+                .expect("every corpus episode retains its source case label")
+                .clone(),
+        );
+        episode_ids.push(format!("{}:{fingerprint}", corpus.family.name()));
+        fingerprints.push(fingerprint);
+        contract_hashes.push(corpus.contract_hash.clone());
+        corpus_episode_indices.push(*episode_index);
+        distinct_episode_counts.push(corpus.episodes.len());
+    }
+    output.set_item("families", families)?;
+    output.set_item("case_kinds", case_kinds)?;
+    output.set_item("primary_case_kinds", primary_case_kinds)?;
+    output.set_item("episode_ids", episode_ids)?;
+    output.set_item("public_fingerprints", fingerprints)?;
+    output.set_item("contract_hashes", contract_hashes)?;
+    output.set_item("corpus_episode_indices", corpus_episode_indices)?;
+    output.set_item("distinct_episode_counts", distinct_episode_counts)?;
+    output.set_item(
+        "action_decision_groups",
+        action_decision_groups(records, max_tokens),
+    )?;
+    output.set_item("token_abi_version", PROFILED_TOKEN_ABI_VERSION)?;
+    output.set_item(
+        "interpretation_profile",
+        InterpretationProfile::FiniteG0Discrete.as_str(),
+    )?;
+    Ok(())
+}
 
 fn parse_serialization_order(value: &str) -> PyResult<SerializationOrder> {
     match value {
@@ -306,6 +677,86 @@ fn generate_goal_conditioning_training_batch(
         "interpretation_profile",
         profiled.then(|| InterpretationProfile::KeySelectionsWithRemainingHorizon.as_str()),
     )?;
+    Ok(output.into_any().unbind())
+}
+
+/// Generate one padded batch from the audited finite-G0 seed portfolio.
+///
+/// `families` and `weights` are evaluator/scheduler inputs.  The returned
+/// tensors are only profiled public records plus supervision; family identity,
+/// alias labels, fingerprints, and contract hashes are separate metadata for
+/// mixture accounting and evaluation and must not be passed to the learner.
+#[pyfunction]
+#[pyo3(signature = (*, families, weights, seed, start_index, batch_size, max_tokens))]
+fn generate_g0_mixed_training_batch(
+    py: Python<'_>,
+    families: Vec<String>,
+    weights: Vec<u32>,
+    seed: u64,
+    start_index: u64,
+    batch_size: usize,
+    max_tokens: usize,
+) -> PyResult<Py<PyAny>> {
+    validate_g0_schedule(&families, &weights, batch_size, max_tokens)
+        .map_err(PyValueError::new_err)?;
+    let corpora = selected_g0_corpora(&families).map_err(PyValueError::new_err)?;
+    let mut records = Vec::with_capacity(batch_size);
+    let mut selected = Vec::with_capacity(batch_size);
+
+    for offset in 0..batch_size {
+        let (family_index, episode_index) =
+            g0_schedule(&corpora, &weights, seed, start_index, offset)
+                .map_err(PyValueError::new_err)?;
+        let corpus = &corpora[family_index];
+        let episode = &corpus.episodes[episode_index];
+        records.push(episode.tokens.as_slice());
+        selected.push((family_index, episode_index));
+    }
+
+    let padded = pad_records(&records, max_tokens).map_err(PyValueError::new_err)?;
+    let output = padded_to_dict(py, padded)?;
+    // All of these fields are evaluator-only accounting metadata.  In
+    // particular, no value in them is rendered into the learner event stream.
+    add_g0_evaluator_metadata(&output, &records, &selected, &corpora, max_tokens)?;
+    output.set_item("corpus_manifest", g0_manifest_to_dict(py, &corpora)?)?;
+    Ok(output.into_any().unbind())
+}
+
+/// The immutable, padded public-episode accounting basis for finite-G0 pilots.
+///
+/// Every distinct profiled public episode occurs exactly once, even when several
+/// card labels alias the same transcript.  Evaluator metadata is parallel to
+/// the padded MODEL_FIELDS and is not learner input.
+#[pyfunction]
+#[pyo3(signature = (*, families, max_tokens=192))]
+fn generate_g0_corpus_manifest(
+    py: Python<'_>,
+    families: Vec<String>,
+    max_tokens: usize,
+) -> PyResult<Py<PyAny>> {
+    if max_tokens == 0 {
+        return Err(PyValueError::new_err("max_tokens must be nonzero"));
+    }
+    let corpora = selected_g0_corpora(&families).map_err(PyValueError::new_err)?;
+    let selected: Vec<(usize, usize)> = corpora
+        .iter()
+        .enumerate()
+        .flat_map(|(family_index, corpus)| {
+            (0..corpus.episodes.len()).map(move |episode_index| (family_index, episode_index))
+        })
+        .collect();
+    let records: Vec<&[LearningToken]> = selected
+        .iter()
+        .map(|(family_index, episode_index)| {
+            corpora[*family_index].episodes[*episode_index]
+                .tokens
+                .as_slice()
+        })
+        .collect();
+    let padded = pad_records(&records, max_tokens).map_err(PyValueError::new_err)?;
+    let output = padded_to_dict(py, padded)?;
+    add_g0_evaluator_metadata(&output, &records, &selected, &corpora, max_tokens)?;
+    output.set_item("corpus_manifest", g0_manifest_to_dict(py, &corpora)?)?;
     Ok(output.into_any().unbind())
 }
 
@@ -993,6 +1444,11 @@ fn versions(py: Python<'_>) -> PyResult<Py<PyAny>> {
     output.set_item("action_horizon", ACTION_HORIZON)?;
     output.set_item("diagnostic_serialization", DIAGNOSTIC_SERIALIZATION_VERSION)?;
     output.set_item("eviction_process", PROCESS_VERSION)?;
+    output.set_item("finite_g0_token_abi", PROFILED_TOKEN_ABI_VERSION)?;
+    output.set_item(
+        "finite_g0_interpretation_profile",
+        InterpretationProfile::FiniteG0Discrete.as_str(),
+    )?;
     Ok(output.into_any().unbind())
 }
 
@@ -1003,6 +1459,8 @@ fn pretraining_world_py(module: &Bound<'_, PyModule>) -> PyResult<()> {
         generate_goal_conditioning_training_batch,
         module
     )?)?;
+    module.add_function(wrap_pyfunction!(generate_g0_mixed_training_batch, module)?)?;
+    module.add_function(wrap_pyfunction!(generate_g0_corpus_manifest, module)?)?;
     module.add_function(wrap_pyfunction!(validate_generated_worlds, module)?)?;
     module.add_function(wrap_pyfunction!(versions, module)?)?;
     module.add_function(wrap_pyfunction!(classify_goal_progress, module)?)?;
@@ -1010,4 +1468,83 @@ fn pretraining_world_py(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PyGoalConditioningRolloutBatch>()?;
     module.add_class::<PyEvictionRolloutBatch>()?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretraining_profiled_event::declared_profile;
+
+    #[test]
+    fn finite_g0_corpora_preserve_rendering_report_accounting() {
+        let corpora = all_g0_corpora().expect("the audited seed families render");
+        let names: Vec<&str> = corpora.iter().map(|corpus| corpus.family.name()).collect();
+        assert_eq!(
+            names,
+            vec!["card04", "card03", "card02", "card05", "card06"]
+        );
+        // These four counts are the R5--R8 collision receipts. Card06 is
+        // intentionally checked only against its own live RenderingReport so
+        // this boundary does not freeze R9's still-owned contract details.
+        assert_eq!(corpora[0].case_label_count, 20);
+        assert_eq!(corpora[0].episodes.len(), 16);
+        assert_eq!(corpora[1].case_label_count, 12);
+        assert_eq!(corpora[1].episodes.len(), 10);
+        assert_eq!(corpora[2].case_label_count, 10);
+        assert_eq!(corpora[2].episodes.len(), 9);
+        assert_eq!(corpora[3].case_label_count, 16);
+        assert_eq!(corpora[3].episodes.len(), 7);
+        assert!(!corpora[4].episodes.is_empty());
+
+        for corpus in corpora {
+            for episode in corpus.episodes {
+                assert_eq!(
+                    declared_profile(&episode.tokens).expect("profile header is valid"),
+                    InterpretationProfile::FiniteG0Discrete
+                );
+                assert!(!episode.case_kind_aliases.is_empty());
+                // The only learner records are the common profiled token
+                // sequence. Family labels exist solely in this surrounding
+                // evaluator corpus structure.
+                assert!(episode.tokens.len() > 1);
+            }
+        }
+    }
+
+    #[test]
+    fn weighted_schedule_cycles_distinct_episodes_not_case_labels() {
+        let corpora = selected_g0_corpora(&["card02".to_string(), "card05".to_string()])
+            .expect("known families");
+        let weights = [1, 2];
+        let selected: Vec<(usize, usize)> = (0..9)
+            .map(|offset| g0_schedule(&corpora, &weights, 0, 0, offset).expect("schedule"))
+            .collect();
+        assert_eq!(
+            selected
+                .iter()
+                .map(|(family, _)| *family)
+                .collect::<Vec<_>>(),
+            vec![0, 1, 1, 0, 1, 1, 0, 1, 1]
+        );
+        // Card02 receives its first three distinct transcript indices before
+        // cycling; its ten labels are not used as the sampling denominator.
+        assert_eq!(
+            selected
+                .iter()
+                .filter(|(family, _)| *family == 0)
+                .map(|(_, episode)| *episode)
+                .collect::<Vec<_>>(),
+            vec![0, 1, 2]
+        );
+    }
+
+    #[test]
+    fn mixed_schedule_rejects_ambiguous_or_empty_inputs() {
+        assert!(validate_g0_schedule(&[], &[], 1, 1).is_err());
+        assert!(selected_g0_corpora(&[]).is_err());
+        assert!(validate_g0_schedule(&["card02".into()], &[], 1, 1).is_err());
+        assert!(validate_g0_schedule(&["card02".into()], &[0], 1, 1).is_err());
+        assert!(selected_g0_corpora(&["card02".into(), "card02".into()]).is_err());
+        assert!(selected_g0_corpora(&["unknown".into()]).is_err());
+    }
 }

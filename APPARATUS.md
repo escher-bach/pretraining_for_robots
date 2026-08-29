@@ -13,6 +13,7 @@ This document describes what the code does and how to run it.
 | `pretraining-profiled-event` | Prefixes a learner-visible profile record, validates the envelope, and reconstructs the exact underlying event sequence. |
 | `pretraining-g0-contract` | Supplies the finite ring environment, symmetry transforms, fragment trait, exhaustive sequences, public/privileged bounds, ambiguity gap, orbit checks, baseline isolation, and contract hashing. |
 | `pretraining-card04-norm-swap` | Implements Card 04 on the G0 layer and emits its exact audit report. |
+| `pretraining-card06-perceptual-organization` | Implements the exact two-source Card 06 binding family, shared coupling/interruption semantics, controls, orbits, rendering, and audit. |
 | `pretraining-world-py` | Exposes batched public tensors and online rollout objects to Python through PyO3. Methods named `privileged_*` are evaluation-only. |
 
 The data path is:
@@ -32,6 +33,7 @@ state. Python does not reproduce those rules.
 cargo fmt --all -- --check
 cargo test --workspace --locked
 cargo run -p pretraining-card04-norm-swap --bin card04-audit
+cargo run -p pretraining-card06-perceptual-organization --bin card06-audit
 cargo run -p pretraining-canonical-event --bin schema
 cargo run -p pretraining-eviction-world --bin eviction-audit
 cargo run -p pretraining-goal-conditioned-world --bin audit
@@ -52,6 +54,11 @@ The audit binaries write JSON to standard output.
 | `baselines.py` | Evaluates fixed scaled-oracle policies before scheduling training. |
 | `benchmarks.py` | Measures batched Rust generation and binding throughput. |
 | `runner.py` | Performs the non-interactive Kaggle phase sequence and packages compact evidence. |
+| `seed_gate.py` | Validates the immutable R10 contracts, runs the selected-core timing gate and bounded per-family pilots, evaluates grouped G0 decisions, and writes non-transfer receipts. |
+
+The finite-G0 Python boundary exposes one deduplicated corpus and mixture API
+for Cards 04, 03, 02, 05, and 06. Family names, aliases, hashes, and accounting
+indices remain evaluator-only metadata and never enter model tensors.
 
 The checked-in model profile has 12 layers, width 384, six attention heads,
 SwiGLU width 1024, payload width 8, action horizon 16, and context limit 2048.
@@ -73,6 +80,25 @@ python -m pip install --force-reinstall --no-deps $wheel.FullName
 $env:PYTHONPATH = (Resolve-Path python).Path
 python -m unittest discover -s python/tests -v
 ```
+
+## R10 seed gate
+
+The fixed CPU pilot and later lineage contracts are
+`configs/r10/seed_gate_cpu.toml` and `configs/r10/lineage_contract.toml`.
+Run the timing decision before any pilot is scored:
+
+```powershell
+$env:PYTHONPATH = (Resolve-Path python).Path
+python -m pretraining_experiments.seed_gate `
+  --config configs/r10/seed_gate_cpu.toml `
+  --output-root artifacts/r10/seed-gate `
+  --preflight-only
+```
+
+The current local receipt is unscored: four selected-core updates at the
+per-family maximum padded length took 8.43 seconds, over the fixed three-second
+limit. Do not run the CPU pilots after that verdict. The next valid route is
+Kaggle after the exact committed source is reachable through `origin`.
 
 At repository creation, 116 Rust tests and 37 Python tests pass.
 

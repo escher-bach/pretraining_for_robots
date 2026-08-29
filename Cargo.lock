@@ -147,6 +147,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pretraining-card06-perceptual-organization"
+version = "0.1.0"
+dependencies = [
+ "pretraining-g0-contract",
+ "pretraining-g0-render",
+ "pretraining-world",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "pretraining-eviction-world"
 version = "0.1.0"
 dependencies = [
@@ -206,7 +217,13 @@ dependencies = [
 name = "pretraining-world-py"
 version = "0.2.0"
 dependencies = [
+ "pretraining-card02-predictive-state",
+ "pretraining-card03-affordance",
+ "pretraining-card04-norm-swap",
+ "pretraining-card05-active-experimentation",
+ "pretraining-card06-perceptual-organization",
  "pretraining-eviction-world",
+ "pretraining-g0-render",
  "pretraining-goal-conditioned-world",
  "pretraining-profiled-event",
  "pretraining-world",

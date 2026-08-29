@@ -11,6 +11,12 @@ crate-type = ["cdylib"]
 pyo3 = { version = "0.23.5", features = ["extension-module"] }
 serde_json = "1.0"
 pretraining-eviction-world = { path = "../eviction-world" }
+pretraining-card02-predictive-state = { path = "../card02-predictive-state" }
+pretraining-card03-affordance = { path = "../card03-affordance" }
+pretraining-card04-norm-swap = { path = "../card04-norm-swap" }
+pretraining-card05-active-experimentation = { path = "../card05-active-experimentation" }
+pretraining-card06-perceptual-organization = { path = "../card06-perceptual-organization" }
+pretraining-g0-render = { path = "../g0-render" }
 pretraining-goal-conditioned-world = { path = "../goal-conditioned-world" }
 pretraining-profiled-event = { path = "../profiled-event" }
 pretraining-world = { path = "../world" }

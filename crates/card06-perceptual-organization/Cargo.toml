@@ -1,0 +1,18 @@
+[package]
+name = "pretraining-card06-perceptual-organization"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_card06_perceptual_organization"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+pretraining-g0-contract = { path = "../g0-contract" }
+pretraining-g0-render = { path = "../g0-render" }
+pretraining-world = { path = "../world" }
+
+[[bin]]
+name = "card06-audit"
+path = "src/bin/card06-audit.rs"

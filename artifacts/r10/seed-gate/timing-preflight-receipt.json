@@ -1,0 +1,13 @@
+{
+  "actual_tokens": 30,
+  "classification": "unscored",
+  "family": "card04",
+  "full_corpus_eval_limit_seconds": 10,
+  "full_corpus_eval_seconds": 2.4042748999781907,
+  "padding_strategy": "family_max_profiled_length_under_cap",
+  "passed": false,
+  "sequence_cap": 192,
+  "update_limit_seconds": 3,
+  "update_seconds": 8.431100300047547,
+  "updates": 4
+}

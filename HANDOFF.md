@@ -7,7 +7,9 @@ was learned building it, and what to do next.
 
 ## Where the work stopped
 
-**R5, R6, R7, and R8 are complete and committed. R9 is next, then R10.**
+**R5–R9 are complete. R10 apparatus and run contracts are complete, but the
+five bounded pilots have not run because the fixed CPU timing gate stopped
+unscored and no Git remote is configured for the authorized Kaggle route.**
 
 | Row | State | Crate |
 |---|---|---|
@@ -17,11 +19,11 @@ was learned building it, and what to do next.
 | R6 card 03 affordance | Complete | `crates/card03-affordance` |
 | R7 card 02 predictive state | Complete | `crates/card02-predictive-state` |
 | R8 card 05 active experimentation | Complete | `crates/card05-active-experimentation` |
-| **R9 card 06 perceptual organization** | **Not started** | — |
-| R10 seed gate | Not started | — |
+| R9 card 06 perceptual organization | Complete, uncommitted | `crates/card06-perceptual-organization` |
+| R10 seed gate | Blocked at pilots | `crates/world-py`, `python/pretraining_experiments/seed_gate.py`, `configs/r10` |
 
-`cargo test --workspace --locked` passes: 39 test targets, 0 failures.
-`cargo fmt --all -- --check` is clean. The Python suite passes too — 37 tests —
+`cargo test --workspace --locked` passes with no failures.
+`cargo fmt --all -- --check` is clean. The Python suite passes too — 41 tests —
 but **only after rebuilding the PyO3 wheel**, because the `0.3.1` envelope bump
 changed a constant the installed extension carries:
 
@@ -35,59 +37,64 @@ a code defect and is not. Note also that the environment has
 `transformers 5.3.0` where `requirements-kaggle.txt` pins `4.57.6`; the suite
 passes on both, but a Kaggle run uses the pin.
 
-Nothing is left half-applied, and no GPU or remote run has been launched or
-authorized.
+No GPU or remote run has been launched. The user authorized Kaggle GPU work for
+this run, but `git remote -v` is empty. The compute rule requires the exact
+source commit to be reachable on `origin`, so authorization alone is not enough
+to launch.
 
-Four audit binaries emit JSON on stdout:
+Five seed-family audit binaries emit JSON on stdout:
 
 ```bash
 cargo run -p pretraining-card02-predictive-state --bin card02-audit
 ```
 
-The others are `card03-audit`, `card04-audit`, `card05-audit`.
+The others are `card03-audit`, `card04-audit`, `card05-audit`, and
+`card06-audit`.
 
-## What R9 has to do
+## What R9 completed
 
-Card 06 is the last seed family and the only one needing the `⊗` shared-coupling
-seam, which `crates/g0-contract/src/kernel.rs` already defines and nothing yet
-uses. Reusing it is not optional decoration — `DEVELOPMENT-PATH.md` requires the
-seam to be executable wherever two cards claim the same construct, and cards 01,
-06, and 08 all claim this one.
+Card 06 is the last seed family and the first executable user of the `⊗`
+shared-coupling seam. Contract `76a08f38947c8cae` has 36 exact seeded cases and
+32 distinct public episodes.
 
-Design sketch that follows from the four families already built:
+The implementation has:
 
-- exchangeable latent sources on the shared `Ring`, each with a hidden drift;
+- two exchangeable latent sources with hidden drift;
 - public observation channels carrying **values** rather than selections — the
   `FiniteG0` profile's content-kind flag exists for this and is so far unused;
-- `Coupling { rule: Override }` from channels to sources through a hidden
-  assignment, changing at public boundaries whose *timing* is public and whose
-  *new assignment* is not;
+- executable `Coupling { rule: Override }` resolving competing source and
+  matched-marginal noise writers through a hidden assignment;
 - occlusion as an `Interrupt` with `Displaced::Continues` in the witness and
   `Displaced::Frozen` in the frozen-during-absence control;
 - a goal naming a source by interaction history, and the four controls the card
   lists: channel-locked, shuffled-covariance, frozen-during-absence, identity-tag.
 
-The exact assignment posterior is what `AmbiguitySet` + `public_policy_value`
-compute; do not write a bespoke posterior.
+The exact assignment posterior is computed by `AmbiguitySet` plus
+`public_policy_value`. The audit also reports agent-equivalence-quotiented
+ambiguity, shared noninterference, real preserving/changing/information orbits,
+baseline brackets, seeds, ambiguity gaps, and learner-boundary round-trips.
 
-## What R10 has to do
+## What remains for R10
 
-Seven gate conditions in `DEVELOPMENT-PATH.md`. Two are already satisfiable from
-what exists (one boundary; valid baseline/ceiling brackets with no direct
-leakage), and the rest need work:
+Gate conditions 2, 3, 5, 6, and 7 are now fixed. The mixed PyO3 API samples
+distinct public episodes rather than labels and returns family/hash/alias data
+only as evaluator metadata. `configs/r10/seed_gate_cpu.toml` freezes the five
+selected-core pilots; `configs/r10/lineage_contract.toml` freezes the later
+fixed-mixture, adaptive, scratch, alternative-pretraining, retention, cadence,
+budget, and stop contracts. Source sentinels and the sealed goal-conditioned
+transfer diagnostic are structurally disjoint.
 
-1. a bounded CPU learner pilot per family. Local Python has `torch 2.10.0+cpu`
-   and `transformers 5.3.0`, and the existing suite passes on it;
-2. the five families need a PyO3 surface. `crates/world-py` currently exposes
-   only the two legacy worlds. One batching entry point taking a family name and
-   returning padded profiled tensors would serve all five;
-3. mixture accounting must count **distinct episodes, not case labels** — see
-   the collision counts below;
-4. the comparators, cadence, budget, and stop rules have to be written down as a
-   run contract before any pilot is scored.
+Conditions 1 and 4 remain blocked by the pilots. The timing receipt at
+`artifacts/r10/seed-gate/timing-preflight-receipt.json` is apparatus evidence,
+not learner evidence: with standard per-family dynamic padding under the fixed
+192-token cap, Card 04 evaluation took 2.40 seconds but four optimizer updates
+took 8.43 seconds against the fixed three-second stop. The CPU path therefore
+stopped before scoring any family.
 
-Compute rule reminder from `META-PROCESS.md`: local CPU for anything under ten
-minutes, Kaggle above that, and **no GPU launch without explicit authorization**.
+Next action: configure a public HTTP(S)-reachable `origin`, commit and push the
+exact source, add the R10 Kaggle entrypoint if needed, and run the unchanged
+five-family pilot contract on Kaggle. Do not loosen the learner, budgets,
+thresholds, or stops in response to the CPU timing result.
 
 ## What building these four families actually found
 
@@ -157,6 +164,7 @@ Distinct public episodes per family, against case count:
 | Card 03 | 12 | 10 | the no-restore negative *is* the unreachable-fallback witness |
 | Card 02 | 10 | 9 | the Forward witness and Forward irrelevant-latch control differ only counterfactually |
 | Card 05 | 16 | 7 | the inconsequential bit is never bought, so it never appears |
+| Card 06 | 36 | 32 | four frozen-source seed pairs share the same public episode |
 
 None of these is a defect; all of them mean a training mixture must count
 episodes rather than labels. `RenderingReport::colliding_episodes` names the

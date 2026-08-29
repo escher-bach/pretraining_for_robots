@@ -1,0 +1,45 @@
+schema_version = 1
+
+[lineage]
+root_seed = 20260829
+families = ["card04", "card03", "card02", "card05", "card06"]
+source_sentinels = "full_distinct_g0_corpora_evaluator_only"
+sealed_transfer = "goal_conditioned_world_diagnostic"
+sealed_transfer_excluded_from_g0_schedule = true
+source_score = "equal_family_macro_grouped_action_decision_argmax"
+fixed_mixture_family_weights = [0.2, 0.2, 0.2, 0.2, 0.2]
+within_family_sampling = "uniform_distinct_public_episode"
+adaptive_block_updates = 4096
+global_batch_size = 16
+accelerator = "two_t4"
+per_device_batch_size = 8
+total_updates = 32768
+checkpoint_count_including_c0 = 8
+evaluation_cadence_updates = 4096
+retention_max_family_drop_from_parent = 0.05
+accept_min_source_score_gain = 0.01
+tie_rule = "lexicographic"
+cost_accounting = "actual_global_episode_presentations_plus_scored_action_queries"
+fixed_mixture_same_c0_and_cadence = true
+scratch_downstream_pretraining_updates = 0
+scratch_downstream_everything_else_identical = true
+transfer_claim_row = "R12_only"
+
+[lineage.contract_hashes]
+card04 = "d975c3a646591ccf"
+card03 = "2442b372a18e1d66"
+card02 = "74b2d0da16ad3b31"
+card05 = "cbe39880124b9d2d"
+card06 = "76a08f38947c8cae"
+
+[lineage.alternative_mixture_controls]
+card04 = "negative_single_goal"
+card03 = "negative_frequency_matched"
+card02 = "negative_fully_observable"
+card05 = "negative_gate_public"
+card06 = "channel_locked"
+
+[lineage.budget_invariants]
+alternative_controls_identical_update_budget = true
+alternative_controls_identical_scored_query_budget = true
+fixed_mixture_equal_family_then_uniform_distinct_episode = true

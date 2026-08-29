@@ -345,7 +345,8 @@ curves falsify it.
 ## Card 06: Perceptual Organization
 
 **Trunk:** T4 binding and relational abstraction. **Fragment:** G0. **State:**
-specified for the finite seed portfolio.
+implemented, audited, and rendered through the shared finite-G0 learner
+boundary. Frontier admission still needs a bounded pilot.
 
 **Claim.** The learner binds observations to persistent causes rather than to
 channel identity, keeps a cause individuated through absence, and re-identifies
@@ -375,6 +376,19 @@ the public/known-assignment gap. Reject positional correlations between goal
 naming and channel placement. Compare per-channel, channel-identity,
 tag-following, assume-nothing-moved, exact assignment-posterior, and
 known-assignment policies.
+
+The implemented finite family uses two exchangeable drifting sources, two
+channels, a public assignment-change boundary, and a two-decision horizon. Its
+`Override` coupling resolves competing source and matched-marginal noise
+writers; the same interruption seam advances source state in the witness and
+freezes it without changing assignment in the frozen control. Across 36 seeded
+cases, the shared posterior reaches `98` on the witness, while destroying
+covariance leaves a public ceiling of `49` against a known-assignment ceiling
+of `98`. Raw residual label ambiguity is quotiented to one agent-relevant class
+on the witness. The audit computes noninterference and all preserving,
+meaning-changing, and information-orbit verdicts rather than recording them as
+labels. The 36 cases render as 32 distinct public episodes; mixture accounting
+uses the latter.
 
 **Admission and transfer.** Admit only if the learner beats channel-based
 policies on the witness, each surgical control restores its associated simple

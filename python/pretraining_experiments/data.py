@@ -87,5 +87,75 @@ def generate_torch_batch(
     return tensorize(raw, device), metadata
 
 
+def _g0_extension_function(*names: str):
+    """Return a declared G0 extension surface without guessing a fallback.
+
+    The finite-G0 families have a different public profile from the legacy
+    calibrated-monomial world.  Falling back to the latter would silently turn
+    a seed-gate result into evidence about the wrong family, so absence of the
+    rebuilt wheel is an explicit apparatus error.
+    """
+    for name in names:
+        function = getattr(pretraining_world_py, name, None)
+        if function is not None:
+            return function
+    joined = " or ".join(names)
+    raise RuntimeError(
+        f"installed pretraining_world_py lacks {joined}; rebuild the Rust extension"
+    )
+
+
+def generate_g0_mixed_torch_batch(
+    *,
+    families: list[str] | tuple[str, ...],
+    weights: list[float] | tuple[float, ...],
+    seed: int,
+    start_index: int,
+    batch_size: int,
+    max_tokens: int,
+    device: torch.device | str | None = None,
+) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
+    """Tensorize a Rust-owned, deduplicated finite-G0 mixture.
+
+    ``families`` and ``weights`` are scheduler inputs only.  The returned
+    model dictionary is restricted to ``MODEL_FIELDS`` so family identity,
+    contract hashes, case labels, and generator indices cannot become learner
+    features.
+    """
+    if not families or len(families) != len(weights):
+        raise ValueError("families and weights must be nonempty and have equal length")
+    if any(int(weight) != weight or int(weight) <= 0 for weight in weights):
+        raise ValueError("every G0 mixture weight must be a positive integer")
+    raw = _g0_extension_function("generate_g0_mixed_training_batch")(
+        families=list(families),
+        weights=[int(weight) for weight in weights],
+        seed=int(seed),
+        start_index=int(start_index),
+        batch_size=int(batch_size),
+        max_tokens=int(max_tokens),
+    )
+    missing = sorted(set(MODEL_FIELDS).difference(raw))
+    if missing:
+        raise RuntimeError(f"G0 batch is missing model fields: {missing}")
+    metadata = {key: value for key, value in raw.items() if key not in MODEL_FIELDS}
+    return tensorize(raw, device), metadata
+
+
+def g0_corpus_manifest(
+    *, families: list[str] | tuple[str, ...], max_tokens: int = 192
+) -> dict[str, Any]:
+    """Read the Rust manifest used for full-corpus evaluator-only scoring."""
+    if not families:
+        raise ValueError("families must be nonempty")
+    if int(max_tokens) <= 0:
+        raise ValueError("max_tokens must be positive")
+    raw = _g0_extension_function("generate_g0_corpus_manifest", "g0_corpus_manifest")(
+        families=list(families), max_tokens=int(max_tokens)
+    )
+    if not isinstance(raw, dict):
+        raise RuntimeError("G0 corpus manifest must be a dictionary")
+    return raw
+
+
 def tensorize_rollout(raw: dict[str, Any], device: torch.device | str) -> dict[str, torch.Tensor]:
     return tensorize(raw, device)

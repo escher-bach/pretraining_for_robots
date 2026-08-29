@@ -13,4 +13,5 @@ members = [
     "crates/card03-affordance",
     "crates/card04-norm-swap",
     "crates/card05-active-experimentation",
+    "crates/card06-perceptual-organization",
 ]
