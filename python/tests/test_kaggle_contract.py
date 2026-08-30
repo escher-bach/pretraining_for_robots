@@ -94,6 +94,16 @@ class KaggleContractTests(unittest.TestCase):
         self.assertEqual(config["seed_gate"]["family_order"], ["card04", "card03", "card02", "card05", "card06"])
         self.assertEqual(config["seed_gate"]["total_timeout_seconds"], 720)
 
+    def test_r10_grouped_repair_uses_a_distinct_registry_entry_and_contract(self) -> None:
+        control = load_control_plane()
+        _, experiment = control.experiment("r10-seed-gate-grouped")
+        self.assertEqual(experiment["config"], "configs/r10/seed_gate_t4_grouped.toml")
+        config_path = ROOT / experiment["config"]
+        config = __import__("tomllib").loads(config_path.read_text(encoding="utf-8"))
+        self.assertEqual(config["run"]["entrypoint"], "seed_gate")
+        self.assertEqual(config["seed_gate"]["action_query_objective"], "grouped_action_query_cross_entropy")
+        self.assertEqual(config["seed_gate"]["apparatus_repair"], "r10-grouped-action-query-objective-v1")
+
 
 if __name__ == "__main__":
     unittest.main()

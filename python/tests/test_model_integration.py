@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import torch
 from accelerate import Accelerator
@@ -12,6 +13,7 @@ from pretraining_experiments.data import generate_torch_batch
 from pretraining_experiments.model import (
     PretrainingConfig,
     PretrainingForTrajectoryPrediction,
+    PretrainingOutput,
     assert_selected_parameter_report,
     assert_selected_profile,
     parameter_report,
@@ -54,6 +56,60 @@ def tiny_config() -> PretrainingConfig:
 
 
 class ModelIntegrationTests(unittest.TestCase):
+    def test_output_exposes_raw_action_logits_without_changing_tanh_predictions(self) -> None:
+        torch.manual_seed(13)
+        model = PretrainingForTrajectoryPrediction(tiny_config())
+        batch, _ = generate_torch_batch(
+            seed=1313, start_index=0, batch_size=1, max_tokens=192, world=WORLD
+        )
+        output = model(**batch)
+        self.assertIsNotNone(output.action_logits)
+        self.assertTrue(torch.allclose(output.action_predictions, torch.tanh(output.action_logits)))
+
+    def test_grouped_action_query_loss_uses_categorical_alternatives_and_gradients(self) -> None:
+        # Two decision groups; the second has two equally correct alternatives.
+        # Raw logits are intentionally used: tanh-L1 saturation must not be the
+        # path that trains this categorical readout.
+        logits = torch.tensor([[[0.0], [1.0], [2.0], [0.0], [0.0]]], requires_grad=True)
+        targets = torch.tensor([[[1.0], [0.0], [1.0], [1.0], [0.0]]])
+        mask = torch.ones_like(targets)
+        groups = torch.tensor([[7, 7, 9, 9, 9]])
+        loss = PretrainingForTrajectoryPrediction._grouped_action_query_cross_entropy(
+            logits, targets, mask, groups
+        )
+        # group 7: -log softmax(0,1)[0]; group 9: uniform target over 2,0,0.
+        expected = -torch.log_softmax(logits[0, :2, 0], dim=0)[0]
+        expected = expected + -0.5 * torch.log_softmax(logits[0, 2:, 0], dim=0)[:2].sum()
+        expected = expected / 2.0
+        self.assertTrue(torch.allclose(loss, expected))
+        loss.backward()
+        self.assertTrue(torch.isfinite(logits.grad).all())
+        self.assertGreater(float(logits.grad.abs().sum()), 0.0)
+
+    def test_group_metadata_is_loss_only_and_legacy_l1_is_unchanged_when_absent(self) -> None:
+        torch.manual_seed(14)
+        model = PretrainingForTrajectoryPrediction(tiny_config())
+        batch, _ = generate_torch_batch(
+            seed=1414, start_index=0, batch_size=1, max_tokens=192, world=WORLD
+        )
+        with patch.object(model, "embed_events", wraps=model.embed_events) as embedded:
+            legacy = model(**batch)
+            with self.assertRaisesRegex(ValueError, "needs a nonnegative group id"):
+                model(
+                    **batch,
+                    action_decision_groups=torch.full((1, 192), -1, dtype=torch.long),
+                )
+        # The ordinary world has supervised rows, so malformed group metadata
+        # must fail rather than silently become a learner-visible input.
+        self.assertIsNotNone(legacy.action_loss)
+        expected_legacy = model._masked_l1(
+            legacy.action_predictions, batch["action_targets"], batch["action_target_mask"]
+        )
+        self.assertTrue(torch.allclose(legacy.action_loss, expected_legacy))
+        self.assertEqual(len(embedded.call_args_list), 2)
+        for call in embedded.call_args_list:
+            self.assertNotIn("action_decision_groups", call.kwargs)
+
     def test_selected_exact_profile_runs_real_world_backward(self) -> None:
         torch.manual_seed(1)
         config = PretrainingConfig.from_project_json(SELECTED_CONFIG)

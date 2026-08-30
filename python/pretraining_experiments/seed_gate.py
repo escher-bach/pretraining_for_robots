@@ -70,6 +70,7 @@ def validate_seed_gate_config(config: dict[str, Any]) -> None:
         "family_order": list(FAMILIES),
         "max_updates": 64,
         "per_device_batch_size": 4,
+        "gradient_accumulation_steps": 1,
         "learning_rate": 3.0e-4,
         "weight_decay": 0.1,
         "warmup_updates": 4,
@@ -86,6 +87,7 @@ def validate_seed_gate_config(config: dict[str, Any]) -> None:
         "family_order": gate.get("family_order"),
         "max_updates": run.get("max_updates"),
         "per_device_batch_size": run.get("per_device_batch_size"),
+        "gradient_accumulation_steps": run.get("gradient_accumulation_steps"),
         "learning_rate": run.get("learning_rate"),
         "weight_decay": run.get("weight_decay"),
         "warmup_updates": run.get("warmup_updates"),
@@ -134,6 +136,20 @@ def validate_seed_gate_config(config: dict[str, Any]) -> None:
     }
     if seeds != expected_seeds:
         raise ValueError("R10 per-family seed schedule drift")
+    objective = str(gate.get("action_query_objective", "rowwise_l1_legacy"))
+    if objective not in {"rowwise_l1_legacy", "grouped_action_query_cross_entropy"}:
+        raise ValueError(f"unknown R10 action-query objective {objective!r}")
+    repair = gate.get("apparatus_repair")
+    if objective == "grouped_action_query_cross_entropy":
+        if repair != "r10-grouped-action-query-objective-v1":
+            raise ValueError("the grouped R10 objective requires its declared bounded apparatus repair")
+    elif repair is not None:
+        raise ValueError("legacy R10 objective must not claim a grouped-objective repair")
+
+
+def uses_grouped_action_query_objective(gate: dict[str, Any]) -> bool:
+    """Whether this immutable run contract supplies loss-only group addresses."""
+    return str(gate.get("action_query_objective", "rowwise_l1_legacy")) == "grouped_action_query_cross_entropy"
 
 
 def _manifest_batch(manifest: dict[str, Any]) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
@@ -276,8 +292,15 @@ def evaluate_g0_corpus(model: torch.nn.Module, manifest: dict[str, Any]) -> dict
     device = next(model.parameters()).device
     model.eval()
     output = model(**{key: value.to(device) for key, value in batch.items()})
+    if output.action_logits is None:
+        raise RuntimeError("finite-G0 grouped evaluation requires raw action logits")
     return grouped_action_decision_argmax(
-        output.action_predictions.detach().cpu(),
+        # Cross-entropy optimizes the raw categorical logits.  In fp16, tanh
+        # can collapse distinct large logits to the same saturated value and
+        # turn the evaluator's deterministic tie-break into a different
+        # decision.  Keep legacy tanh readouts available to their callers, but
+        # rank finite-G0 alternatives in this matching raw-logit space.
+        output.action_logits.detach().float().cpu(),
         batch["action_targets"],
         batch["action_target_mask"],
         families=families,
@@ -288,24 +311,89 @@ def evaluate_g0_corpus(model: torch.nn.Module, manifest: dict[str, Any]) -> dict
 
 
 class DistinctEpisodeDataset(IterableDataset):
-    """Rust samples the deduplicated corpus; this class records actual cost."""
+    """Rust-backed infinite schedule over the deduplicated public corpus.
 
-    def __init__(self, family: str, seed: int, max_tokens: int) -> None:
+    Trainer and DataLoader can prefetch iterable examples.  Cost is therefore
+    accounted from completed optimizer steps, not from calls to ``__iter__``.
+    """
+
+    def __init__(
+        self, family: str, seed: int, max_tokens: int, *, include_action_decision_groups: bool = False
+    ) -> None:
         self.family, self.seed, self.max_tokens = family, seed, max_tokens
-        self.episode_presentations = 0
-        self.action_query_targets = 0
+        self.include_action_decision_groups = include_action_decision_groups
 
     def __iter__(self) -> Iterator[dict[str, torch.Tensor]]:
         index = 0
         while True:
-            batch, _ = generate_g0_mixed_torch_batch(
+            batch, metadata = generate_g0_mixed_torch_batch(
                 families=[self.family], weights=[1.0], seed=self.seed,
                 start_index=index, batch_size=1, max_tokens=self.max_tokens,
             )
-            self.episode_presentations += 1
-            self.action_query_targets += int(batch["action_target_mask"][:, :, 0].sum().item())
-            yield {name: batch[name][0] for name in MODEL_FIELDS}
+            row = {name: batch[name][0] for name in MODEL_FIELDS}
+            if self.include_action_decision_groups:
+                decision_groups = metadata.get("action_decision_groups")
+                if not isinstance(decision_groups, list) or len(decision_groups) != 1:
+                    raise RuntimeError("G0 training batch requires one action_decision_groups row per episode")
+                groups = torch.tensor(decision_groups[0], dtype=torch.long)
+                if groups.shape != batch["role_ids"][0].shape:
+                    raise RuntimeError("G0 action_decision_groups must match the token sequence")
+                # This field is passed only to the loss adapter.  It is deliberately
+                # absent from MODEL_FIELDS and never reaches embed_events.
+                row["action_decision_groups"] = groups
+            yield row
             index += 1
+
+
+def consumed_training_cost(
+    *,
+    family: str,
+    seed: int,
+    max_tokens: int,
+    completed_updates: int,
+    per_device_batch_size: int,
+    gradient_accumulation_steps: int,
+    world_size: int,
+) -> dict[str, int]:
+    """Count exactly the scheduled examples consumed by completed updates.
+
+    The selected R10 schedule is infinite and always uses full batches.  Given
+    its seed and index order, the first ``presentations`` episodes are exactly
+    the ones consumed by a completed one-process Trainer run.  Re-generating
+    that bounded prefix avoids treating prefetched iterable rows as evidence or
+    training cost.
+    """
+    inputs = {
+        "completed_updates": completed_updates,
+        "per_device_batch_size": per_device_batch_size,
+        "gradient_accumulation_steps": gradient_accumulation_steps,
+        "world_size": world_size,
+    }
+    if int(world_size) != 1:
+        raise ValueError(
+            "consumed_training_cost only supports the registered single-process R10 schedule "
+            f"(world_size=1), got world_size={world_size}"
+        )
+    if any(int(value) < 0 for value in inputs.values()) or any(
+        int(value) == 0 for name, value in inputs.items() if name != "completed_updates"
+    ):
+        raise ValueError(f"invalid consumed-training cost inputs: {inputs}")
+    presentations = (
+        int(completed_updates)
+        * int(per_device_batch_size)
+        * int(gradient_accumulation_steps)
+        * int(world_size)
+    )
+    if presentations == 0:
+        return {"episode_presentations": 0, "scored_action_query_targets": 0}
+    batch, _ = generate_g0_mixed_torch_batch(
+        families=[family], weights=[1.0], seed=seed, start_index=0,
+        batch_size=presentations, max_tokens=max_tokens,
+    )
+    return {
+        "episode_presentations": presentations,
+        "scored_action_query_targets": int(batch["action_target_mask"][:, :, 0].sum().item()),
+    }
 
 
 @dataclass
@@ -371,7 +459,8 @@ def seed_gate_timing_preflight(config: dict[str, Any], output_root: Path) -> dic
     eval_seconds = time.perf_counter() - started_eval
 
     dataset = DistinctEpisodeDataset(
-        family, int(gate["family_seeds"][family]["train"]), actual_tokens
+        family, int(gate["family_seeds"][family]["train"]), actual_tokens,
+        include_action_decision_groups=uses_grouped_action_query_objective(gate),
     )
     started_updates = time.perf_counter()
     arguments = training_arguments(
@@ -506,7 +595,10 @@ def run_seed_gate_pilot(
     model = PretrainingForTrajectoryPrediction(model_config)
     if not use_cpu:
         model.to("cuda")
-    dataset = DistinctEpisodeDataset(family, int(family_seed["train"]), actual_tokens)
+    dataset = DistinctEpisodeDataset(
+        family, int(family_seed["train"]), actual_tokens,
+        include_action_decision_groups=uses_grouped_action_query_objective(gate),
+    )
     started = time.perf_counter()
     evaluations = {0: evaluate_g0_corpus(model, manifest)}
     hard_timeout = min(float(gate["per_family_timeout_seconds"]), float(timeout_seconds) if timeout_seconds is not None else float("inf"))
@@ -521,20 +613,30 @@ def run_seed_gate_pilot(
     )
     trainer = Trainer(model=model, args=arguments, train_dataset=dataset, callbacks=[callback])
     trainer.train()
-    complete = int(trainer.state.global_step) == int(run["max_updates"])
+    completed_updates = int(trainer.state.global_step)
+    complete = completed_updates == int(run["max_updates"])
     if complete and int(run["max_updates"]) not in evaluations:
         evaluations[int(run["max_updates"])] = evaluate_g0_corpus(model, manifest)
+    cost = consumed_training_cost(
+        family=family,
+        seed=int(family_seed["train"]),
+        max_tokens=actual_tokens,
+        completed_updates=completed_updates,
+        per_device_batch_size=int(run["per_device_batch_size"]),
+        gradient_accumulation_steps=int(run["gradient_accumulation_steps"]),
+        world_size=int(trainer.args.world_size),
+    )
     result: dict[str, Any] = {
         "family": family, "contract_hash": CONTRACT_HASHES[family], "classification": "pending",
         "device": str(run["device"]),
+        "action_query_objective": str(gate.get("action_query_objective", "rowwise_l1_legacy")),
         "seeds": dict(family_seed), "evaluation_support": "full_distinct_public_corpus",
         "padding_strategy": gate["padding_strategy"],
         "sequence_cap": sequence_cap, "actual_tokens": actual_tokens,
         "complete": complete, "finite": all(torch.isfinite(value).all().item() for value in model.parameters()),
         "abi_and_bounds_ok": abi_and_bounds_ok, "timed_out": callback.timed_out,
         "elapsed_seconds": time.perf_counter() - started, "evaluations": evaluations,
-        "episode_presentations": dataset.episode_presentations,
-        "scored_action_query_targets": dataset.action_query_targets,
+        **cost,
         "transfer_claim": False,
     }
     result["classification"] = classify_seed_gate_pilot(result=result, gate={**gate, "max_updates": run["max_updates"]})

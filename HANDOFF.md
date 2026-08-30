@@ -7,9 +7,10 @@ was learned building it, and what to do next.
 
 ## Where the work stopped
 
-**R5–R9 are complete. R10 apparatus and run contracts are complete, and its
-fixed one-T4 Kaggle dispatch is ready. The five bounded pilots have not yet
-produced evidence.**
+**R5–R9 are complete. The preserved first R10 one-T4 pilot completed but did
+not admit a family: its row-wise loss was mismatched to grouped ActionQuery
+argmax and its iterable counters included prefetch. One versioned, bounded
+apparatus repair is prepared; it changes neither worlds nor scientific budget.**
 
 | Row | State | Crate |
 |---|---|---|
@@ -19,8 +20,8 @@ produced evidence.**
 | R6 card 03 affordance | Complete | `crates/card03-affordance` |
 | R7 card 02 predictive state | Complete | `crates/card02-predictive-state` |
 | R8 card 05 active experimentation | Complete | `crates/card05-active-experimentation` |
-| R9 card 06 perceptual organization | Complete, uncommitted | `crates/card06-perceptual-organization` |
-| R10 seed gate | Blocked at pilots | `crates/world-py`, `python/pretraining_experiments/seed_gate.py`, `configs/r10` |
+| R9 card 06 perceptual organization | Complete | `crates/card06-perceptual-organization` |
+| R10 seed gate | One bounded apparatus repair queued | `crates/world-py`, `python/pretraining_experiments/seed_gate.py`, `configs/r10` |
 
 `cargo test --workspace --locked` passes with no failures.
 `cargo fmt --all -- --check` is clean. The Python suite passes too — 41 tests —
@@ -37,9 +38,10 @@ a code defect and is not. Note also that the environment has
 `transformers 5.3.0` where `requirements-kaggle.txt` pins `4.57.6`; the suite
 passes on both, but a Kaggle run uses the pin.
 
-No GPU run had been launched when this handoff paragraph was updated. The user
-authorized Kaggle GPU work, `origin` is now the public HTTPS repository, and
-the R10 registry entry uses the existing exact-SHA launcher.
+The user authorized Kaggle GPU work, `origin` is now the public HTTPS repository,
+and the first T4 pilot completed; its preserved receipt and the one bounded
+repair are described below. The R10 registry entries use the existing exact-SHA
+launcher.
 
 Five seed-family audit binaries emit JSON on stdout:
 
@@ -83,7 +85,24 @@ fixed-mixture, adaptive, scratch, alternative-pretraining, retention, cadence,
 budget, and stop contracts. Source sentinels and the sealed goal-conditioned
 transfer diagnostic are structurally disjoint.
 
-Conditions 1 and 4 remain blocked by the pilots. The timing receipt at
+The first T4 run is retained at
+`audit/runs/pretraining-r10-seed-gate-e36b828/receipt.json`. Its preflight
+passed (four updates in 2.80 seconds; full-corpus evaluation in 0.72 seconds)
+and all five pilots completed, but none met the fixed admission threshold.
+Row-wise L1 decreased while grouped argmax stayed flat or fell for every family;
+that common failure is an apparatus/objective mismatch, not evidence against
+the worlds. Its `episode_presentations = 520` also counted iterable prefetches
+rather than the 256 examples actually consumed by 64 updates of four examples.
+
+The sole authorized repair is `configs/r10/seed_gate_t4_grouped.toml` and
+registry entry `r10-seed-gate-grouped`: raw action-head logits use standard
+categorical cross-entropy across ActionQuery alternatives, with grouping passed
+only to the loss adapter, and cost is regenerated from completed steps. Seeds,
+family contracts, selected core, optimizer schedule, batch size, thresholds,
+evaluation support, and time caps are unchanged. Its result is decisive for
+R10; do not make a second repair.
+
+The original CPU timing receipt at
 `artifacts/r10/seed-gate/timing-preflight-receipt.json` is apparatus evidence,
 not learner evidence: with standard per-family dynamic padding under the fixed
 192-token cap, Card 04 evaluation took 2.40 seconds but four optimizer updates
@@ -91,9 +110,10 @@ took 8.43 seconds against the fixed three-second stop. The CPU path therefore
 stopped before scoring any family.
 
 Next action: commit and push the exact source, then launch
-`python tools/kaggle_run.py launch --experiment r10-seed-gate`. Collect the
-compact receipt after the kernel becomes terminal. Do not loosen the learner,
-budgets, thresholds, or stops in response to either timing result.
+`python tools/kaggle_run.py launch --experiment r10-seed-gate-grouped`.
+Collect the compact receipt after the kernel becomes terminal. Do not loosen or
+change the worlds, learner core, seeds, budgets, thresholds, or stops; the
+grouped loss and exact completed-step accounting are the only repair.
 
 ## What building these four families actually found
 

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import torch
+import torch.nn.functional as F
 from torch import nn
 from transformers import LlamaConfig, LlamaModel, PretrainedConfig, PreTrainedModel
 from transformers.utils import ModelOutput
@@ -93,6 +94,7 @@ class PretrainingOutput(ModelOutput):
     loss: torch.Tensor | None = None
     action_loss: torch.Tensor | None = None
     future_loss: torch.Tensor | None = None
+    action_logits: torch.Tensor | None = None
     action_predictions: torch.Tensor | None = None
     future_predictions: torch.Tensor | None = None
 
@@ -209,6 +211,50 @@ class PretrainingForTrajectoryPrediction(PreTrainedModel):
             return prediction.sum() * 0.0
         return (numerator[valid] / denominator[valid]).mean()
 
+    @staticmethod
+    def _grouped_action_query_cross_entropy(
+        action_logits: torch.Tensor,
+        action_targets: torch.Tensor,
+        action_target_mask: torch.Tensor,
+        action_decision_groups: torch.Tensor,
+    ) -> torch.Tensor:
+        """Categorical loss over the alternatives in each public ActionQuery.
+
+        A finite-G0 action decision is represented by several query rows.  Its
+        group identifier is *supervision addressing*, not a learner feature:
+        it selects which row logits form one categorical distribution after the
+        backbone has run.  Positive targets may name more than one equally
+        correct alternative, in which case the standard cross-entropy target is
+        the uniform distribution over those alternatives.
+        """
+        if action_logits.ndim != 3 or action_targets.shape != action_logits.shape:
+            raise ValueError("action logits and targets must both be [batch, tokens, horizon]")
+        if action_target_mask.shape != action_logits.shape:
+            raise ValueError("action_target_mask must match action logits")
+        if action_decision_groups.shape != action_logits.shape[:2]:
+            raise ValueError("action_decision_groups must be [batch, tokens]")
+
+        supervised = action_target_mask[..., 0].to(dtype=torch.bool)
+        groups = action_decision_groups.to(device=action_logits.device, dtype=torch.long)
+        if torch.any(supervised & (groups < 0)):
+            raise ValueError("every supervised grouped ActionQuery needs a nonnegative group id")
+
+        losses: list[torch.Tensor] = []
+        for episode in range(action_logits.shape[0]):
+            episode_groups = groups[episode]
+            for group in torch.unique(episode_groups[supervised[episode]]):
+                positions = supervised[episode] & (episode_groups == group)
+                logits = action_logits[episode, positions, 0].unsqueeze(0)
+                positive = action_targets[episode, positions, 0].to(dtype=logits.dtype).clamp_min(0.0)
+                total_positive = positive.sum()
+                if total_positive <= 0:
+                    raise ValueError("each ActionQuery decision needs at least one positive target")
+                target_distribution = (positive / total_positive).unsqueeze(0)
+                losses.append(F.cross_entropy(logits, target_distribution))
+        if not losses:
+            return action_logits.sum() * 0.0
+        return torch.stack(losses).mean()
+
     def forward(
         self,
         role_ids: torch.Tensor,
@@ -218,6 +264,7 @@ class PretrainingForTrajectoryPrediction(PreTrainedModel):
         attention_mask: torch.Tensor,
         action_targets: torch.Tensor | None = None,
         action_target_mask: torch.Tensor | None = None,
+        action_decision_groups: torch.Tensor | None = None,
         future_targets: torch.Tensor | None = None,
         future_target_mask: torch.Tensor | None = None,
         canonical_content_embeds: torch.Tensor | None = None,
@@ -237,14 +284,23 @@ class PretrainingForTrajectoryPrediction(PreTrainedModel):
             use_cache=False,
             return_dict=True,
         ).last_hidden_state
-        action_predictions = torch.tanh(self.action_head(hidden))
+        action_logits = self.action_head(hidden)
+        action_predictions = torch.tanh(action_logits)
         future_predictions = torch.tanh(self.future_head(hidden).squeeze(-1))
 
         action_loss = None
         future_loss = None
         total_loss = None
         if action_targets is not None and action_target_mask is not None:
-            action_loss = self._masked_l1(action_predictions, action_targets, action_target_mask)
+            if action_decision_groups is None:
+                action_loss = self._masked_l1(action_predictions, action_targets, action_target_mask)
+            else:
+                action_loss = self._grouped_action_query_cross_entropy(
+                    action_logits,
+                    action_targets,
+                    action_target_mask,
+                    action_decision_groups,
+                )
         if future_targets is not None and future_target_mask is not None:
             future_loss = self._masked_l1(future_predictions, future_targets, future_target_mask)
         if action_loss is not None or future_loss is not None:
@@ -258,6 +314,7 @@ class PretrainingForTrajectoryPrediction(PreTrainedModel):
             loss=total_loss,
             action_loss=action_loss,
             future_loss=future_loss,
+            action_logits=action_logits,
             action_predictions=action_predictions,
             future_predictions=future_predictions,
         )

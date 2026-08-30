@@ -105,6 +105,18 @@ control plane:
 python tools/kaggle_run.py launch --experiment r10-seed-gate
 ```
 
+That first T4 run completed but is retained as an apparatus result, not learner
+evidence: row-wise action L1 decreased while the declared grouped ActionQuery
+argmax did not improve, and iterable prefetch overstated presentations. The
+only authorized follow-up preserves every scientific setting and replaces just
+that objective with standard categorical cross-entropy over the public query
+alternatives; group addresses remain loss-only metadata. Use the versioned
+contract and registry entry (never overwrite the first receipt):
+
+```powershell
+python tools/kaggle_run.py launch --experiment r10-seed-gate-grouped
+```
+
 At repository creation, 116 Rust tests and 37 Python tests pass.
 
 ## Kaggle control plane

@@ -1,0 +1,1699 @@
+{
+  "architecture_gate_passed": null,
+  "architecture_gate_progress": null,
+  "audit_verified": true,
+  "collected_at_unix": 1788046929.7762823,
+  "configuration": {
+    "path": "configs/r10/seed_gate_t4.toml",
+    "sha256": "e25d21655f74b8f5b597fd5585463a5c4778fbb6c4f546d81a8fa48f6fb43328"
+  },
+  "downloaded_files": [
+    {
+      "path": "pretraining-r10-seed-gate-e36b828.log",
+      "sha256": "7d10477bbac9fc78110d9a03b9d9311c5ab1e76a16aeda8dbcfc21b538d593c2",
+      "size": 308062
+    },
+    {
+      "path": "pretraining-results/audit-manifest.json",
+      "sha256": "fe0911a7d6ae391f5c0a9c485d9a950b97d531d077d007e964249818c8e07c9e",
+      "size": 3048
+    },
+    {
+      "path": "pretraining-results/card02/seed-gate-receipt.json",
+      "sha256": "65649f2ae93539067c41f0da4373738a05427bb5d00ad1df13de96b0631a145f",
+      "size": 5959
+    },
+    {
+      "path": "pretraining-results/card03/seed-gate-receipt.json",
+      "sha256": "a9bf45e7ad1684833ad8f62fb86e3ee11e5004dff1af8b90cec5640039a2c3ff",
+      "size": 6549
+    },
+    {
+      "path": "pretraining-results/card04/seed-gate-receipt.json",
+      "sha256": "7e1552a64da192f8780563d5b078e7cbfcb3a573691917730d8f66c081024c95",
+      "size": 10770
+    },
+    {
+      "path": "pretraining-results/card05/seed-gate-receipt.json",
+      "sha256": "fe33449502b804655dac81cdba374aefed4b589c3d7ff4ec378ee8b1f039a5c2",
+      "size": 5940
+    },
+    {
+      "path": "pretraining-results/card06/seed-gate-receipt.json",
+      "sha256": "b61c4bd88f23ce6b8095fd4069232caf08354078475cfa1cc8d1c3c915baac19",
+      "size": 6460
+    },
+    {
+      "path": "pretraining-results/environment.json",
+      "sha256": "69389477a11b531da23ed8c31bfcd38b97d591f78d0de5c7b8ae10c6853eff9d",
+      "size": 2963
+    },
+    {
+      "path": "pretraining-results/logs/maturin-build.log",
+      "sha256": "83bbac2171621402b647f23816b14773f073ecf0f679f2bce30f57e488f59830",
+      "size": 5950
+    },
+    {
+      "path": "pretraining-results/logs/pip-install.log",
+      "sha256": "9295dfd7a86b8a983f58afec772372c1e005fe5d7565f8e39a9cfc9e5d810309",
+      "size": 12502
+    },
+    {
+      "path": "pretraining-results/logs/python-tests.log",
+      "sha256": "0b39623db57a06ef795d5fe60e5cd73662098fefced175fffc616ef05a969153",
+      "size": 11149
+    },
+    {
+      "path": "pretraining-results/logs/rust-tests.log",
+      "sha256": "008512fe57fafe7d1c1c6da479f3b269a7a0cc1f722190fc9cb0d1263cd096fd",
+      "size": 29656
+    },
+    {
+      "path": "pretraining-results/logs/rust-toolchain.log",
+      "sha256": "eb407fb00aaa6c2362c6109acc534c26432350bc77ddebf3eb3280663466babe",
+      "size": 251
+    },
+    {
+      "path": "pretraining-results/logs/rustup-download.log",
+      "sha256": "65ab67427918399433c826dc3d69d1a19dc47a96b0439717ad27931fb699e6ce",
+      "size": 111
+    },
+    {
+      "path": "pretraining-results/logs/rustup-install.log",
+      "sha256": "2b1de893e77f9176eea810f2065325e56010d224aa58a758482a3b7ca25b0fa3",
+      "size": 1489
+    },
+    {
+      "path": "pretraining-results/logs/seed-gate.log",
+      "sha256": "3d2543ffd939646e2931d8715d647fafdca00144d3b27e94ffb016d32d1c70e4",
+      "size": 31392
+    },
+    {
+      "path": "pretraining-results/logs/world-wheel-install.log",
+      "sha256": "eeacb1c3d9398a021181ef7732ba4a0596422ca3912d5fd910cdeddc06411841",
+      "size": 353
+    },
+    {
+      "path": "pretraining-results/phase_status.json",
+      "sha256": "aeecf436cb1a0ad5e845b3f15ce83f7ddb2d7af31bdae3ada7ec375a5d4d7a6c",
+      "size": 816
+    },
+    {
+      "path": "pretraining-results/seed-gate-receipt.json",
+      "sha256": "2d34249cf546788925acfd68ff79f9d88e7866f3a4a6db305fdd89fb6e599060",
+      "size": 42324
+    },
+    {
+      "path": "pretraining-results/summary.json",
+      "sha256": "f3dac03628899482ec4c0cc6ce79d4205e2f7fe1911d96a144986955530e1772",
+      "size": 46595
+    },
+    {
+      "path": "pretraining-results/timing-preflight-receipt.json",
+      "sha256": "ae64642b4583cd9b06542829ba4d91227c65e45e0ea9e360bd1ee9bbd2a86fa8",
+      "size": 386
+    }
+  ],
+  "experiment": "r10-seed-gate",
+  "kaggle": {
+    "completion_time": "2026-08-29T23:36:01.907000",
+    "owner_slug_version": "aniruddhavarma/pretraining-r10-seed-gate-e36b828/1",
+    "push_url": "https://www.kaggle.com/code/aniruddhavarma/pretraining-r10-seed-gate-e36b828",
+    "terminal_status": "aniruddhavarma/pretraining-r10-seed-gate-e36b828/1 has status \"KernelWorkerStatus.COMPLETE\"",
+    "url": "https://www.kaggle.com/code/aniruddhavarma/pretraining-r10-seed-gate-e36b828/versions/1"
+  },
+  "kernel": "aniruddhavarma/pretraining-r10-seed-gate-e36b828",
+  "model_sha256": null,
+  "observed_accelerator_inventory": null,
+  "recovery_artifact": null,
+  "remote_manifest_sha256": "fe0911a7d6ae391f5c0a9c485d9a950b97d531d077d007e964249818c8e07c9e",
+  "requested_accelerator": "NvidiaTeslaT4",
+  "root_seed": 20260829,
+  "run_id": "aniruddhavarma/pretraining-r10-seed-gate-e36b828/1",
+  "schema_version": 1,
+  "scientific_report": {
+    "classification": "seed_gate_incomplete",
+    "elapsed_seconds": 87.42484493699999,
+    "pilots": [
+      {
+        "abi_and_bounds_ok": true,
+        "actual_tokens": 30,
+        "classification": "inconclusive_not_admitted",
+        "complete": true,
+        "contract_hash": "d975c3a646591ccf",
+        "device": "cuda",
+        "elapsed_seconds": 16.171092818999966,
+        "episode_presentations": 520,
+        "evaluation_support": "full_distinct_public_corpus",
+        "evaluations": {
+          "0": {
+            "by_case_kind": {
+              "negative_goal_predictable": {
+                "argmax": 0.0,
+                "decisions": 9
+              },
+              "negative_no_go_removed": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_single_goal": {
+                "argmax": 0.2222222222222222,
+                "decisions": 9
+              },
+              "negative_switch_announced": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_goal_conditioning": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_inhibit": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_maintain": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_switch": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_viability": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card04": {
+                "argmax": 0.3541666666666667,
+                "decisions": 48
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_goal_predictable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_single_goal": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_switch_announced": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_goal_conditioning": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_inhibit": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_maintain": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_switch": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_viability": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "decisions": 48,
+            "macro_argmax": 0.3395061728395061
+          },
+          "16": {
+            "by_case_kind": {
+              "negative_goal_predictable": {
+                "argmax": 0.0,
+                "decisions": 9
+              },
+              "negative_no_go_removed": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_single_goal": {
+                "argmax": 0.2222222222222222,
+                "decisions": 9
+              },
+              "negative_switch_announced": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_goal_conditioning": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_inhibit": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_maintain": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_switch": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_viability": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card04": {
+                "argmax": 0.3541666666666667,
+                "decisions": 48
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_goal_predictable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_single_goal": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_switch_announced": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_goal_conditioning": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_inhibit": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_maintain": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_switch": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_viability": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "decisions": 48,
+            "macro_argmax": 0.3395061728395061
+          },
+          "32": {
+            "by_case_kind": {
+              "negative_goal_predictable": {
+                "argmax": 0.0,
+                "decisions": 9
+              },
+              "negative_no_go_removed": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_single_goal": {
+                "argmax": 0.2222222222222222,
+                "decisions": 9
+              },
+              "negative_switch_announced": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_goal_conditioning": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_inhibit": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_maintain": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_switch": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_viability": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card04": {
+                "argmax": 0.3541666666666667,
+                "decisions": 48
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_goal_predictable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_single_goal": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_switch_announced": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_goal_conditioning": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_inhibit": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_maintain": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_switch": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_viability": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "decisions": 48,
+            "macro_argmax": 0.3395061728395061
+          },
+          "48": {
+            "by_case_kind": {
+              "negative_goal_predictable": {
+                "argmax": 0.0,
+                "decisions": 9
+              },
+              "negative_no_go_removed": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_single_goal": {
+                "argmax": 0.2222222222222222,
+                "decisions": 9
+              },
+              "negative_switch_announced": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_goal_conditioning": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_inhibit": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_maintain": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_switch": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_viability": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card04": {
+                "argmax": 0.3541666666666667,
+                "decisions": 48
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_goal_predictable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_single_goal": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_switch_announced": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_goal_conditioning": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_inhibit": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_maintain": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_switch": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_viability": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "decisions": 48,
+            "macro_argmax": 0.3395061728395061
+          },
+          "64": {
+            "by_case_kind": {
+              "negative_goal_predictable": {
+                "argmax": 0.0,
+                "decisions": 9
+              },
+              "negative_no_go_removed": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_single_goal": {
+                "argmax": 0.2222222222222222,
+                "decisions": 9
+              },
+              "negative_switch_announced": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_goal_conditioning": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_inhibit": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_maintain": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_switch": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_viability": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card04": {
+                "argmax": 0.3541666666666667,
+                "decisions": 48
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_goal_predictable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_single_goal": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_switch_announced": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_goal_conditioning": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_inhibit": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_maintain": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_switch": {
+                "argmax": 0.5,
+                "decisions": 6
+              },
+              "witness_viability": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "decisions": 48,
+            "macro_argmax": 0.3395061728395061
+          }
+        },
+        "family": "card04",
+        "finite": true,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "scored_action_query_targets": 4680,
+        "seeds": {
+          "eval": 2026083101,
+          "init": 2026082901,
+          "train": 2026083001
+        },
+        "sequence_cap": 192,
+        "timed_out": false,
+        "transfer_claim": false
+      },
+      {
+        "abi_and_bounds_ok": true,
+        "actual_tokens": 44,
+        "classification": "inconclusive_not_admitted",
+        "complete": true,
+        "contract_hash": "2442b372a18e1d66",
+        "device": "cuda",
+        "elapsed_seconds": 16.11209769499999,
+        "episode_presentations": 520,
+        "evaluation_support": "full_distinct_public_corpus",
+        "evaluations": {
+          "0": {
+            "by_case_kind": {
+              "negative_frequency_matched": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "negative_no_restore": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reachable_attempt": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_restore": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_unreachable_fallback": {
+                "argmax": 1.0,
+                "decisions": 2
+              }
+            },
+            "by_family": {
+              "card03": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_frequency_matched": {
+                "argmax": 0.3333333333333333,
+                "decisions": 6
+              },
+              "witness_reachable_attempt": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_restore": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_unreachable_fallback": {
+                "argmax": 1.0,
+                "decisions": 2
+              }
+            },
+            "decisions": 16,
+            "macro_argmax": 0.4666666666666667
+          },
+          "16": {
+            "by_case_kind": {
+              "negative_frequency_matched": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "negative_no_restore": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_reachable_attempt": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_restore": {
+                "argmax": 0.5,
+                "decisions": 4
+              },
+              "witness_unreachable_fallback": {
+                "argmax": 0.0,
+                "decisions": 2
+              }
+            },
+            "by_family": {
+              "card03": {
+                "argmax": 0.1875,
+                "decisions": 16
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_frequency_matched": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "witness_reachable_attempt": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_restore": {
+                "argmax": 0.5,
+                "decisions": 4
+              },
+              "witness_unreachable_fallback": {
+                "argmax": 0.0,
+                "decisions": 2
+              }
+            },
+            "decisions": 16,
+            "macro_argmax": 0.13333333333333333
+          },
+          "32": {
+            "by_case_kind": {
+              "negative_frequency_matched": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "negative_no_restore": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_reachable_attempt": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_restore": {
+                "argmax": 0.5,
+                "decisions": 4
+              },
+              "witness_unreachable_fallback": {
+                "argmax": 0.0,
+                "decisions": 2
+              }
+            },
+            "by_family": {
+              "card03": {
+                "argmax": 0.1875,
+                "decisions": 16
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_frequency_matched": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "witness_reachable_attempt": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_restore": {
+                "argmax": 0.5,
+                "decisions": 4
+              },
+              "witness_unreachable_fallback": {
+                "argmax": 0.0,
+                "decisions": 2
+              }
+            },
+            "decisions": 16,
+            "macro_argmax": 0.13333333333333333
+          },
+          "48": {
+            "by_case_kind": {
+              "negative_frequency_matched": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "negative_no_restore": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_reachable_attempt": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_restore": {
+                "argmax": 0.5,
+                "decisions": 4
+              },
+              "witness_unreachable_fallback": {
+                "argmax": 0.0,
+                "decisions": 2
+              }
+            },
+            "by_family": {
+              "card03": {
+                "argmax": 0.1875,
+                "decisions": 16
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_frequency_matched": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "witness_reachable_attempt": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_restore": {
+                "argmax": 0.5,
+                "decisions": 4
+              },
+              "witness_unreachable_fallback": {
+                "argmax": 0.0,
+                "decisions": 2
+              }
+            },
+            "decisions": 16,
+            "macro_argmax": 0.13333333333333333
+          },
+          "64": {
+            "by_case_kind": {
+              "negative_frequency_matched": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "negative_no_restore": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_reachable_attempt": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_restore": {
+                "argmax": 0.5,
+                "decisions": 4
+              },
+              "witness_unreachable_fallback": {
+                "argmax": 0.0,
+                "decisions": 2
+              }
+            },
+            "by_family": {
+              "card03": {
+                "argmax": 0.1875,
+                "decisions": 16
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_frequency_matched": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "witness_reachable_attempt": {
+                "argmax": 0.0,
+                "decisions": 4
+              },
+              "witness_restore": {
+                "argmax": 0.5,
+                "decisions": 4
+              },
+              "witness_unreachable_fallback": {
+                "argmax": 0.0,
+                "decisions": 2
+              }
+            },
+            "decisions": 16,
+            "macro_argmax": 0.13333333333333333
+          }
+        },
+        "family": "card03",
+        "finite": true,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "scored_action_query_targets": 4160,
+        "seeds": {
+          "eval": 2026083102,
+          "init": 2026082902,
+          "train": 2026083002
+        },
+        "sequence_cap": 192,
+        "timed_out": false,
+        "transfer_claim": false
+      },
+      {
+        "abi_and_bounds_ok": true,
+        "actual_tokens": 37,
+        "classification": "inconclusive_not_admitted",
+        "complete": true,
+        "contract_hash": "74b2d0da16ad3b31",
+        "device": "cuda",
+        "elapsed_seconds": 15.987533406000011,
+        "episode_presentations": 520,
+        "evaluation_support": "full_distinct_public_corpus",
+        "evaluations": {
+          "0": {
+            "by_case_kind": {
+              "negative_fully_observable": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "negative_irrelevant_latch": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "negative_memory_cost": {
+                "argmax": 0.16666666666666666,
+                "decisions": 12
+              },
+              "witness_latched_mode": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card02": {
+                "argmax": 0.18518518518518517,
+                "decisions": 27
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_fully_observable": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              },
+              "negative_irrelevant_latch": {
+                "argmax": 0.3333333333333333,
+                "decisions": 3
+              },
+              "negative_memory_cost": {
+                "argmax": 0.16666666666666666,
+                "decisions": 12
+              },
+              "witness_latched_mode": {
+                "argmax": 0.16666666666666666,
+                "decisions": 6
+              }
+            },
+            "decisions": 27,
+            "macro_argmax": 0.16666666666666666
+          },
+          "16": {
+            "by_case_kind": {
+              "negative_fully_observable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_irrelevant_latch": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_memory_cost": {
+                "argmax": 0.0,
+                "decisions": 12
+              },
+              "witness_latched_mode": {
+                "argmax": 0.0,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card02": {
+                "argmax": 0.0,
+                "decisions": 27
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_fully_observable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_irrelevant_latch": {
+                "argmax": 0.0,
+                "decisions": 3
+              },
+              "negative_memory_cost": {
+                "argmax": 0.0,
+                "decisions": 12
+              },
+              "witness_latched_mode": {
+                "argmax": 0.0,
+                "decisions": 6
+              }
+            },
+            "decisions": 27,
+            "macro_argmax": 0.0
+          },
+          "32": {
+            "by_case_kind": {
+              "negative_fully_observable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_irrelevant_latch": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_memory_cost": {
+                "argmax": 0.0,
+                "decisions": 12
+              },
+              "witness_latched_mode": {
+                "argmax": 0.0,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card02": {
+                "argmax": 0.0,
+                "decisions": 27
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_fully_observable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_irrelevant_latch": {
+                "argmax": 0.0,
+                "decisions": 3
+              },
+              "negative_memory_cost": {
+                "argmax": 0.0,
+                "decisions": 12
+              },
+              "witness_latched_mode": {
+                "argmax": 0.0,
+                "decisions": 6
+              }
+            },
+            "decisions": 27,
+            "macro_argmax": 0.0
+          },
+          "48": {
+            "by_case_kind": {
+              "negative_fully_observable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_irrelevant_latch": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_memory_cost": {
+                "argmax": 0.0,
+                "decisions": 12
+              },
+              "witness_latched_mode": {
+                "argmax": 0.0,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card02": {
+                "argmax": 0.0,
+                "decisions": 27
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_fully_observable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_irrelevant_latch": {
+                "argmax": 0.0,
+                "decisions": 3
+              },
+              "negative_memory_cost": {
+                "argmax": 0.0,
+                "decisions": 12
+              },
+              "witness_latched_mode": {
+                "argmax": 0.0,
+                "decisions": 6
+              }
+            },
+            "decisions": 27,
+            "macro_argmax": 0.0
+          },
+          "64": {
+            "by_case_kind": {
+              "negative_fully_observable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_irrelevant_latch": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_memory_cost": {
+                "argmax": 0.0,
+                "decisions": 12
+              },
+              "witness_latched_mode": {
+                "argmax": 0.0,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card02": {
+                "argmax": 0.0,
+                "decisions": 27
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_fully_observable": {
+                "argmax": 0.0,
+                "decisions": 6
+              },
+              "negative_irrelevant_latch": {
+                "argmax": 0.0,
+                "decisions": 3
+              },
+              "negative_memory_cost": {
+                "argmax": 0.0,
+                "decisions": 12
+              },
+              "witness_latched_mode": {
+                "argmax": 0.0,
+                "decisions": 6
+              }
+            },
+            "decisions": 27,
+            "macro_argmax": 0.0
+          }
+        },
+        "family": "card02",
+        "finite": true,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "scored_action_query_targets": 6240,
+        "seeds": {
+          "eval": 2026083103,
+          "init": 2026082903,
+          "train": 2026083003
+        },
+        "sequence_cap": 192,
+        "timed_out": false,
+        "transfer_claim": false
+      },
+      {
+        "abi_and_bounds_ok": true,
+        "actual_tokens": 33,
+        "classification": "inconclusive_not_admitted",
+        "complete": true,
+        "contract_hash": "cbe39880124b9d2d",
+        "device": "cuda",
+        "elapsed_seconds": 15.93464960700004,
+        "episode_presentations": 520,
+        "evaluation_support": "full_distinct_public_corpus",
+        "evaluations": {
+          "0": {
+            "by_case_kind": {
+              "negative_gate_irrelevant": {
+                "argmax": 0.0,
+                "decisions": 1
+              },
+              "negative_gate_public": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "negative_probe_too_expensive": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_probe_then_commit": {
+                "argmax": 0.5,
+                "decisions": 4
+              }
+            },
+            "by_family": {
+              "card05": {
+                "argmax": 0.2222222222222222,
+                "decisions": 9
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_gate_irrelevant": {
+                "argmax": 0.0,
+                "decisions": 1
+              },
+              "negative_gate_public": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "negative_probe_too_expensive": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_probe_then_commit": {
+                "argmax": 0.5,
+                "decisions": 4
+              }
+            },
+            "decisions": 9,
+            "macro_argmax": 0.125
+          },
+          "16": {
+            "by_case_kind": {
+              "negative_gate_irrelevant": {
+                "argmax": 0.0,
+                "decisions": 1
+              },
+              "negative_gate_public": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "negative_probe_too_expensive": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_probe_then_commit": {
+                "argmax": 0.75,
+                "decisions": 4
+              }
+            },
+            "by_family": {
+              "card05": {
+                "argmax": 0.3333333333333333,
+                "decisions": 9
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_gate_irrelevant": {
+                "argmax": 0.0,
+                "decisions": 1
+              },
+              "negative_gate_public": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "negative_probe_too_expensive": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_probe_then_commit": {
+                "argmax": 0.75,
+                "decisions": 4
+              }
+            },
+            "decisions": 9,
+            "macro_argmax": 0.1875
+          },
+          "32": {
+            "by_case_kind": {
+              "negative_gate_irrelevant": {
+                "argmax": 0.0,
+                "decisions": 1
+              },
+              "negative_gate_public": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "negative_probe_too_expensive": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_probe_then_commit": {
+                "argmax": 0.5,
+                "decisions": 4
+              }
+            },
+            "by_family": {
+              "card05": {
+                "argmax": 0.2222222222222222,
+                "decisions": 9
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_gate_irrelevant": {
+                "argmax": 0.0,
+                "decisions": 1
+              },
+              "negative_gate_public": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "negative_probe_too_expensive": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_probe_then_commit": {
+                "argmax": 0.5,
+                "decisions": 4
+              }
+            },
+            "decisions": 9,
+            "macro_argmax": 0.125
+          },
+          "48": {
+            "by_case_kind": {
+              "negative_gate_irrelevant": {
+                "argmax": 0.0,
+                "decisions": 1
+              },
+              "negative_gate_public": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "negative_probe_too_expensive": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_probe_then_commit": {
+                "argmax": 0.5,
+                "decisions": 4
+              }
+            },
+            "by_family": {
+              "card05": {
+                "argmax": 0.2222222222222222,
+                "decisions": 9
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_gate_irrelevant": {
+                "argmax": 0.0,
+                "decisions": 1
+              },
+              "negative_gate_public": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "negative_probe_too_expensive": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_probe_then_commit": {
+                "argmax": 0.5,
+                "decisions": 4
+              }
+            },
+            "decisions": 9,
+            "macro_argmax": 0.125
+          },
+          "64": {
+            "by_case_kind": {
+              "negative_gate_irrelevant": {
+                "argmax": 0.0,
+                "decisions": 1
+              },
+              "negative_gate_public": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "negative_probe_too_expensive": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_probe_then_commit": {
+                "argmax": 0.75,
+                "decisions": 4
+              }
+            },
+            "by_family": {
+              "card05": {
+                "argmax": 0.3333333333333333,
+                "decisions": 9
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_gate_irrelevant": {
+                "argmax": 0.0,
+                "decisions": 1
+              },
+              "negative_gate_public": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "negative_probe_too_expensive": {
+                "argmax": 0.0,
+                "decisions": 2
+              },
+              "witness_probe_then_commit": {
+                "argmax": 0.75,
+                "decisions": 4
+              }
+            },
+            "decisions": 9,
+            "macro_argmax": 0.1875
+          }
+        },
+        "family": "card05",
+        "finite": true,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "scored_action_query_targets": 3340,
+        "seeds": {
+          "eval": 2026083104,
+          "init": 2026082904,
+          "train": 2026083004
+        },
+        "sequence_cap": 192,
+        "timed_out": false,
+        "transfer_claim": false
+      },
+      {
+        "abi_and_bounds_ok": true,
+        "actual_tokens": 30,
+        "classification": "inconclusive_not_admitted",
+        "complete": true,
+        "contract_hash": "76a08f38947c8cae",
+        "device": "cuda",
+        "elapsed_seconds": 16.070748347000062,
+        "episode_presentations": 520,
+        "evaluation_support": "full_distinct_public_corpus",
+        "evaluations": {
+          "0": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card06": {
+                "argmax": 0.25,
+                "decisions": 64
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "decisions": 64,
+            "macro_argmax": 0.25
+          },
+          "16": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card06": {
+                "argmax": 0.25,
+                "decisions": 64
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "decisions": 64,
+            "macro_argmax": 0.25
+          },
+          "32": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card06": {
+                "argmax": 0.25,
+                "decisions": 64
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "decisions": 64,
+            "macro_argmax": 0.25
+          },
+          "48": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card06": {
+                "argmax": 0.25,
+                "decisions": 64
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "decisions": 64,
+            "macro_argmax": 0.25
+          },
+          "64": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card06": {
+                "argmax": 0.25,
+                "decisions": 64
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "decisions": 64,
+            "macro_argmax": 0.25
+          }
+        },
+        "family": "card06",
+        "finite": true,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "scored_action_query_targets": 4160,
+        "seeds": {
+          "eval": 2026083105,
+          "init": 2026082905,
+          "train": 2026083005
+        },
+        "sequence_cap": 192,
+        "timed_out": false,
+        "transfer_claim": false
+      }
+    ],
+    "preflight": {
+      "actual_tokens": 30,
+      "classification": "preflight_passed",
+      "device": "cuda",
+      "family": "card04",
+      "full_corpus_eval_limit_seconds": 10,
+      "full_corpus_eval_seconds": 0.7218163559999766,
+      "padding_strategy": "family_max_profiled_length_under_cap",
+      "passed": true,
+      "sequence_cap": 192,
+      "update_limit_seconds": 10,
+      "update_seconds": 2.7982245430000035,
+      "updates": 4
+    },
+    "row": "R10",
+    "transfer_claim": false
+  },
+  "source": {
+    "git_remote": "origin",
+    "git_remote_url": "https://github.com/escher-bach/pretraining_for_robots.git",
+    "git_sha": "e36b828bfb882603ebfd386682e3fd12884ad199"
+  },
+  "status": "complete",
+  "upstream_kaggle_versions": [],
+  "verified_manifest_entries": [
+    "card02/seed-gate-receipt.json",
+    "card03/seed-gate-receipt.json",
+    "card04/seed-gate-receipt.json",
+    "card05/seed-gate-receipt.json",
+    "card06/seed-gate-receipt.json",
+    "environment.json",
+    "logs/maturin-build.log",
+    "logs/pip-install.log",
+    "logs/python-tests.log",
+    "logs/rust-tests.log",
+    "logs/rust-toolchain.log",
+    "logs/rustup-download.log",
+    "logs/rustup-install.log",
+    "logs/seed-gate.log",
+    "logs/world-wheel-install.log",
+    "phase_status.json",
+    "seed-gate-receipt.json",
+    "timing-preflight-receipt.json"
+  ],
+  "world_size": null
+}

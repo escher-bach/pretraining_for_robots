@@ -8,3 +8,7 @@
 *.egg-info/
 /audit/launches/
 /audit/logs/
+/audit/runs/**/*.log
+/audit/runs/**/pretraining-results/summary.json
+/audit/runs/**/pretraining-results/seed-gate-receipt.json
+/audit/runs/**/pretraining-results/card*/

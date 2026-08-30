@@ -15,3 +15,9 @@ title = "R10 five-family finite-G0 seed gate"
 slug_prefix = "pretraining-r10-seed-gate"
 config = "configs/r10/seed_gate_t4.toml"
 purpose = "run the fixed five-family R10 seed gate on one T4"
+
+[experiments.r10-seed-gate-grouped]
+title = "R10 five-family finite-G0 seed gate: grouped-objective repair"
+slug_prefix = "pretraining-r10-seed-gate-grouped"
+config = "configs/r10/seed_gate_t4_grouped.toml"
+purpose = "run the single bounded grouped ActionQuery apparatus repair on one T4"
