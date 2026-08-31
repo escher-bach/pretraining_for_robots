@@ -87,6 +87,57 @@ start). Composition is `Both`, `Supersede(before,after,guard)`, or
 `Priority(high,low)`. Guards are `AtStart`, `AfterStep(k)`, `OnAction(a)`,
 `OnCellEntry(c)`, and `Never`.
 
+### Guard evaluation and norm timing
+
+A guard is a total predicate over `GuardContext { executed, last_action,
+cell }`. Its exact truth conditions are:
+
+```text
+AtStart         = true
+AfterStep(k)    = executed > k
+OnAction(a)     = last_action == Some(a)
+OnCellEntry(c)  = cell == c
+Never           = false
+```
+
+`AtStart` is deliberately not a one-time event: it is true in every context,
+including after actions. `OnCellEntry` is likewise a cell-equality predicate,
+not a proof that the current step crossed an edge into that cell.
+
+The executor uses three contexts. At the start it evaluates public guarded
+events with `(0, None, start)`. A non-fallback scored transition at source
+cell `c`, action `a`, and prior scored count `e` evaluates coupling guards
+with `(e + 1, Some(a), c)`; this is the **source** context. After that
+transition it evaluates public process/reveal guards with
+`(e + 1, Some(a), c')`, where `c'` is the destination; this is the
+**post-transition** context. Calibration pulses call the transition at scored
+index zero, so each pulse's coupling context has `executed = 1` and its then
+current source cell.
+
+For a non-fallback outcome, norm evaluation receives the complete supplied
+trajectory and the final context `(actions.len(), actions.last(),
+trajectory.last())`. `Supersede(before, after, guard)` selects `after` when
+that final guard fires and otherwise selects `before`; it then evaluates the
+selected subtree over the whole trajectory. It is not a per-step switch.
+Consequently `Supersede` with `AtStart` always selects `after`, even for a
+nonempty trajectory. A fallback outcome uses fallback scoring before norm
+evaluation, as specified below.
+
+### Reference public-norm encoding
+
+The reference executor emits a public norm as a signed 64-bit `norm_code`.
+This encoding is not a general interchange format, but byte/trace-compatible
+implementations MUST compute it exactly. Start with unsigned state
+`0xcbf29ce484222325`; for every `mix(v)`, set
+`state = (state XOR v) * 0x100000001b3 (mod 2^64)`. Encode leaves as
+`mix(1 XOR cell)`, `mix(2 XOR cell)`, and `mix(3 XOR cell)` for `Settle`,
+`Visit`, and `Avoid`. Encode `Both` as `mix(4)` followed by its left then right
+child; `Supersede` as `mix(5 XOR guard_code)` followed by before then after;
+and `Priority` as `mix(6)` followed by high then low. Guard codes are
+`AtStart=11`, `AfterStep(k)=12 XOR k`, `OnAction(a)=13 XOR a`,
+`OnCellEntry(c)=14 XOR c`, and `Never=15`. The final unsigned state is
+reinterpreted as Rust `u64 as i64` and appended to the public trace.
+
 `ScoringTerm` is `(goal_reward, action_cost, fallback_reward,
 violation_penalty)`, all signed integers except that `action_cost` MUST be
 nonnegative. First fallback at index `k` has value
@@ -250,24 +301,41 @@ announcements and start events; scored cells are still emitted after each
 scored action. This differs from a term with no calibration, where the sensorium
 does emit the start cell before the norm code.
 
-## 8. Canonical hashing and replay
+## 8. Canonical hashing, replay, and conformance levels
 
 To hash a family, the implementation clears `name`, sorts ports by name,
 wiring by endpoints, actuators by identifier, and blocked edges
 lexicographically. It preserves behavior-sensitive orders: norm tree,
 restrictions, process signals, restoration announcements, and override writers.
-It serializes the canonical term using `serde_json` and hashes the bytes with
-BLAKE3. The resulting 256-bit digest is a collision-resistant family
+The reference implementation serializes this canonical Rust value using its
+derived `serde` representation through `serde_json`, then hashes those bytes
+with BLAKE3. The resulting 256-bit digest is a collision-resistant family
 identifier, not a mathematical proof of semantic inequality: a hash collision
-is possible in principle. Conformance compares canonical bytes when testing
-the hash implementation itself and treats equal hashes as a versioning
-identifier, never as the sole evidence that two arbitrary programs are
-equivalent.
+is possible in principle. Equal hashes are a versioning identifier, never the
+sole evidence that two arbitrary programs are equivalent.
+
+This specification has two conformance levels. **Semantic conformance**
+requires the types, validation, lowering, operational behavior, public/other
+views, and family/receipt predicates in this document. It does not require an
+independent implementation to reproduce the reference's derived Rust JSON
+field layout, `serde_json` escaping/number serialization, or bytes. A semantic
+implementation MAY use another canonical representation and identifier, but
+MUST label it as such and MUST NOT claim reference hash compatibility.
+
+**Reference-byte conformance** is narrower and implementation-specific. It
+requires the exact current Rust data model, declaration/field order supplied
+by the reference's derived `Serialize`, the `serde_json` bytes it produces,
+the sorting/normalization above, and BLAKE3 over those exact bytes. Thus its
+canonical bytes and hash are reproducible by rebuilding the reference, rather
+than a language-neutral wire standard defined by this document. The exact
+`norm_code` algorithm above is separately fixed for public-trace
+compatibility.
 
 Seed/index changes MUST NOT alter the hash. Semantic changes, including action
 meaning, support, edge, calibration, restoration, norm, or scoring changes,
-MUST alter the canonical serialized term and SHOULD alter the digest absent a
-cryptographic collision. Replay is the complete
+MUST be treated as a distinct semantic term; they change the reference
+canonical term bytes and SHOULD alter the digest absent a cryptographic
+collision. Replay is the complete
 `GenerationSpec` plus index; `GeneratorMetadata { seed, index }` stays
 separate from the term.
 
