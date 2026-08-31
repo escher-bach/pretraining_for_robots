@@ -29,7 +29,7 @@ evidence, not evidence of usefulness or learnability.
 ## 2. Mathematical/executable model
 
 The configuration space is the ring `C = {0, ..., n-1}`, where `2 <= n <= 32`.
-An actuator has an identifier in `0..32`, an integer displacement `d(a)`, and
+An actuator has an identifier in `[0,32)`, an integer displacement `d(a)`, and
 one role:
 
 - `Movement` MAY be withheld by body support;
@@ -48,8 +48,9 @@ supported(a,e) = a in S
 edge_present(c,a) = (c,a) not in E
 ```
 
-For a non-fallback action that is supported, passes every action restriction,
-and has an environment edge, execution is:
+For a non-fallback action whose source cell is admitted by every viability
+restriction, that is supported, passes every action restriction, and has an
+environment edge, execution is:
 
 ```text
 c' = (c + d(a) + coupling_delta(e,a,c)) mod n.
@@ -108,11 +109,29 @@ when `executed > after_step`.
 
 `ProcessTerm` is a named disturbance or scaffold with guarded signal outputs.
 `RevealTerm` explicitly publishes a guarded value through a public signal port.
+Its `source_visibility` field is currently provenance/hash data only: runtime
+publication is controlled by the output port and guard, and the validator does
+not inspect that source field. A term using a private value in a reveal therefore
+needs an explicit audit; this spike does not provide a generic hidden-state to
+reveal proof.
 `CouplingTerm` has a `Sum`, `Override`, or `Conflict` rule, ordered guarded
 integer writers, and an `inactive_value`. `InterruptTerm` names a process and
 contains a guard, a displaced mode (`Continues` or `Frozen`), and a resume mode
 (`FromState` or `Restart`). Restrictions are action support, viability
 (reset/absorbing boundary), or resource budget with declared scope.
+
+Several fields are intentionally narrow in this version. `ports` and `wiring`
+are validated and hashed, but wiring is not a general runtime dataflow
+executor: lowered transitions read the body/environment fields directly.
+`Actuation.command_port`, `Sensorium.cell_port`, actuator `name`, and
+`Coupling.variable` are typed identity or validation metadata and do not alter
+the ring transition by themselves. `Sensorium.publishes_cell` controls cell
+records in the public trace, while `NormTerm.visibility` controls whether the
+compact norm code is public; neither changes private norm evaluation. A
+restoration's announcement port is validated as a public signal port, but the
+trace emits its `announcement_value` directly. Disturbance and scaffold signals
+share the same guarded public-event mechanism; their distinction is currently
+structural/name-level rather than a separate scheduler.
 
 ## 4. Types, ports, and visibility
 
@@ -138,7 +157,10 @@ Generator   -> Privileged | Generator
 ```
 
 Thus direct privileged/generator-to-public flow is invalid. A public reveal is
-the explicit publication mechanism, not an ordinary-wire exception.
+the explicit publication mechanism, not an ordinary-wire exception. Public to
+Generator is accepted by the validator, but generator values cannot be emitted
+as process signals from a Generator port and ordinary wiring has no runtime
+publication side effect in this spike.
 
 ## 5. Validation and error model
 
@@ -155,6 +177,11 @@ A restoration MUST target one initially unsupported movement action and use a
 public signal output. `Override` and `Conflict` MUST have a writer.
 `Conflict` MUST have at most one declared writer; this conservative rule avoids
 requiring a proof that guards never coincide.
+
+The validator does not enforce role/displacement consistency for custom
+actuators. The generator template gives `Hold` displacement zero, but a custom
+`Hold` may carry another displacement. `Fallback` is special in the lowered
+transition and never moves regardless of its stored displacement.
 
 Errors are `Invalid(message)`, `UnknownPort(name)`, `IllTypedWire {from,to}`,
 `VisibilityLeak {from,to}`, or `MonitorAsSource(name)`. Generation also uses
@@ -175,8 +202,19 @@ the smallest resource budget, when present.
 
 Couplings are lowered to total functions: `Sum` returns the active sum or
 `inactive_value`; `Override` returns the last active writer or inactive value;
-and validated `Conflict` returns its sole active writer or inactive value. A
+and validated `Conflict` returns its sole active writer or inactive value. Each
+coupling contributes a displacement and all lowered coupling displacements are
+summed. Guards receive the transition context (including the current action and
+cell); the declared variable identifier is not a runtime storage lookup. A
 runtime coupling error MUST NOT be discarded.
+
+Interrupt lowering is intentionally partial. A `Frozen` interrupt suppresses
+public signals from the named process while its guard is active. `Continues`
+does not suppress those signals, and neither `resume` value currently changes
+anything because process state and a scheduler are not implemented. The fields
+remain serialized and hashed so changing them is a contract change for future
+implementations, but this version MUST report this limit rather than claiming
+continuation or restart behavior.
 
 ## 7. Operational semantics and views
 
@@ -184,8 +222,11 @@ An absorbing viability cell stays unchanged. A reset boundary returns to start.
 Other transitions follow Section 2. The public trace is an integer sequence in
 this order:
 
-1. public cumulative calibration cells, if enabled; otherwise the start cell
-   when the sensorium publishes cells;
+1. public cumulative calibration cells when a calibration exists *and*
+   `publishes_cells` is true; when no calibration exists, the start cell when
+   the sensorium publishes cells. If calibration exists with
+   `publishes_cells=false`, no calibration cell (including no synthesized start
+   cell) is emitted;
 2. a deterministic compact code for a public norm, if any;
 3. restoration announcement values;
 4. public guarded process signals and reveals at start;
@@ -201,6 +242,14 @@ trajectory, blocked edges, and body support. Audit metadata contains the family
 hash, kernel-use flags, and public port names. Seed/index metadata is neither
 public nor part of a family hash.
 
+For example, if a term has a calibration prelude but sets
+`publishes_cells=false` while its sensorium publishes cells, the public trace
+does not begin with either the calibration start cell or the cumulative pulse
+cells. It begins with the public norm code (if present), then any restoration
+announcements and start events; scored cells are still emitted after each
+scored action. This differs from a term with no calibration, where the sensorium
+does emit the start cell before the norm code.
+
 ## 8. Canonical hashing and replay
 
 To hash a family, the implementation clears `name`, sorts ports by name,
@@ -208,11 +257,17 @@ wiring by endpoints, actuators by identifier, and blocked edges
 lexicographically. It preserves behavior-sensitive orders: norm tree,
 restrictions, process signals, restoration announcements, and override writers.
 It serializes the canonical term using `serde_json` and hashes the bytes with
-BLAKE3.
+BLAKE3. The resulting 256-bit digest is a collision-resistant family
+identifier, not a mathematical proof of semantic inequality: a hash collision
+is possible in principle. Conformance compares canonical bytes when testing
+the hash implementation itself and treats equal hashes as a versioning
+identifier, never as the sole evidence that two arbitrary programs are
+equivalent.
 
 Seed/index changes MUST NOT alter the hash. Semantic changes, including action
 meaning, support, edge, calibration, restoration, norm, or scoring changes,
-MUST alter the serialized term and hence the hash. Replay is the complete
+MUST alter the canonical serialized term and SHOULD alter the digest absent a
+cryptographic collision. Replay is the complete
 `GenerationSpec` plus index; `GeneratorMetadata { seed, index }` stays
 separate from the term.
 
@@ -254,12 +309,19 @@ three terms:
 1. **Body-limited witness:** support `{advance,hold,fallback}`, no blocked
    edges.
 2. **Unrestricted control:** all four actions supported, no blocked edges.
-3. **Environment twin:** full support, with retreat deleted only at cells that
-   exact enumeration finds reachable at a scored command site in the witness.
+3. **Environment twin:** full support, with retreat deleted only at the
+   conservative set of cells appearing anywhere in a complete witness
+   trajectory (including its initial and final cells). The implementation
+   currently uses this set, not the exact set of pre-action command sites; it
+   may therefore include a terminal cell, which is safe but stronger than
+   necessary.
 
 The prelude travels beyond that scored region before retreat. The twin is thus
 publicly distinct in calibration while behaviorally preserving the witness
-during scoring.
+during scoring. The scored-region set is computed by enumerating all action
+sequences of the compiled witness fragment, so a future transition extension
+must either preserve this conservative interpretation or version the generator
+and receipt semantics.
 
 ## 10. Exact validity receipt
 
