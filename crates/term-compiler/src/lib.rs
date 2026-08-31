@@ -13,8 +13,9 @@ use std::{
 };
 
 use pretraining_g0_contract::{
-    BoundaryEffect, Coupling, CouplingRule, Displaced, Fragment, Guard, GuardContext, IndexSet,
-    Interrupt, KernelUse, Norm, PubliclyObservable, Restriction,
+    identification_diameter, AmbiguitySet, BoundaryEffect, Coupling, CouplingRule, Displaced,
+    Fragment, Guard, GuardContext, IndexSet, Interrupt, KernelUse, Norm, PubliclyObservable,
+    Restriction,
 };
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
@@ -644,7 +645,7 @@ impl WorldTerm {
             interrupt: !self.interrupts.is_empty(),
             restrict: !self.restrictions.is_empty()
                 || self.body.actuation.supported.len() != self.body.actuation.actuators.len(),
-            reveal: !self.reveals.is_empty(),
+            reveal: !self.reveals.is_empty() || !self.restorations.is_empty(),
             norm_algebra: !self.norm.expression.connectives().is_empty(),
         }
     }
@@ -1206,6 +1207,12 @@ pub struct EmbodimentValidityReceipt {
     pub twin_trajectories_equal: bool,
     pub twin_values_equal: bool,
     pub twin_optimal_sequences_equal: bool,
+    /// The preserving twin must still be observable through the calibration
+    /// prelude; otherwise the orbit would compare a public episode with itself.
+    pub twin_publicly_distinct: bool,
+    /// Generic query-algebra evidence: the public prelude collapses the two
+    /// body candidates from an initial ambiguity class to one survivor.
+    pub calibration_identifies_body: bool,
     pub valid: bool,
 }
 
@@ -1248,6 +1255,11 @@ impl GeneratedEmbodimentFamily {
             values_equal &= body.fragment.value(&body.contract, &body_path, sequence)
                 == twin.fragment.value(&twin.contract, &twin_path, sequence);
         }
+        let twin_publicly_distinct = body.public_view(&[]).trace != twin.public_view(&[]).trace;
+        let calibration_identifies_body = body_identification_after_calibration(
+            &self.body_limited.term,
+            &self.unrestricted_control.term,
+        )?;
         let receipt = EmbodimentValidityReceipt {
             sequences_checked: sequences.len(),
             goal_differs_from_start,
@@ -1256,15 +1268,64 @@ impl GeneratedEmbodimentFamily {
             twin_values_equal: values_equal,
             twin_optimal_sequences_equal: body_ceiling == twin_ceiling
                 && body_optimal == twin_optimal,
+            twin_publicly_distinct,
+            calibration_identifies_body,
             valid: goal_differs_from_start
                 && body_ceiling != unrestricted_ceiling
                 && trajectories_equal
                 && values_equal
                 && body_ceiling == twin_ceiling
-                && body_optimal == twin_optimal,
+                && body_optimal == twin_optimal
+                && twin_publicly_distinct
+                && calibration_identifies_body,
         };
         Ok(receipt)
     }
+}
+
+/// Use the shared query algebra to check the generated body's identification
+/// claim.  The same two terms are compared once without their prelude and once
+/// with it; no card-specific query or evaluator is introduced here.
+fn body_identification_after_calibration(
+    body_term: &WorldTerm,
+    unrestricted_term: &WorldTerm,
+) -> Result<bool, CompileError> {
+    let mut blind_body_term = body_term.clone();
+    blind_body_term.calibration = None;
+    let mut blind_unrestricted_term = unrestricted_term.clone();
+    blind_unrestricted_term.calibration = None;
+    let blind_body = blind_body_term.compile()?;
+    let blind_unrestricted = blind_unrestricted_term.compile()?;
+    let blind_set = AmbiguitySet::uniform(vec![
+        blind_body.contract.clone(),
+        blind_unrestricted.contract.clone(),
+    ]);
+    let initial_diameter = identification_diameter(&blind_body.fragment, &blind_set, &[]);
+
+    let body = body_term.compile()?;
+    let unrestricted = unrestricted_term.compile()?;
+    let calibrated_set =
+        AmbiguitySet::uniform(vec![body.contract.clone(), unrestricted.contract.clone()]);
+    let calibrated_diameter = identification_diameter(&body.fragment, &calibrated_set, &[]);
+    Ok(initial_diameter == 2 && calibrated_diameter == 1)
+}
+
+/// Enumerate the configurations a term can expose to a scored command.  This
+/// derives the twin's deleted edges from executable body semantics rather than
+/// assuming that the sampled horizon happens to be the reachable region.
+fn scored_reachable_cells(term: &WorldTerm) -> Result<Vec<usize>, CompileError> {
+    let compiled = term.compile()?;
+    let actions = compiled.actions();
+    let sequences = pretraining_g0_contract::sequences_of_length(&actions, compiled.horizon());
+    let mut cells = BTreeSet::new();
+    for sequence in sequences {
+        cells.extend(pretraining_g0_contract::trajectory(
+            &compiled.fragment,
+            &compiled.contract,
+            &sequence,
+        ));
+    }
+    Ok(cells.into_iter().collect())
 }
 
 impl Default for GenerationSpec {
@@ -1358,16 +1419,22 @@ impl GenerationSpec {
                 full_support,
                 Vec::new(),
             );
-            // Blocking the withheld command at every configuration makes the
-            // environment twin behaviorally identical for every finite action
-            // sequence while retaining a different typed provenance.
+            // Delete the withheld actuator only where the scored phase can
+            // command from.  The calibration prelude intentionally exits that
+            // region, making the provenance-changing twin publicly visible.
+            let scored_cells = scored_reachable_cells(&body_term)?;
+            let withheld = full_support.difference(limited_support);
+            let twin_edges = scored_cells
+                .into_iter()
+                .flat_map(|cell| withheld.iter().map(move |actuator| (cell, actuator as u16)))
+                .collect();
             let twin_term = embodiment_term(
                 format!("embodiment-{index}-environment"),
                 cells,
                 horizon,
                 goal,
                 full_support,
-                (0..cells).map(|cell| (cell, 1)).collect(),
+                twin_edges,
             );
             let metadata = GeneratorMetadata {
                 seed: self.seed,
@@ -1393,6 +1460,8 @@ impl GenerationSpec {
                     twin_trajectories_equal: false,
                     twin_values_equal: false,
                     twin_optimal_sequences_equal: false,
+                    twin_publicly_distinct: false,
+                    calibration_identifies_body: false,
                     valid: false,
                 },
             };
@@ -1481,7 +1550,14 @@ fn embodiment_term(
             violation_penalty: -100,
         },
         calibration: Some(CalibrationTerm {
-            pulses: vec![0, 1],
+            // Advance beyond every scored-reachable cell, then pulse the
+            // withheld retreat actuator.  The body twin remains still while
+            // the environment twin retreats, so the preserving transform is
+            // publicly non-vacuous through the prelude.
+            pulses: std::iter::repeat(0)
+                .take(horizon + 1)
+                .chain(std::iter::once(1))
+                .collect(),
             publishes_cells: true,
         }),
         restorations: Vec::new(),
@@ -1690,6 +1766,7 @@ mod tests {
         });
         let compiled = term.compile().unwrap();
         assert_eq!(compiled.public_view(&[]).trace[..3], [0, 1, 1]);
+        assert!(compiled.kernel_use.reveal);
         assert_eq!(compiled.fragment.step(&compiled.contract, 0, 0, 1), 0);
         assert_eq!(compiled.fragment.step(&compiled.contract, 0, 1, 1), 4);
         assert!(compiled.public_view(&[]).trace.contains(&401));
@@ -1835,6 +1912,30 @@ mod tests {
                 &vec![actions[0]; compiled.horizon()],
             );
             assert_eq!(path.len(), compiled.horizon() + 1);
+        }
+    }
+
+    #[test]
+    fn generated_twins_are_publicly_distinct_and_calibration_is_query_audited() {
+        let families = GenerationSpec {
+            seed: 7,
+            count: 8,
+            ..GenerationSpec::default()
+        }
+        .generate()
+        .unwrap();
+        assert_eq!(families.len(), 8);
+        for family in families {
+            assert!(family.receipt.valid);
+            assert!(family.receipt.twin_publicly_distinct);
+            assert!(family.receipt.calibration_identifies_body);
+            let body = family.body_limited.compile().unwrap();
+            let twin = family.environment_twin.compile().unwrap();
+            assert_ne!(
+                body.public_view(&[]).trace,
+                twin.public_view(&[]).trace,
+                "the generated preserving twin must be visible in its prelude"
+            );
         }
     }
 

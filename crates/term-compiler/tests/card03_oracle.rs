@@ -1,10 +1,9 @@
 //! The executable portion of the Card 03 oracle.
 //!
-//! These tests deliberately stop at the semantics the current generic compiler
-//! can represent.  They do not weaken the full oracle in
-//! `experiments/term-compiler/CARD03-ORACLE.md`: calibration prelude state,
-//! support restoration, Card 03 scoring, and learner rendering remain explicit
-//! follow-up gates rather than being approximated here.
+//! These tests cover the executable finite semantics the current generic
+//! compiler can represent. They do not weaken the full oracle in
+//! `experiments/term-compiler/CARD03-ORACLE.md`; learner-facing rendering and
+//! full audit/query parity remain explicit follow-up gates.
 
 use pretraining_card03_affordance::{
     all_sequences, body_environment_swap, card_cases, full_body, run, Action, Affordance, Contract,
