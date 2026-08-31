@@ -1,4 +1,5 @@
 /target/
+/.target-term-compiler/
 /dist/
 /dist-r10/
 /.venv/
