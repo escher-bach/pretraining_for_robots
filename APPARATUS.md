@@ -139,6 +139,12 @@ only open a separately declared generalization profile. Unstable or incomplete
 fit sends Card 06 to optimization diagnosis, decomposition, or deferral. None
 of these outcomes changes R10 or authorizes R11.
 
+The first submitted scale kernel at source `a9f118018261241812b991811cb33aebf51b1f7c`
+stopped before training: the runner resolved the pinned relative model-config
+path before the strict profile comparison. Its failed receipt is preserved.
+The bounded apparatus repair permits only that equivalent resolved path and
+keeps all scientific settings and other execution fields fixed.
+
 Launch only from a committed, reachable SHA:
 
 ```powershell

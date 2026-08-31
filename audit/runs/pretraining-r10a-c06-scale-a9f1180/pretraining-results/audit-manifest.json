@@ -1,0 +1,63 @@
+{
+  "artifacts": [
+    {
+      "path": "environment.json",
+      "sha256": "77ffe8e0484c8b3f5d2d25f686b0d934b79e3134048bb46ad5479b11ae9fa3d4",
+      "size": 2980
+    },
+    {
+      "path": "logs/maturin-build.log",
+      "sha256": "81e61bee46e2759d5ffd5d12d5304c779a0e96597fd84e34248247353f65c045",
+      "size": 5950
+    },
+    {
+      "path": "logs/pip-install.log",
+      "sha256": "80144f657c9411cf327d773cc8977431b3bec1e7dbf1fa01935d9655b3f906c3",
+      "size": 12502
+    },
+    {
+      "path": "logs/python-tests.log",
+      "sha256": "3b3db34460d0c200d75c6844ecdd1d7743b1f33124a3f87e3ea34f7b43163941",
+      "size": 13793
+    },
+    {
+      "path": "logs/rust-tests.log",
+      "sha256": "0e241b22b53ff833f1fbd13ed5fde808dca05285a21a406a526c0b4e20207e03",
+      "size": 29656
+    },
+    {
+      "path": "logs/rust-toolchain.log",
+      "sha256": "eb407fb00aaa6c2362c6109acc534c26432350bc77ddebf3eb3280663466babe",
+      "size": 251
+    },
+    {
+      "path": "logs/rustup-download.log",
+      "sha256": "65ab67427918399433c826dc3d69d1a19dc47a96b0439717ad27931fb699e6ce",
+      "size": 111
+    },
+    {
+      "path": "logs/rustup-install.log",
+      "sha256": "2b1de893e77f9176eea810f2065325e56010d224aa58a758482a3b7ca25b0fa3",
+      "size": 1489
+    },
+    {
+      "path": "logs/seed-gate.log",
+      "sha256": "89a287a32d4fa3625c239f20cba49c51245e58185e2bbea1a6bfd1fcb9291fd8",
+      "size": 2273
+    },
+    {
+      "path": "logs/world-wheel-install.log",
+      "sha256": "eeacb1c3d9398a021181ef7732ba4a0596422ca3912d5fd910cdeddc06411841",
+      "size": 353
+    },
+    {
+      "path": "phase_status.json",
+      "sha256": "b60f7510393c1d404f9f2fefa844873fbfef0c9e9375fd5e561d57fa407ce4b0",
+      "size": 728
+    }
+  ],
+  "config_sha256": "4454cd9f2b7950d1f73cd7692966177b958d8d5ece69dfe7ef535ec71c65dff6",
+  "error": "RuntimeError: command failed with exit code 1 after 13.2s: ['/usr/bin/python3', '-m', 'pretraining_experiments.seed_gate', '--config', '/tmp/pretraining-runtime/source/configs/r10/card06_compatibility_scale_t4.toml', '--output-root', '/kaggle/working/pretraining-results']\nlog: /kaggle/working/pretraining-results/logs/seed-gate.log\n--- child log tail ---\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/seed_gate.py\", line 832, in <module>\n    main()\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/seed_gate.py\", line 715, in main\n    result = run_all_seed_gate_pilots(config, args.output_root.resolve())\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/seed_gate.py\", line 640, in run_all_seed_gate_pilots\n    validate_seed_gate_config(config)\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/seed_gate.py\", line 83, in validate_seed_gate_config\n    _validate_card06_scale_diagnostic_config(config)\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/seed_gate.py\", line 232, in _validate_card06_scale_diagnostic_config\n    raise ValueError(\nValueError: Card06 scale diagnostic execution drift: expected {'device': 'cuda', 'mixed_precision': 'fp16', 'max_updates': 256, 'per_device_batch_size': 4, 'gradient_accumulation_steps': 1, 'learning_rate': 0.0003, 'weight_decay': 0.1, 'warmup_updates': 4, 'seed': 20260829, 'entrypoint': 'seed_gate', 'max_grad_norm': 1.0, 'log_every': 16, 'seed_gate_phase_timeout_seconds': 600, 'max_wall_clock_seconds': 3600, 'config': 'artifacts/icrt-derived-small/model_config.json', 'sequence_length': 192, 'token_abi_version': 'physical-event-abi-0.3.1'}, got {'device': 'cuda', 'mixed_precision': 'fp16', 'max_updates': 256, 'per_device_batch_size': 4, 'gradient_accumulation_steps': 1, 'learning_rate': 0.0003, 'weight_decay': 0.1, 'warmup_updates': 4, 'seed': 20260829, 'entrypoint': 'seed_gate', 'max_grad_norm': 1.0, 'log_every': 16, 'seed_gate_phase_timeout_seconds': 600, 'max_wall_clock_seconds': 3600, 'config': '/tmp/pretraining-runtime/source/artifacts/icrt-derived-small/model_config.json', 'sequence_length': 192, 'token_abi_version': 'physical-event-abi-0.3.1'}\nTraceback (most recent call last):\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/runner.py\", line 415, in main\n    run_logged(\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/runner.py\", line 180, in run_logged\n    raise RuntimeError(\nRuntimeError: command failed with exit code 1 after 13.2s: ['/usr/bin/python3', '-m', 'pretraining_experiments.seed_gate', '--config', '/tmp/pretraining-runtime/source/configs/r10/card06_compatibility_scale_t4.toml', '--output-root', '/kaggle/working/pretraining-results']\nlog: /kaggle/working/pretraining-results/logs/seed-gate.log\n--- child log tail ---\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/seed_gate.py\", line 832, in <module>\n    main()\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/seed_gate.py\", line 715, in main\n    result = run_all_seed_gate_pilots(config, args.output_root.resolve())\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/seed_gate.py\", line 640, in run_all_seed_gate_pilots\n    validate_seed_gate_config(config)\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/seed_gate.py\", line 83, in validate_seed_gate_config\n    _validate_card06_scale_diagnostic_config(config)\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/seed_gate.py\", line 232, in _validate_card06_scale_diagnostic_config\n    raise ValueError(\nValueError: Card06 scale diagnostic execution drift: expected {'device': 'cuda', 'mixed_precision': 'fp16', 'max_updates': 256, 'per_device_batch_size': 4, 'gradient_accumulation_steps': 1, 'learning_rate': 0.0003, 'weight_decay': 0.1, 'warmup_updates': 4, 'seed': 20260829, 'entrypoint': 'seed_gate', 'max_grad_norm': 1.0, 'log_every': 16, 'seed_gate_phase_timeout_seconds': 600, 'max_wall_clock_seconds': 3600, 'config': 'artifacts/icrt-derived-small/model_config.json', 'sequence_length': 192, 'token_abi_version': 'physical-event-abi-0.3.1'}, got {'device': 'cuda', 'mixed_precision': 'fp16', 'max_updates': 256, 'per_device_batch_size': 4, 'gradient_accumulation_steps': 1, 'learning_rate': 0.0003, 'weight_decay': 0.1, 'warmup_updates': 4, 'seed': 20260829, 'entrypoint': 'seed_gate', 'max_grad_norm': 1.0, 'log_every': 16, 'seed_gate_phase_timeout_seconds': 600, 'max_wall_clock_seconds': 3600, 'config': '/tmp/pretraining-runtime/source/artifacts/icrt-derived-small/model_config.json', 'sequence_length': 192, 'token_abi_version': 'physical-event-abi-0.3.1'}\n",
+  "git_sha": "a9f118018261241812b991811cb33aebf51b1f7c",
+  "status": "failed"
+}

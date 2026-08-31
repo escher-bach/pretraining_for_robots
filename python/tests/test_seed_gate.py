@@ -16,6 +16,7 @@ from pretraining_experiments.seed_gate import (
     evaluate_g0_corpus,
     grouped_action_decision_argmax,
     load_seed_gate_config,
+    validate_seed_gate_config,
 )
 from pretraining_experiments.model import PretrainingOutput
 
@@ -155,6 +156,26 @@ class SeedGateTests(unittest.TestCase):
         self.assertEqual(config["run"]["seed_gate_phase_timeout_seconds"], 600)
         self.assertEqual(config["run"]["max_wall_clock_seconds"], 3600)
         self.assertEqual(config["model"]["config"], "artifacts/icrt-derived-small/model_config.json")
+
+    def test_card06_scale_profile_accepts_runner_resolved_model_config_path(self) -> None:
+        config = load_seed_gate_config(
+            ROOT / "configs" / "r10" / "card06_compatibility_scale_t4.toml"
+        )
+        config["model"]["config"] = str(
+            (ROOT / config["model"]["config"]).resolve()
+        )
+        validate_seed_gate_config(config)
+
+    def test_card06_scale_profile_keeps_non_path_execution_drift_strict(self) -> None:
+        config = load_seed_gate_config(
+            ROOT / "configs" / "r10" / "card06_compatibility_scale_t4.toml"
+        )
+        config["model"]["config"] = str(
+            (ROOT / config["model"]["config"]).resolve()
+        )
+        config["run"]["max_updates"] = 128
+        with self.assertRaisesRegex(ValueError, "execution drift"):
+            validate_seed_gate_config(config)
 
     def test_card06_scale_classification_requires_exact_full_support_fit(self) -> None:
         result = {

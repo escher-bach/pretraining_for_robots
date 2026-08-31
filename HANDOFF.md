@@ -110,13 +110,19 @@ evidence only, not transfer evidence. R10 permits no second repair and does
 not authorize R11. The original L1 run remains a preserved apparatus failure;
 the grouped objective and exact accounting were its one bounded repair.
 
-R10a is the next decision row, not a rerun of R10: decompose/defer Card 04;
+R10a is the active decision row, not a rerun of R10: decompose/defer Card 04;
 decompose body identification from planning for Card 03 (scale only under a
 separately justified profile); decompose reveal use from probe value for Card
 05; and allow one Card-06-only scale diagnostic because its curve rose through
 64 updates. The user authorized GPU work and the fixed Card 06 profile is
-`configs/r10/card06_compatibility_scale_t4.toml`; after committing and pushing
-its exact source, launch registry entry `r10a-card06-compatibility-scale` once.
+`configs/r10/card06_compatibility_scale_t4.toml`. The first kernel at
+`a9f118018261241812b991811cb33aebf51b1f7c` stopped before training because the
+validator rejected the runner-resolved absolute spelling of the pinned model
+configuration path. Its audit-verified failure receipt is preserved under
+`audit/runs/pretraining-r10a-c06-scale-a9f1180/`. A bounded repair now treats
+only the equivalent relative and resolved paths alike while retaining strict
+validation of every other execution field. Commit and push that repair, then
+launch registry entry `r10a-card06-compatibility-scale` once from its exact SHA.
 Its stable, unstable, or incomplete support-fit result cannot reopen R10 or
 authorize R11.
 

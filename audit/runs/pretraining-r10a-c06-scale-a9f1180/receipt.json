@@ -1,0 +1,121 @@
+{
+  "architecture_gate_passed": null,
+  "architecture_gate_progress": null,
+  "audit_verified": true,
+  "collected_at_unix": 1788137572.0584743,
+  "configuration": {
+    "path": "configs/r10/card06_compatibility_scale_t4.toml",
+    "sha256": "4454cd9f2b7950d1f73cd7692966177b958d8d5ece69dfe7ef535ec71c65dff6"
+  },
+  "downloaded_files": [
+    {
+      "path": "pretraining-r10a-c06-scale-a9f1180.log",
+      "sha256": "3231369a1a3eca01cbc817b892e08c62fc21742ec38f746809bc4801cf9e4f90",
+      "size": 274266
+    },
+    {
+      "path": "pretraining-results/audit-manifest.json",
+      "sha256": "04117e0fcf246425006c9f586e09be58cdad7cc09d652fe38cd80a50ed89db59",
+      "size": 7134
+    },
+    {
+      "path": "pretraining-results/environment.json",
+      "sha256": "77ffe8e0484c8b3f5d2d25f686b0d934b79e3134048bb46ad5479b11ae9fa3d4",
+      "size": 2980
+    },
+    {
+      "path": "pretraining-results/logs/maturin-build.log",
+      "sha256": "81e61bee46e2759d5ffd5d12d5304c779a0e96597fd84e34248247353f65c045",
+      "size": 5950
+    },
+    {
+      "path": "pretraining-results/logs/pip-install.log",
+      "sha256": "80144f657c9411cf327d773cc8977431b3bec1e7dbf1fa01935d9655b3f906c3",
+      "size": 12502
+    },
+    {
+      "path": "pretraining-results/logs/python-tests.log",
+      "sha256": "3b3db34460d0c200d75c6844ecdd1d7743b1f33124a3f87e3ea34f7b43163941",
+      "size": 13793
+    },
+    {
+      "path": "pretraining-results/logs/rust-tests.log",
+      "sha256": "0e241b22b53ff833f1fbd13ed5fde808dca05285a21a406a526c0b4e20207e03",
+      "size": 29656
+    },
+    {
+      "path": "pretraining-results/logs/rust-toolchain.log",
+      "sha256": "eb407fb00aaa6c2362c6109acc534c26432350bc77ddebf3eb3280663466babe",
+      "size": 251
+    },
+    {
+      "path": "pretraining-results/logs/rustup-download.log",
+      "sha256": "65ab67427918399433c826dc3d69d1a19dc47a96b0439717ad27931fb699e6ce",
+      "size": 111
+    },
+    {
+      "path": "pretraining-results/logs/rustup-install.log",
+      "sha256": "2b1de893e77f9176eea810f2065325e56010d224aa58a758482a3b7ca25b0fa3",
+      "size": 1489
+    },
+    {
+      "path": "pretraining-results/logs/seed-gate.log",
+      "sha256": "89a287a32d4fa3625c239f20cba49c51245e58185e2bbea1a6bfd1fcb9291fd8",
+      "size": 2273
+    },
+    {
+      "path": "pretraining-results/logs/world-wheel-install.log",
+      "sha256": "eeacb1c3d9398a021181ef7732ba4a0596422ca3912d5fd910cdeddc06411841",
+      "size": 353
+    },
+    {
+      "path": "pretraining-results/phase_status.json",
+      "sha256": "b60f7510393c1d404f9f2fefa844873fbfef0c9e9375fd5e561d57fa407ce4b0",
+      "size": 728
+    },
+    {
+      "path": "pretraining-results/summary.json",
+      "sha256": "66dd35e33ff4822fc44dcb831cfff27e1f93792ce32762b2e1daa6f577262e0e",
+      "size": 6373
+    }
+  ],
+  "experiment": "r10a-card06-compatibility-scale",
+  "kaggle": {
+    "completion_time": "2026-08-31T00:48:55.580000",
+    "owner_slug_version": "aniruddhavarma/pretraining-r10a-c06-scale-a9f1180/1",
+    "push_url": "https://www.kaggle.com/code/aniruddhavarma/pretraining-r10a-c06-scale-a9f1180",
+    "terminal_status": "aniruddhavarma/pretraining-r10a-c06-scale-a9f1180/1 has status \"KernelWorkerStatus.ERROR\"",
+    "url": "https://www.kaggle.com/code/aniruddhavarma/pretraining-r10a-c06-scale-a9f1180/versions/1"
+  },
+  "kernel": "aniruddhavarma/pretraining-r10a-c06-scale-a9f1180",
+  "model_sha256": null,
+  "observed_accelerator_inventory": null,
+  "recovery_artifact": null,
+  "remote_manifest_sha256": "04117e0fcf246425006c9f586e09be58cdad7cc09d652fe38cd80a50ed89db59",
+  "requested_accelerator": "NvidiaTeslaT4",
+  "root_seed": 20260829,
+  "run_id": "aniruddhavarma/pretraining-r10a-c06-scale-a9f1180/1",
+  "schema_version": 1,
+  "scientific_report": null,
+  "source": {
+    "git_remote": "origin",
+    "git_remote_url": "https://github.com/escher-bach/pretraining_for_robots.git",
+    "git_sha": "a9f118018261241812b991811cb33aebf51b1f7c"
+  },
+  "status": "failed",
+  "upstream_kaggle_versions": [],
+  "verified_manifest_entries": [
+    "environment.json",
+    "logs/maturin-build.log",
+    "logs/pip-install.log",
+    "logs/python-tests.log",
+    "logs/rust-tests.log",
+    "logs/rust-toolchain.log",
+    "logs/rustup-download.log",
+    "logs/rustup-install.log",
+    "logs/seed-gate.log",
+    "logs/world-wheel-install.log",
+    "phase_status.json"
+  ],
+  "world_size": null
+}

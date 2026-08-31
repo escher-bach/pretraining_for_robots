@@ -53,6 +53,7 @@ CONTRACT_HASHES = {
     "card06": "76a08f38947c8cae",
 }
 CARD06_SCALE_PROFILE = "r10a-card06-compatibility-scale-v1"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def is_card06_scale_diagnostic(config: dict[str, Any]) -> bool:
@@ -228,9 +229,23 @@ def _validate_card06_scale_diagnostic_config(config: dict[str, Any]) -> None:
         "config": "artifacts/icrt-derived-small/model_config.json",
         "sequence_length": 192, "token_abi_version": "physical-event-abi-0.3.1",
     }
-    if execution != expected_execution:
+    actual_config = execution.pop("config")
+    expected_config = expected_execution.pop("config")
+    config_path_matches = actual_config == expected_config
+    if not config_path_matches:
+        try:
+            config_path_matches = (
+                Path(str(actual_config)).is_absolute()
+                and Path(str(actual_config)).resolve()
+                == (PROJECT_ROOT / str(expected_config)).resolve()
+            )
+        except (OSError, RuntimeError, TypeError, ValueError):
+            config_path_matches = False
+    if execution != expected_execution or not config_path_matches:
         raise ValueError(
-            f"Card06 scale diagnostic execution drift: expected {expected_execution}, got {execution}"
+            "Card06 scale diagnostic execution drift: expected "
+            f"{expected_execution | {'config': expected_config}}, got "
+            f"{execution | {'config': actual_config}}"
         )
 
 
