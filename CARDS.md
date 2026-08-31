@@ -222,9 +222,7 @@ everywhere.
 meet frontier admission: macro argmax was `0.4667 -> 0.6000`, with final
 all-case-kind minimum `0.2500`. This is an inconclusive bounded learner result,
 not evidence against the family or a transfer result; R10 is closed and permits
-no second repair. Its R10a decomposition certificate separates public body
-identification from reachability planning: keep the existing controls and
-orbits, then remove the planning/fallback decision to test identification first.
+no second repair. Its R10a decomposition certificate is stated in full below.
 Scale the composite only under a separately justified Card-03-only scaling
 profile. Admit in a later, separately declared decision only if unreachable
 goals cause fallback on the first scored decision, frequency matching does not
@@ -236,6 +234,60 @@ not require any behaviour to update. The absorbing-wasted-budget variant is not
 implemented and no admission decision turns on it.
 The transfer prediction is faster acquisition of Card 05 than from fixed-body
 pretraining. Equal curves falsify it.
+
+**Decomposition certificate.** The original relation is body-relative action
+allocation before a failed attempt: identifying what this body can bring about
+in this environment *and* planning inside a two-decision budget, including an
+immediate minimum-cost fallback when the public goal is unreachable. The next
+basic relation is public body identification alone — after the free exact
+calibration scaffold, drive the published goal cell with the command this body
+actually supports, where *which* supported command reaches that cell depends on
+the identified support. It removes the planning and fallback decision, the
+unreachable goal, and the budget that made planning necessary, leaving one
+scored decision whose only content is the identified body. It retains the ring
+configuration and its rotation-only invariance group, the mandatory free exact
+calibration scaffold and its goal-independent constant pulse order, the hidden
+actuator support with its exact post-calibration identification, the announced
+restoration control, the body/environment swap invariance, the
+uninformative-calibration information orbit, and the always-attempt and
+ignore-support baselines. It is more compatible with the observed learner
+profile because the R10 pilot's aggregate rose to `0.6000` while the
+all-case-kind minimum stayed at `0.2500`: the learner acquired part of the
+support and not the composite, and identification is exactly the factor this
+family shares with Card 02, the one family R10 admitted. It is falsified if the
+same fixed learner cannot reach predeclared exact full-support fit on a newly
+audited identification-only family, or if an ignore-support policy succeeds on
+that family's witness; the fully-capable control should instead restore the
+fixed-command baseline. Re-entry requires that new version and contract hash to
+pass its own semantic audit and its own fixed AdmissionProfile; only then may a
+later version restore the fallback decision, then the frequency-matched budget
+control, then unreachable goals, one factor at a time. The composite remains
+deferred until every prerequisite stage has its own evidence.
+
+**Stage A family.** `card03a`, contract `235c0a6ad2efb10d`, in
+`crates/card03a-body-identification`. Nine cells, one scored decision, and two
+actuators — `Leap` and `Vault` — that drive the same `+2` edge; the witness body
+supports exactly one of them, so the published goal is reachable either way and
+which command reaches it is a fact about the body rather than the configuration.
+This is the card's declared coupling variant used as the whole content of a
+single decision. Twelve cases render as twelve distinct public episodes.
+Calibration identifies support exactly — diameter `1`, scored gap `0` — and
+making it uninformative moves the public ceiling `99 -> 66` and the diameter
+`1 -> 3`, which is the same information orbit the composite uses to show the
+scaffold is load-bearing. The fully-capable control restores the ignore-support
+baseline; the announced restoration arrives after the scaffold and defeats a
+scaffold-following policy. Rotations preserve and the reflection is
+meaning-changing, because it sends the `+2` edge to a `-2` edge this body has no
+actuator for — the composite's rotations-only group, measured rather than
+inherited. The body/environment swap preserves every public fact on all six
+swappable contracts, and the audit reports that count rather than claiming the
+transform bites everywhere. Run
+`cargo run -p pretraining-card03a-body-identification --bin card03a-audit`.
+Its R10b pilot is `support_fit_incomplete`: macro case-kind argmax rose
+`0.5000 -> 0.8333` while both controls reached `1.0000` and the witness held at
+`0.5000`. The learner acquired the two arms where the body does not have to be
+read and not the one where it does, so removing the planning half did not move
+the barrier.
 
 ## Card 04: Norm Swap
 
@@ -290,10 +342,62 @@ episodes, not labels.
 argmax `0.3395 -> 0.4259`, final all-case-kind minimum `0.3333`. It misses the
 fixed frontier profile and is learner/support-fit evidence, not a semantic
 defect or transfer result. R10a therefore decomposes public goal use from the
-switch and viability composite and defers this card; any re-entry needs a new
-Card-04 decomposition certificate and AdmissionProfile, not another R10
+switch and viability composite and defers this card; re-entry runs through the
+certificate below and its own AdmissionProfile, not through another R10
 repair. The transfer prediction is faster acquisition of Card 07 segment
 selection than from single-goal pretraining. Equal Card 07 curves falsify it.
+
+**Decomposition certificate.** The original relation is norm-conditioned action
+selection with public state and history held fixed, composited over goal
+maintenance, inhibition by a prohibition, mid-episode supersession by an
+unannounced second goal, and an absorbing viability boundary. The next basic
+relation is public goal use alone: with the start configuration fixed and one
+goal published at episode start, the correct action is the one that settles the
+published goal, and changing only the goal changes that action. It removes the
+prohibition, the superseding second goal together with the interrupt and reveal
+that carry it, the viability restriction, and the irrelevant distractors — and
+with them every norm connective, leaving the `Settle` and `Visit` leaves alone.
+It retains the ring and its full dihedral orbit, the public known body, matched
+episode pairs that share all history up to the goal event, the
+constant-single-goal and goal-predictable-from-state controls, the state-only
+ceiling of `0.5` on the witness, the published-norm teacher, and the
+goal-predicate meaning-changing transformation. It is more compatible with the
+observed learner profile because Card 04's R10 pilot had both the lowest final
+macro (`0.4259`) and the flattest gain of the five families while its public
+and privileged information coincide on eighteen of its twenty cases: almost
+nothing was epistemically withheld, so what the learner missed was the
+composite norm structure rather than any hidden state. It is falsified if the
+same fixed learner cannot reach predeclared exact full-support fit on a newly
+audited goal-use family, or if a state-only policy succeeds on that family's
+witness; the two controls should instead restore their state-only and
+fixed-action baselines. Re-entry requires that new version and contract hash to
+pass its own semantic audit and its own fixed AdmissionProfile; only then may a
+later version restore the prohibition, then the announced switch, then the
+unannounced switch, then the absorbing viability boundary, one factor at a
+time. The composite remains deferred until every prerequisite stage has its own
+evidence.
+
+**Stage A family.** `card04a`, contract `06a36ac33c3f952b`, in
+`crates/card04a-goal-use`. The same five-position ring, two decisions, one goal
+published at episode start, and a single `Settle` leaf with no connectives left
+to compose. Sixteen cases render as sixteen distinct public episodes — the
+composite's own distinct-episode count, kept so that the stage differs from it
+in the relation it asks for rather than in how much data it offers. The witness
+is four start configurations each carrying the goal one step forward and one
+step back, which is what makes the enumerated state-only ceiling exactly `0.5`
+against `1.0` on both controls. The ambiguity gap is zero on every case *and*
+vacuous, and the audit reports both rather than presenting the zero as evidence.
+The full dihedral orbit holds; shifting what the goal symbol denotes is
+meaning-changing, and the denotation is published so that transformation is a
+change to the world the learner is told about rather than hidden state it must
+guess. `Settle` and `Visit` coincide at this horizon, so the composite's
+goal-predicate transformation has no bite here; that is recorded rather than
+silently substituted. Run
+`cargo run -p pretraining-card04a-goal-use --bin card04a-audit`.
+Its R10b pilot is `support_fit_incomplete` and is the flattest of the four:
+macro case-kind argmax did not move from `0.3750` at any recorded rung, and the
+training loss fell only `1.0985 -> 1.0720`. Removing the prohibition, the
+switch, and the viability boundary left the composite's shortfall in place.
 
 ## Card 05: Active Experimentation
 
@@ -358,9 +462,10 @@ by this card.
 `cbe39880124b9d2d` used 64 updates and 256 consumed presentations: macro
 argmax `0.1250 -> 0.6875`, final all-case-kind minimum `0.2500`. It therefore
 misses the fixed frontier barrier despite a rising aggregate score. R10a
-decomposes reveal use from the value-of-probing decision, retaining matched
-controls and the information boundary; this is a new card-local decision, not
-a retrospective relaxation of R10. Admit only if probe rate is high in the
+decomposes reveal use from the value-of-probing decision under the certificate
+below, retaining matched controls and the information boundary; this is a new
+card-local decision, not a retrospective relaxation of R10. Admit only if probe
+rate is high in the
 witness and low in all three primary controls. Each control breaks exactly one clause of the
 matched-control verdict and the audit names which: publishing the gate breaks
 informativeness, making the probe consume the whole budget breaks cost matching,
@@ -368,6 +473,56 @@ and the equally-valuable control breaks none — there the probe is matched and
 informative and simply worthless. The transfer prediction is faster
 disambiguation in Card 08 than from information-free pretraining. Equal Card 08
 curves falsify it.
+
+**Decomposition certificate.** The original relation is paying for information
+exactly when it changes a later decision: a matched-cost informative probe
+bought before an irreversible commit, scored in expectation over a case kind
+against three controls that each break exactly one clause of the
+matched-control verdict. The next basic relation is reveal use alone — when a
+free reveal publishes the gate at episode start, commit to the action that gate
+value favours. It removes the purchase decision itself: the probe, its cost,
+and the value-of-information comparison that ranked it against blind
+commitment, so that no action in the reduced family reduces the surviving
+candidate set and the matched-control verdict reports that absence rather than
+asserting it. It retains the hidden binary gate and its prior, the irreversible
+commit with its two gated outcomes, the matched-cost non-informative `Sham`
+action, the gate-hidden and equally-valuable controls, the uninformative-reveal
+information orbit, non-interference before the reveal fires,
+expectation-over-case-kind scoring, and the blind-commit and
+exact-public-policy baselines. It is more compatible with the observed learner
+profile because Card 05's R10 curve rose furthest of the deferred four
+(`0.1250 -> 0.6875`) while its all-case-kind minimum stayed at `0.2500`: the
+aggregate moved and some case kind did not, and conditioning a commit on
+already-published content is the strictly weaker half of deciding to buy that
+content first. It is falsified if the same fixed learner cannot reach
+predeclared exact full-support fit on a newly audited reveal-use family, or if
+a fixed blind-commit policy succeeds on that family's witness; the gate-hidden
+and equally-valuable controls should instead restore the blind average.
+Re-entry requires that new version and contract hash to pass its own semantic
+audit and its own fixed AdmissionProfile; only then may a later version restore
+a free probe, then a matched-cost probe carrying a real value-of-information
+decision, then the `Peek` and raised-cost controls, one factor at a time. The
+composite remains deferred until every prerequisite stage has its own evidence.
+
+**Stage A family.** `card05a`, contract `4941b2e1e1c8c390`, in
+`crates/card05a-reveal-use`. Three outcome cells, two decisions, and three
+actions: `Sham` and the two commits. Twelve cases render as six distinct public
+episodes, because the decoy varies inside every kind and is published in none of
+them — the same accounting fact the composite reports when its inconsequential
+bit is never bought. On the witness the published gate closes the gap
+completely, `99` public against `99` privileged; withholding it leaves `49.5`
+against `99`, which is the composite's non-vacuous gap retained as the
+gate-hidden control. The removal is audited rather than asserted: no
+non-committing action reduces the surviving candidate set, and no opening is
+worth more than committing at once. The matched-control check is still run on
+`Sham` and reports that its ambiguity clause does *not* hold, which is the
+correct answer for a family with nothing to buy and leaves stage B's restoration
+anchored to an existing verdict. Run
+`cargo run -p pretraining-card05a-reveal-use --bin card05a-audit`.
+Its R10b pilot is `support_fit_incomplete`: macro case-kind argmax held at
+`0.8333` from initialization to the rung, with both controls at `1.0000` and the
+witness at `0.5000`. Conditioning a commit on already-published content is the
+weaker half of buying that content, and this learner did not acquire it either.
 
 ## Card 06: Perceptual Organization
 
@@ -455,6 +610,33 @@ absence without hidden
 evolution, followed by evolution and matched noise one factor at a time. The
 current composite remains deferred until every prerequisite stage has its own
 evidence.
+
+**Stage A family.** `card06a`, contract `b6f762bb89601096`, in
+`crates/card06a-visible-reassignment`. Two exchangeable sources, two channels,
+one public assignment-change boundary, and a two-decision horizon. A pulse
+perturbs the source in the pulsed channel and the perturbation then appears
+wherever that source went, so the history-named goal is answered by following a
+value across a boundary rather than by remembering through an absence. Twenty
+cases render as fourteen distinct public episodes. The channel is a shared
+variable with exactly one writer, so the coupling rule is `Conflict` where the
+composite's is `Override`; restoring the occlusion noise is what restores the
+second writer. The public and known-assignment ceilings coincide at `98` — the
+composite's `98`/`49` gap closes, and that is the removed factor stated as a
+number rather than as an absence, with the
+`values_made_invisible_across_the_boundary` information orbit dropping it back
+to `49`. Raw residual ambiguity after a pulse is `2` and quotients to one
+agent-relevant class. Channel-identity reaches `49` on the witness against `98`
+for value tracking, and both surgical controls restore their simple baselines.
+One verdict diverges from the composite deliberately: hiding the
+assignment-change boundary is *preserving* here, because continuously visible
+values already carry what the marker announces. It is declared and checked as
+preserving rather than inherited as meaning-changing. Run
+`cargo run -p pretraining-card06a-visible-reassignment --bin card06a-audit`.
+Its R10b pilot is `support_fit_incomplete`: macro case-kind argmax rose
+`0.2500 -> 0.7500` with all three kinds level at `0.7500`, so unlike the
+composite's R10a diagnostic there is no control/witness separation to read. The
+certificate's staging is therefore not entered: absence is not added on top of a
+stage that has not itself been fit.
 
 The original admission condition remains: the learner must beat channel-based
 policies on the witness, each surgical control must restore its associated

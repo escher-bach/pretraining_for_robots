@@ -16,6 +16,10 @@ pretraining-card03-affordance = { path = "../card03-affordance" }
 pretraining-card04-norm-swap = { path = "../card04-norm-swap" }
 pretraining-card05-active-experimentation = { path = "../card05-active-experimentation" }
 pretraining-card06-perceptual-organization = { path = "../card06-perceptual-organization" }
+pretraining-card03a-body-identification = { path = "../card03a-body-identification" }
+pretraining-card04a-goal-use = { path = "../card04a-goal-use" }
+pretraining-card05a-reveal-use = { path = "../card05a-reveal-use" }
+pretraining-card06a-visible-reassignment = { path = "../card06a-visible-reassignment" }
 pretraining-g0-render = { path = "../g0-render" }
 pretraining-goal-conditioned-world = { path = "../goal-conditioned-world" }
 pretraining-profiled-event = { path = "../profiled-event" }

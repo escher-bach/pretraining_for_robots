@@ -602,6 +602,8 @@ def main() -> None:
             )
             if "scale_diagnostic" in config:
                 summary["card06_scale_diagnostic"] = finite_g0_receipt
+            elif "decomposition_gate" in config:
+                summary["decomposition_gate"] = finite_g0_receipt
             else:
                 summary["seed_gate"] = finite_g0_receipt
         atomic_json(output_root / "summary.json", summary)

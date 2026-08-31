@@ -1,0 +1,294 @@
+{
+  "abi_and_bounds_ok": true,
+  "action_query_objective": "grouped_action_query_cross_entropy",
+  "actual_tokens": 29,
+  "admits_composite": false,
+  "authorizes_r11": false,
+  "case_kind_argmax_at_rung": {
+    "channel_locked": 0.75,
+    "identity_tag": 0.75,
+    "witness": 0.75
+  },
+  "classification": "support_fit_incomplete",
+  "complete": true,
+  "composite_contract_hash": "76a08f38947c8cae",
+  "contract_hash": "b6f762bb89601096",
+  "decision_rung": 64,
+  "decomposes": "card06",
+  "device": "cpu",
+  "elapsed_seconds": 106.69178120000288,
+  "episode_presentations": 256,
+  "evaluation_support": "full_distinct_public_corpus",
+  "evaluations": {
+    "0": {
+      "by_case_kind": {
+        "channel_locked": {
+          "argmax": 0.25,
+          "decisions": 4
+        },
+        "identity_tag": {
+          "argmax": 0.25,
+          "decisions": 16
+        },
+        "witness": {
+          "argmax": 0.25,
+          "decisions": 8
+        }
+      },
+      "by_family": {
+        "card06a": {
+          "argmax": 0.25,
+          "decisions": 28
+        }
+      },
+      "by_primary_case_kind": {
+        "channel_locked": {
+          "argmax": 0.25,
+          "decisions": 4
+        },
+        "identity_tag": {
+          "argmax": 0.25,
+          "decisions": 16
+        },
+        "witness": {
+          "argmax": 0.25,
+          "decisions": 8
+        }
+      },
+      "decisions": 28,
+      "macro_argmax": 0.25
+    },
+    "16": {
+      "by_case_kind": {
+        "channel_locked": {
+          "argmax": 0.75,
+          "decisions": 4
+        },
+        "identity_tag": {
+          "argmax": 0.75,
+          "decisions": 16
+        },
+        "witness": {
+          "argmax": 0.75,
+          "decisions": 8
+        }
+      },
+      "by_family": {
+        "card06a": {
+          "argmax": 0.75,
+          "decisions": 28
+        }
+      },
+      "by_primary_case_kind": {
+        "channel_locked": {
+          "argmax": 0.75,
+          "decisions": 4
+        },
+        "identity_tag": {
+          "argmax": 0.75,
+          "decisions": 16
+        },
+        "witness": {
+          "argmax": 0.75,
+          "decisions": 8
+        }
+      },
+      "decisions": 28,
+      "macro_argmax": 0.75
+    },
+    "32": {
+      "by_case_kind": {
+        "channel_locked": {
+          "argmax": 0.75,
+          "decisions": 4
+        },
+        "identity_tag": {
+          "argmax": 0.75,
+          "decisions": 16
+        },
+        "witness": {
+          "argmax": 0.75,
+          "decisions": 8
+        }
+      },
+      "by_family": {
+        "card06a": {
+          "argmax": 0.75,
+          "decisions": 28
+        }
+      },
+      "by_primary_case_kind": {
+        "channel_locked": {
+          "argmax": 0.75,
+          "decisions": 4
+        },
+        "identity_tag": {
+          "argmax": 0.75,
+          "decisions": 16
+        },
+        "witness": {
+          "argmax": 0.75,
+          "decisions": 8
+        }
+      },
+      "decisions": 28,
+      "macro_argmax": 0.75
+    },
+    "48": {
+      "by_case_kind": {
+        "channel_locked": {
+          "argmax": 0.75,
+          "decisions": 4
+        },
+        "identity_tag": {
+          "argmax": 0.75,
+          "decisions": 16
+        },
+        "witness": {
+          "argmax": 0.75,
+          "decisions": 8
+        }
+      },
+      "by_family": {
+        "card06a": {
+          "argmax": 0.75,
+          "decisions": 28
+        }
+      },
+      "by_primary_case_kind": {
+        "channel_locked": {
+          "argmax": 0.75,
+          "decisions": 4
+        },
+        "identity_tag": {
+          "argmax": 0.75,
+          "decisions": 16
+        },
+        "witness": {
+          "argmax": 0.75,
+          "decisions": 8
+        }
+      },
+      "decisions": 28,
+      "macro_argmax": 0.75
+    },
+    "64": {
+      "by_case_kind": {
+        "channel_locked": {
+          "argmax": 0.75,
+          "decisions": 4
+        },
+        "identity_tag": {
+          "argmax": 0.75,
+          "decisions": 16
+        },
+        "witness": {
+          "argmax": 0.75,
+          "decisions": 8
+        }
+      },
+      "by_family": {
+        "card06a": {
+          "argmax": 0.75,
+          "decisions": 28
+        }
+      },
+      "by_primary_case_kind": {
+        "channel_locked": {
+          "argmax": 0.75,
+          "decisions": 4
+        },
+        "identity_tag": {
+          "argmax": 0.75,
+          "decisions": 16
+        },
+        "witness": {
+          "argmax": 0.75,
+          "decisions": 8
+        }
+      },
+      "decisions": 28,
+      "macro_argmax": 0.75
+    }
+  },
+  "exact_full_support_fit": false,
+  "family": "card06a",
+  "finite": true,
+  "macro_argmax_at_rung": 0.75,
+  "padding_strategy": "family_max_profiled_length_under_cap",
+  "profile": "r10b-stage-a-decomposition-gate-v1",
+  "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+  "reopens_r10": false,
+  "scored_action_query_targets": 2048,
+  "seeds": {
+    "eval": 2026083304,
+    "init": 2026083104,
+    "train": 2026083204
+  },
+  "sequence_cap": 192,
+  "stage": "A",
+  "timed_out": false,
+  "trainer_log_history": [
+    {
+      "epoch": 0.015625,
+      "grad_norm": 0.4549511671066284,
+      "learning_rate": 0.0,
+      "loss": 1.3852814435958862,
+      "num_input_tokens_seen": 116,
+      "step": 1,
+      "train_runtime": 2.4501,
+      "train_tokens_per_second": 47.345
+    },
+    {
+      "epoch": 0.25,
+      "grad_norm": 43.05527114868164,
+      "learning_rate": 0.0002758005851918136,
+      "loss": 1.3894388834635416,
+      "num_input_tokens_seen": 1856,
+      "step": 16,
+      "train_runtime": 29.2476,
+      "train_tokens_per_second": 63.458
+    },
+    {
+      "epoch": 0.5,
+      "grad_norm": 1.4427073001861572,
+      "learning_rate": 0.00017346516975603462,
+      "loss": 1.044952630996704,
+      "num_input_tokens_seen": 3712,
+      "step": 32,
+      "train_runtime": 55.392,
+      "train_tokens_per_second": 67.013
+    },
+    {
+      "epoch": 0.75,
+      "grad_norm": 6.597067356109619,
+      "learning_rate": 5.56019413425244e-05,
+      "loss": 0.8932812213897705,
+      "num_input_tokens_seen": 5568,
+      "step": 48,
+      "train_runtime": 79.1096,
+      "train_tokens_per_second": 70.383
+    },
+    {
+      "epoch": 1.0,
+      "grad_norm": 4.462266445159912,
+      "learning_rate": 2.05569786813925e-07,
+      "loss": 0.7267348766326904,
+      "num_input_tokens_seen": 7424,
+      "step": 64,
+      "train_runtime": 104.197,
+      "train_tokens_per_second": 71.25
+    },
+    {
+      "epoch": 1.0,
+      "num_input_tokens_seen": 7424,
+      "step": 64,
+      "total_flos": 946688331264.0,
+      "train_loss": 1.0135369431227446,
+      "train_runtime": 104.2013,
+      "train_samples_per_second": 2.457,
+      "train_steps_per_second": 0.614
+    }
+  ],
+  "transfer_claim": false
+}

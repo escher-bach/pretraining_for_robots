@@ -1,0 +1,294 @@
+{
+  "abi_and_bounds_ok": true,
+  "action_query_objective": "grouped_action_query_cross_entropy",
+  "actual_tokens": 38,
+  "admits_composite": false,
+  "authorizes_r11": false,
+  "case_kind_argmax_at_rung": {
+    "negative_announced_restoration": 1.0,
+    "negative_fully_capable": 1.0,
+    "witness_identified_support": 0.5
+  },
+  "classification": "support_fit_incomplete",
+  "complete": true,
+  "composite_contract_hash": "2442b372a18e1d66",
+  "contract_hash": "235c0a6ad2efb10d",
+  "decision_rung": 64,
+  "decomposes": "card03",
+  "device": "cpu",
+  "elapsed_seconds": 119.2565492996946,
+  "episode_presentations": 256,
+  "evaluation_support": "full_distinct_public_corpus",
+  "evaluations": {
+    "0": {
+      "by_case_kind": {
+        "negative_announced_restoration": {
+          "argmax": 0.0,
+          "decisions": 3
+        },
+        "negative_fully_capable": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "witness_identified_support": {
+          "argmax": 0.5,
+          "decisions": 6
+        }
+      },
+      "by_family": {
+        "card03a": {
+          "argmax": 0.5,
+          "decisions": 12
+        }
+      },
+      "by_primary_case_kind": {
+        "negative_announced_restoration": {
+          "argmax": 0.0,
+          "decisions": 3
+        },
+        "negative_fully_capable": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "witness_identified_support": {
+          "argmax": 0.5,
+          "decisions": 6
+        }
+      },
+      "decisions": 12,
+      "macro_argmax": 0.5
+    },
+    "16": {
+      "by_case_kind": {
+        "negative_announced_restoration": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "negative_fully_capable": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "witness_identified_support": {
+          "argmax": 0.5,
+          "decisions": 6
+        }
+      },
+      "by_family": {
+        "card03a": {
+          "argmax": 0.75,
+          "decisions": 12
+        }
+      },
+      "by_primary_case_kind": {
+        "negative_announced_restoration": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "negative_fully_capable": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "witness_identified_support": {
+          "argmax": 0.5,
+          "decisions": 6
+        }
+      },
+      "decisions": 12,
+      "macro_argmax": 0.8333333333333334
+    },
+    "32": {
+      "by_case_kind": {
+        "negative_announced_restoration": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "negative_fully_capable": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "witness_identified_support": {
+          "argmax": 0.5,
+          "decisions": 6
+        }
+      },
+      "by_family": {
+        "card03a": {
+          "argmax": 0.75,
+          "decisions": 12
+        }
+      },
+      "by_primary_case_kind": {
+        "negative_announced_restoration": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "negative_fully_capable": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "witness_identified_support": {
+          "argmax": 0.5,
+          "decisions": 6
+        }
+      },
+      "decisions": 12,
+      "macro_argmax": 0.8333333333333334
+    },
+    "48": {
+      "by_case_kind": {
+        "negative_announced_restoration": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "negative_fully_capable": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "witness_identified_support": {
+          "argmax": 0.5,
+          "decisions": 6
+        }
+      },
+      "by_family": {
+        "card03a": {
+          "argmax": 0.75,
+          "decisions": 12
+        }
+      },
+      "by_primary_case_kind": {
+        "negative_announced_restoration": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "negative_fully_capable": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "witness_identified_support": {
+          "argmax": 0.5,
+          "decisions": 6
+        }
+      },
+      "decisions": 12,
+      "macro_argmax": 0.8333333333333334
+    },
+    "64": {
+      "by_case_kind": {
+        "negative_announced_restoration": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "negative_fully_capable": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "witness_identified_support": {
+          "argmax": 0.5,
+          "decisions": 6
+        }
+      },
+      "by_family": {
+        "card03a": {
+          "argmax": 0.75,
+          "decisions": 12
+        }
+      },
+      "by_primary_case_kind": {
+        "negative_announced_restoration": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "negative_fully_capable": {
+          "argmax": 1.0,
+          "decisions": 3
+        },
+        "witness_identified_support": {
+          "argmax": 0.5,
+          "decisions": 6
+        }
+      },
+      "decisions": 12,
+      "macro_argmax": 0.8333333333333334
+    }
+  },
+  "exact_full_support_fit": false,
+  "family": "card03a",
+  "finite": true,
+  "macro_argmax_at_rung": 0.8333333333333334,
+  "padding_strategy": "family_max_profiled_length_under_cap",
+  "profile": "r10b-stage-a-decomposition-gate-v1",
+  "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+  "reopens_r10": false,
+  "scored_action_query_targets": 1280,
+  "seeds": {
+    "eval": 2026083302,
+    "init": 2026083102,
+    "train": 2026083202
+  },
+  "sequence_cap": 192,
+  "stage": "A",
+  "timed_out": false,
+  "trainer_log_history": [
+    {
+      "epoch": 0.015625,
+      "grad_norm": 0.48715999722480774,
+      "learning_rate": 0.0,
+      "loss": 1.6075915098190308,
+      "num_input_tokens_seen": 152,
+      "step": 1,
+      "train_runtime": 2.8458,
+      "train_tokens_per_second": 53.412
+    },
+    {
+      "epoch": 0.25,
+      "grad_norm": 26.59436798095703,
+      "learning_rate": 0.0002758005851918136,
+      "loss": 1.187783940633138,
+      "num_input_tokens_seen": 2432,
+      "step": 16,
+      "train_runtime": 32.5249,
+      "train_tokens_per_second": 74.773
+    },
+    {
+      "epoch": 0.5,
+      "grad_norm": 31.310152053833008,
+      "learning_rate": 0.00017346516975603462,
+      "loss": 1.0760703086853027,
+      "num_input_tokens_seen": 4864,
+      "step": 32,
+      "train_runtime": 61.9017,
+      "train_tokens_per_second": 78.576
+    },
+    {
+      "epoch": 0.75,
+      "grad_norm": 3.2055647373199463,
+      "learning_rate": 5.56019413425244e-05,
+      "loss": 0.7036439180374146,
+      "num_input_tokens_seen": 7296,
+      "step": 48,
+      "train_runtime": 90.3497,
+      "train_tokens_per_second": 80.753
+    },
+    {
+      "epoch": 1.0,
+      "grad_norm": 1.1367888450622559,
+      "learning_rate": 2.05569786813925e-07,
+      "loss": 0.5678964257240295,
+      "num_input_tokens_seen": 9728,
+      "step": 64,
+      "train_runtime": 117.0913,
+      "train_tokens_per_second": 83.08
+    },
+    {
+      "epoch": 1.0,
+      "num_input_tokens_seen": 9728,
+      "step": 64,
+      "total_flos": 1240488158208.0,
+      "train_loss": 0.8904081415385008,
+      "train_runtime": 117.0955,
+      "train_samples_per_second": 2.186,
+      "train_steps_per_second": 0.547
+    }
+  ],
+  "transfer_claim": false
+}

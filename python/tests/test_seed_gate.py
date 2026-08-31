@@ -9,13 +9,19 @@ from pretraining_experiments.data import MODEL_FIELDS, generate_g0_mixed_torch_b
 from pretraining_experiments.seed_gate import (
     CONTRACT_HASHES,
     CARD06_SCALE_PROFILE,
+    DECOMPOSITION_GATE_PROFILE,
+    STAGE_A_CONTRACT_HASHES,
+    STAGE_A_DISTINCT_EPISODE_COUNTS,
+    STAGE_A_FAMILIES,
     card06_scale_decision,
     classify_card06_scale_pilot,
     classify_seed_gate_pilot,
     consumed_training_cost,
+    decomposition_gate_decision,
     evaluate_g0_corpus,
     grouped_action_decision_argmax,
     load_seed_gate_config,
+    profile_families,
     validate_seed_gate_config,
 )
 from pretraining_experiments.model import PretrainingOutput
@@ -203,6 +209,127 @@ class SeedGateTests(unittest.TestCase):
         self.assertEqual(
             classify_card06_scale_pilot(result=result, max_updates=256), "support_fit_incomplete"
         )
+
+    def test_decomposition_gate_is_a_separate_fixed_contract(self) -> None:
+        config = load_seed_gate_config(ROOT / "configs" / "r10b" / "decomposition_gate.toml")
+        gate = config["decomposition_gate"]
+        self.assertNotIn("seed_gate", config)
+        self.assertNotIn("scale_diagnostic", config)
+        self.assertEqual(gate["profile"], DECOMPOSITION_GATE_PROFILE)
+        self.assertEqual(tuple(gate["family_order"]), STAGE_A_FAMILIES)
+        self.assertEqual(gate["contract_hashes"], STAGE_A_CONTRACT_HASHES)
+        self.assertEqual(gate["distinct_episode_counts"], STAGE_A_DISTINCT_EPISODE_COUNTS)
+        self.assertEqual(profile_families(config), STAGE_A_FAMILIES)
+        # A stage-A pass is about one basic relation. The config says so in
+        # three places so a receipt reader cannot infer more than was claimed.
+        self.assertFalse(gate["admits_composite"])
+        self.assertFalse(gate["reopens_r10"])
+        self.assertFalse(gate["authorizes_r11"])
+        self.assertEqual(gate["decision_rung"], 64)
+        self.assertEqual(config["run"]["max_updates"], 64)
+        self.assertEqual(config["run"]["device"], "cpu")
+        self.assertEqual(config["run"]["seed"], 20260831)
+
+    def test_decomposition_gate_inherits_the_decisive_r10_learner_budget(self) -> None:
+        stage_a = load_seed_gate_config(ROOT / "configs" / "r10b" / "decomposition_gate.toml")
+        r10 = load_seed_gate_config(ROOT / "configs" / "r10" / "seed_gate_t4_grouped.toml")
+        for key in (
+            "max_updates",
+            "per_device_batch_size",
+            "gradient_accumulation_steps",
+            "learning_rate",
+            "weight_decay",
+            "warmup_updates",
+            "max_grad_norm",
+        ):
+            self.assertEqual(stage_a["run"][key], r10["run"][key], key)
+        self.assertEqual(stage_a["model"]["sequence_length"], r10["model"]["sequence_length"])
+        self.assertEqual(
+            stage_a["decomposition_gate"]["action_query_objective"],
+            r10["seed_gate"]["action_query_objective"],
+        )
+
+    def test_decomposition_gate_execution_drift_is_rejected(self) -> None:
+        config = load_seed_gate_config(ROOT / "configs" / "r10b" / "decomposition_gate.toml")
+        config["run"]["max_updates"] = 128
+        with self.assertRaisesRegex(ValueError, "execution drift"):
+            validate_seed_gate_config(config)
+
+    def test_decomposition_gate_refuses_a_stale_contract_hash(self) -> None:
+        config = load_seed_gate_config(ROOT / "configs" / "r10b" / "decomposition_gate.toml")
+        config["decomposition_gate"]["contract_hashes"]["card06a"] = CONTRACT_HASHES["card06"]
+        with self.assertRaisesRegex(ValueError, "contract drift"):
+            validate_seed_gate_config(config)
+
+    def test_decomposition_gate_barrier_is_exact_full_support_fit(self) -> None:
+        # Not R10's 0.80 / 0.25 / 0.60. Those were heuristic and unpowered and
+        # are binding only for the closed gate that declared them; each stage-A
+        # certificate states exact full-support fit as its own falsifier.
+        result = {
+            "evaluations": {
+                64: {
+                    "macro_argmax": 1.0,
+                    "by_case_kind": {"witness": {"argmax": 1.0}, "control": {"argmax": 1.0}},
+                }
+            }
+        }
+        decision = decomposition_gate_decision(result=result, decision_rung=64)
+        self.assertEqual(decision["classification"], "exact_support_fit")
+        self.assertTrue(decision["exact_full_support_fit"])
+
+        result["evaluations"][64]["by_case_kind"]["control"]["argmax"] = 0.9375
+        decision = decomposition_gate_decision(result=result, decision_rung=64)
+        self.assertEqual(decision["classification"], "support_fit_incomplete")
+        self.assertEqual(decision["case_kind_argmax_at_rung"]["control"], 0.9375)
+
+    def test_matched_t4_replication_differs_only_in_device_and_its_bounds(self) -> None:
+        cpu = load_seed_gate_config(ROOT / "configs" / "r10b" / "decomposition_gate.toml")
+        t4 = load_seed_gate_config(ROOT / "configs" / "r10b" / "decomposition_gate_t4.toml")
+        # The scientific contract is the same object in both spellings, which is
+        # what makes the T4 run a replication rather than a second profile.
+        self.assertEqual(cpu["model"], t4["model"])
+        for key in (
+            "profile",
+            "family_order",
+            "root_seed",
+            "evaluation_steps",
+            "decision_rung",
+            "padding_strategy",
+            "action_query_objective",
+            "distinct_episode_counts",
+            "contract_hashes",
+            "decomposes",
+            "family_seeds",
+            "exact_fit_action",
+            "incomplete_action",
+        ):
+            self.assertEqual(cpu["decomposition_gate"][key], t4["decomposition_gate"][key], key)
+        for key in (
+            "max_updates",
+            "per_device_batch_size",
+            "gradient_accumulation_steps",
+            "learning_rate",
+            "weight_decay",
+            "warmup_updates",
+            "max_grad_norm",
+            "log_every",
+            "seed",
+            "entrypoint",
+        ):
+            self.assertEqual(cpu["run"][key], t4["run"][key], key)
+        self.assertEqual(t4["run"]["device"], "cuda")
+        self.assertEqual(t4["run"]["mixed_precision"], "fp16")
+        # And the T4 run matches R10's decisive learner, which is the whole
+        # reason this replication exists.
+        r10 = load_seed_gate_config(ROOT / "configs" / "r10" / "seed_gate_t4_grouped.toml")
+        self.assertEqual(t4["run"]["device"], r10["run"]["device"])
+        self.assertEqual(t4["run"]["mixed_precision"], r10["run"]["mixed_precision"])
+
+    def test_decomposition_gate_rejects_an_unlisted_device_pairing(self) -> None:
+        config = load_seed_gate_config(ROOT / "configs" / "r10b" / "decomposition_gate_t4.toml")
+        config["run"]["mixed_precision"] = "bf16"
+        with self.assertRaisesRegex(ValueError, "execution contract drift"):
+            validate_seed_gate_config(config)
 
     def test_completed_step_cost_excludes_iterable_prefetch(self) -> None:
         from pretraining_experiments import seed_gate

@@ -1,0 +1,14 @@
+{
+  "actual_tokens": 25,
+  "classification": "preflight_passed",
+  "device": "cpu",
+  "family": "card04a",
+  "full_corpus_eval_limit_seconds": 30,
+  "full_corpus_eval_seconds": 0.5465015997178853,
+  "padding_strategy": "family_max_profiled_length_under_cap",
+  "passed": true,
+  "sequence_cap": 192,
+  "update_limit_seconds": 30,
+  "update_seconds": 5.137361700180918,
+  "updates": 4
+}

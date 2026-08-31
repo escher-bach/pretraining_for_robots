@@ -1,0 +1,18 @@
+[package]
+name = "pretraining-card05a-reveal-use"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_card05a_reveal_use"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+pretraining-g0-contract = { path = "../g0-contract" }
+pretraining-g0-render = { path = "../g0-render" }
+pretraining-world = { path = "../world" }
+
+[[bin]]
+name = "card05a-audit"
+path = "src/bin/card05a-audit.rs"

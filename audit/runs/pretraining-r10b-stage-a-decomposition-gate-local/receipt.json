@@ -1,0 +1,279 @@
+{
+  "admits_composite": false,
+  "authorizes_r11": false,
+  "classification": "decomposition_gate_incomplete",
+  "configuration": {
+    "path": "configs/r10b/decomposition_gate.toml",
+    "sha256": "e7fff29ba92791fa8080bf71c803718b55570d69255fb01ed64fa681710da3b2"
+  },
+  "counterfactual_under_the_closed_r10_barrier": {
+    "barrier": "final macro >= 0.80, gain >= 0.25, every case kind >= 0.60",
+    "note": "Reported only to show that the stage-A barrier choice did not produce the outcome. The R10 numbers remain binding for R10 alone and are not a barrier for this row.",
+    "per_family": {
+      "card03a": {
+        "final_macro": 0.8333333333333334,
+        "gain": 0.333333,
+        "min_case_kind": 0.5,
+        "would_pass_r10_barrier": false
+      },
+      "card04a": {
+        "final_macro": 0.375,
+        "gain": 0.0,
+        "min_case_kind": 0.25,
+        "would_pass_r10_barrier": false
+      },
+      "card05a": {
+        "final_macro": 0.8333333333333334,
+        "gain": 0.0,
+        "min_case_kind": 0.5,
+        "would_pass_r10_barrier": false
+      },
+      "card06a": {
+        "final_macro": 0.75,
+        "gain": 0.5,
+        "min_case_kind": 0.75,
+        "would_pass_r10_barrier": false
+      }
+    }
+  },
+  "environment": {
+    "device": "cpu",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.2",
+    "torch": "2.10.0+cpu",
+    "transformers": "5.3.0"
+  },
+  "evidence_level": "source-family learner evidence; not transfer evidence",
+  "execution": "local-cpu",
+  "experiment": "r10b-stage-a-decomposition-gate",
+  "kaggle": null,
+  "learner_deviation_from_r10": "Same core, initialization policy, objective, batch, and 64-update / 256-presentation budget as the decisive R10 grouped repair. Device and precision differ: cpu/fp32 here against cuda/fp16 there. Recorded because 'the same fixed learner' is a claim the certificates make, and this pairing is not byte-identical to R10's.",
+  "note": "A local CPU run, not a Kaggle collection. The per-family CPU estimate was under the ten-minute local rule at preflight and the whole gate finished in 469.1s, so no GPU authorization was sought or needed.",
+  "pilots": [
+    {
+      "abi_and_bounds_ok": true,
+      "case_kind_argmax_at_rung": {
+        "negative_constant_goal": 0.375,
+        "negative_goal_predictable_from_state": 0.5,
+        "witness_goal_changes_action": 0.25
+      },
+      "classification": "support_fit_incomplete",
+      "complete": true,
+      "composite_contract_hash": "d975c3a646591ccf",
+      "contract_hash": "06a36ac33c3f952b",
+      "decomposes": "card04",
+      "episode_presentations": 256,
+      "exact_full_support_fit": false,
+      "family": "card04a",
+      "finite": true,
+      "macro_argmax_curve": {
+        "0": 0.375,
+        "16": 0.375,
+        "32": 0.375,
+        "48": 0.375,
+        "64": 0.375
+      },
+      "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+      "timed_out": false,
+      "training_loss": [
+        {
+          "loss": 1.098483681678772,
+          "step": 1
+        },
+        {
+          "loss": 1.1009625752766927,
+          "step": 16
+        },
+        {
+          "loss": 1.0905208587646484,
+          "step": 32
+        },
+        {
+          "loss": 1.0800445079803467,
+          "step": 48
+        },
+        {
+          "loss": 1.0719562768936157,
+          "step": 64
+        }
+      ]
+    },
+    {
+      "abi_and_bounds_ok": true,
+      "case_kind_argmax_at_rung": {
+        "negative_announced_restoration": 1.0,
+        "negative_fully_capable": 1.0,
+        "witness_identified_support": 0.5
+      },
+      "classification": "support_fit_incomplete",
+      "complete": true,
+      "composite_contract_hash": "2442b372a18e1d66",
+      "contract_hash": "235c0a6ad2efb10d",
+      "decomposes": "card03",
+      "episode_presentations": 256,
+      "exact_full_support_fit": false,
+      "family": "card03a",
+      "finite": true,
+      "macro_argmax_curve": {
+        "0": 0.5,
+        "16": 0.8333333333333334,
+        "32": 0.8333333333333334,
+        "48": 0.8333333333333334,
+        "64": 0.8333333333333334
+      },
+      "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+      "timed_out": false,
+      "training_loss": [
+        {
+          "loss": 1.6075915098190308,
+          "step": 1
+        },
+        {
+          "loss": 1.187783940633138,
+          "step": 16
+        },
+        {
+          "loss": 1.0760703086853027,
+          "step": 32
+        },
+        {
+          "loss": 0.7036439180374146,
+          "step": 48
+        },
+        {
+          "loss": 0.5678964257240295,
+          "step": 64
+        }
+      ]
+    },
+    {
+      "abi_and_bounds_ok": true,
+      "case_kind_argmax_at_rung": {
+        "negative_commits_equally_valuable": 1.0,
+        "negative_gate_hidden": 1.0,
+        "witness_reveal_then_commit": 0.5
+      },
+      "classification": "support_fit_incomplete",
+      "complete": true,
+      "composite_contract_hash": "cbe39880124b9d2d",
+      "contract_hash": "4941b2e1e1c8c390",
+      "decomposes": "card05",
+      "episode_presentations": 256,
+      "exact_full_support_fit": false,
+      "family": "card05a",
+      "finite": true,
+      "macro_argmax_curve": {
+        "0": 0.8333333333333334,
+        "16": 0.8333333333333334,
+        "32": 0.8333333333333334,
+        "48": 0.8333333333333334,
+        "64": 0.8333333333333334
+      },
+      "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+      "timed_out": false,
+      "training_loss": [
+        {
+          "loss": 1.0980019569396973,
+          "step": 1
+        },
+        {
+          "loss": 0.9862935384114583,
+          "step": 16
+        },
+        {
+          "loss": 0.726874828338623,
+          "step": 32
+        },
+        {
+          "loss": 0.692811906337738,
+          "step": 48
+        },
+        {
+          "loss": 0.6926611661911011,
+          "step": 64
+        }
+      ]
+    },
+    {
+      "abi_and_bounds_ok": true,
+      "case_kind_argmax_at_rung": {
+        "channel_locked": 0.75,
+        "identity_tag": 0.75,
+        "witness": 0.75
+      },
+      "classification": "support_fit_incomplete",
+      "complete": true,
+      "composite_contract_hash": "76a08f38947c8cae",
+      "contract_hash": "b6f762bb89601096",
+      "decomposes": "card06",
+      "episode_presentations": 256,
+      "exact_full_support_fit": false,
+      "family": "card06a",
+      "finite": true,
+      "macro_argmax_curve": {
+        "0": 0.25,
+        "16": 0.75,
+        "32": 0.75,
+        "48": 0.75,
+        "64": 0.75
+      },
+      "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+      "timed_out": false,
+      "training_loss": [
+        {
+          "loss": 1.3852814435958862,
+          "step": 1
+        },
+        {
+          "loss": 1.3894388834635416,
+          "step": 16
+        },
+        {
+          "loss": 1.044952630996704,
+          "step": 32
+        },
+        {
+          "loss": 0.8932812213897705,
+          "step": 48
+        },
+        {
+          "loss": 0.7267348766326904,
+          "step": 64
+        }
+      ]
+    }
+  ],
+  "profile": "r10b-stage-a-decomposition-gate-v1",
+  "reopens_r10": false,
+  "row": "R10b",
+  "schema_version": 1,
+  "source_commit": "e9b8a8959a266e4fa23cdf9ea8304cd559537088",
+  "source_tree_dirty_at_run_time": true,
+  "transfer_claim": false,
+  "verified_manifest_entries": [
+    {
+      "path": "pilots/card04a.json",
+      "sha256": "95600ef79c57c73398ff8d6d3e12672177c585b2498e1481cbb6ea7410e80922"
+    },
+    {
+      "path": "pilots/card03a.json",
+      "sha256": "cfa5297f98a4d7653a18c4787de0760b7b5de96a3acaf44a415528292429ee79"
+    },
+    {
+      "path": "pilots/card05a.json",
+      "sha256": "1f7a278e46e092dd016c39f4969f38e0c3801f46617b0b4ccee7340736279b78"
+    },
+    {
+      "path": "pilots/card06a.json",
+      "sha256": "742bc368d71380ea1a62bac1a43fef65aa6654e48586b1a1908f352454de1622"
+    },
+    {
+      "path": "seed-gate-receipt.json",
+      "sha256": "9d516c29ac86e1c0d3a932de36790838fb899f8ec569a9d5e10026df9baa90f8"
+    },
+    {
+      "path": "timing-preflight-receipt.json",
+      "sha256": "736bac69b41ff608f78a7950c4b0959c872992c1444b3c9f1fbf79db42c7e037"
+    }
+  ]
+}

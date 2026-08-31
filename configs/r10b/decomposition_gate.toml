@@ -1,0 +1,98 @@
+schema_version = 1
+
+# R10b: the stage-A decomposition gate.
+#
+# This is a new AdmissionProfile over four newly audited world versions, not a
+# rerun, repair, or relaxation of R10 or R10a. Both of those are closed. Passing
+# this gate makes a stage-A family frontier for its own basic relation and
+# nothing else: it cannot admit a composite, reopen the R10 seed gate, or
+# authorize R11.
+#
+# The barrier is the one each decomposition certificate in `CARDS.md` states for
+# itself — predeclared exact full-support fit by the same fixed learner. R10's
+# 0.80 final macro, 0.25 gain, and 0.60 every-case-kind numbers are not reused:
+# they were heuristic and unpowered, and they remain binding only for the closed
+# gate they were declared for.
+
+[decomposition_gate]
+profile = "r10b-stage-a-decomposition-gate-v1"
+family_order = ["card04a", "card03a", "card05a", "card06a"]
+root_seed = 20260831
+certificates_finalized = true
+reopens_r10 = false
+authorizes_r11 = false
+admits_composite = false
+evaluation_steps = [0, 16, 32, 48, 64]
+decision_rung = 64
+per_family_timeout_seconds = 300
+total_timeout_seconds = 1500
+timing_updates = 4
+timing_updates_max_seconds = 30
+timing_eval_max_seconds = 30
+padding_strategy = "family_max_profiled_length_under_cap"
+action_query_objective = "grouped_action_query_cross_entropy"
+exact_fit_action = "stage-A frontier for its own basic relation only; no composite admission, no R10 reopening, no R11 authorization"
+incomplete_action = "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile"
+
+[decomposition_gate.distinct_episode_counts]
+card04a = 16
+card03a = 12
+card05a = 6
+card06a = 14
+
+[decomposition_gate.contract_hashes]
+card04a = "06a36ac33c3f952b"
+card03a = "235c0a6ad2efb10d"
+card05a = "4941b2e1e1c8c390"
+card06a = "b6f762bb89601096"
+
+[decomposition_gate.decomposes]
+card04a = "card04"
+card03a = "card03"
+card05a = "card05"
+card06a = "card06"
+
+[decomposition_gate.family_seeds.card04a]
+init = 2026083101
+train = 2026083201
+eval = 2026083301
+
+[decomposition_gate.family_seeds.card03a]
+init = 2026083102
+train = 2026083202
+eval = 2026083302
+
+[decomposition_gate.family_seeds.card05a]
+init = 2026083103
+train = 2026083203
+eval = 2026083303
+
+[decomposition_gate.family_seeds.card06a]
+init = 2026083104
+train = 2026083204
+eval = 2026083304
+
+[run]
+name = "r10b-stage-a-decomposition-gate-cpu"
+purpose = "one bounded pilot per stage-A decomposed family under a newly declared AdmissionProfile; not R10 admission, not transfer"
+checkpoint_label = "r10b-stage-a-decomposition-gate"
+entrypoint = "seed_gate"
+seed = 20260831
+device = "cpu"
+mixed_precision = "no"
+# The decisive R10 repair's budget, inherited unchanged: same learner core,
+# objective, batch, and 64 updates over 256 presentations. Only the world is
+# simpler, which is what makes the comparison a statement about the world.
+max_updates = 64
+per_device_batch_size = 4
+gradient_accumulation_steps = 1
+learning_rate = 0.0003
+weight_decay = 0.1
+warmup_updates = 4
+max_grad_norm = 1.0
+log_every = 16
+
+[model]
+config = "artifacts/icrt-derived-small/model_config.json"
+sequence_length = 192
+token_abi_version = "physical-event-abi-0.3.1"

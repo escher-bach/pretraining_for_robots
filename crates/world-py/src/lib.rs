@@ -25,11 +25,17 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList, PyModule};
 
-/// The finite seed families accepted by the R10 learner surface.
+/// The finite seed families accepted by the learner surface.
 ///
 /// This is evaluator-side scheduling metadata only.  A family name is never
-/// rendered into a learner token; all five families already carry the same
+/// rendered into a learner token; every family carries the same
 /// `finite-g0-discrete` envelope from `pretraining-g0-render`.
+///
+/// The `*a` families are the R10b stage-A decompositions of the four cards R10a
+/// deferred.  They are separate families with their own contract hashes, not
+/// new seeds of the composites: a semantic change creates a new version, so a
+/// gate that mixed the two would be scoring two different worlds under one
+/// name.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum G0Family {
     Card04,
@@ -37,6 +43,10 @@ enum G0Family {
     Card02,
     Card05,
     Card06,
+    Card04a,
+    Card03a,
+    Card05a,
+    Card06a,
 }
 
 impl G0Family {
@@ -47,6 +57,10 @@ impl G0Family {
             Self::Card02 => "card02",
             Self::Card05 => "card05",
             Self::Card06 => "card06",
+            Self::Card04a => "card04a",
+            Self::Card03a => "card03a",
+            Self::Card05a => "card05a",
+            Self::Card06a => "card06a",
         }
     }
 
@@ -57,8 +71,12 @@ impl G0Family {
             "card02" => Ok(Self::Card02),
             "card05" => Ok(Self::Card05),
             "card06" => Ok(Self::Card06),
+            "card04a" => Ok(Self::Card04a),
+            "card03a" => Ok(Self::Card03a),
+            "card05a" => Ok(Self::Card05a),
+            "card06a" => Ok(Self::Card06a),
             _ => Err(format!(
-                "unknown finite-G0 family {value:?}; expected one of card04, card03, card02, card05, card06"
+                "unknown finite-G0 family {value:?}; expected one of card04, card03, card02, card05, card06, card04a, card03a, card05a, card06a"
             )),
         }
     }
@@ -167,6 +185,26 @@ fn all_g0_corpora() -> Result<Vec<G0FamilyCorpus>, String> {
         .into_iter()
         .map(|(kind, episode)| (kind.label().to_string(), episode))
         .collect();
+    let card04a = pretraining_card04a_goal_use::learner_episodes()
+        .map_err(|error| g0_render_error(G0Family::Card04a, error))?
+        .into_iter()
+        .map(|(kind, episode)| (kind.label().to_string(), episode))
+        .collect();
+    let card03a = pretraining_card03a_body_identification::learner_episodes()
+        .map_err(|error| g0_render_error(G0Family::Card03a, error))?
+        .into_iter()
+        .map(|(kind, episode)| (kind.label().to_string(), episode))
+        .collect();
+    let card05a = pretraining_card05a_reveal_use::learner_episodes()
+        .map_err(|error| g0_render_error(G0Family::Card05a, error))?
+        .into_iter()
+        .map(|(kind, episode)| (kind.label().to_string(), episode))
+        .collect();
+    let card06a = pretraining_card06a_visible_reassignment::learner_episodes()
+        .map_err(|error| g0_render_error(G0Family::Card06a, error))?
+        .into_iter()
+        .map(|(kind, episode)| (kind.label().to_string(), episode))
+        .collect();
 
     Ok(vec![
         build_g0_corpus(
@@ -193,6 +231,26 @@ fn all_g0_corpora() -> Result<Vec<G0FamilyCorpus>, String> {
             G0Family::Card06,
             pretraining_card06_perceptual_organization::contract_hash(),
             card06,
+        )?,
+        build_g0_corpus(
+            G0Family::Card04a,
+            pretraining_card04a_goal_use::contract_hash(),
+            card04a,
+        )?,
+        build_g0_corpus(
+            G0Family::Card03a,
+            pretraining_card03a_body_identification::contract_hash(),
+            card03a,
+        )?,
+        build_g0_corpus(
+            G0Family::Card05a,
+            pretraining_card05a_reveal_use::contract_hash(),
+            card05a,
+        )?,
+        build_g0_corpus(
+            G0Family::Card06a,
+            pretraining_card06a_visible_reassignment::contract_hash(),
+            card06a,
         )?,
     ])
 }
@@ -1481,7 +1539,10 @@ mod tests {
         let names: Vec<&str> = corpora.iter().map(|corpus| corpus.family.name()).collect();
         assert_eq!(
             names,
-            vec!["card04", "card03", "card02", "card05", "card06"]
+            vec![
+                "card04", "card03", "card02", "card05", "card06", "card04a", "card03a", "card05a",
+                "card06a"
+            ]
         );
         // These four counts are the R5--R8 collision receipts. Card06 is
         // intentionally checked only against its own live RenderingReport so

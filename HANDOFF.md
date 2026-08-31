@@ -1,17 +1,21 @@
 # Handoff
 
-Current state of the R5–R10 bootstrap, written so the next agent can continue
+Current state of the R5–R10b bootstrap, written so the next agent can continue
 without re-deriving what was already decided. `DEVELOPMENT-PATH.md` remains the
 authority for the progress chart; this document says where the work stopped, what
 was learned building it, and what to do next.
 
 ## Where the work stopped
 
-**R5–R10 are closed. The preserved first R10 one-T4 pilot exposed a loss/metric
+**R5–R10b are closed. The preserved first R10 one-T4 pilot exposed a loss/metric
 and accounting defect; its one allowed grouped-objective repair completed and
 is the decisive result. R10 is `seed_gate_incomplete`: Card 02 alone is
 frontier-admitted, while Cards 04, 03, 05, and 06 are audited and
-compatibility-characterized but inconclusive. R11 remains blocked.**
+compatibility-characterized but inconclusive. R10a decomposed and deferred
+those four. R10b implemented all four decomposition certificates as new audited
+family versions and gated them under a new profile: every one is
+`support_fit_incomplete`, so every certificate's own falsifier fired. R11
+remains blocked.**
 
 | Row | State | Crate |
 |---|---|---|
@@ -24,11 +28,14 @@ compatibility-characterized but inconclusive. R11 remains blocked.**
 | R9 card 06 perceptual organization | Complete | `crates/card06-perceptual-organization` |
 | R10 seed gate | Complete — `seed_gate_incomplete` | `crates/world-py`, `python/pretraining_experiments/seed_gate.py`, `configs/r10` |
 | R10a post-gate compatibility triage | Complete — Card 06 `support_fit_incomplete` | `CARDS.md`, `DEVELOPMENT-PATH.md`, `configs/r10/card06_compatibility_scale_t4.toml` |
+| R10b stage-A decomposition gate | Complete — `decomposition_gate_incomplete` | `crates/card04a-goal-use`, `crates/card03a-body-identification`, `crates/card05a-reveal-use`, `crates/card06a-visible-reassignment`, `configs/r10b` |
+| R10c matched replication of the R10b profile | Launched | `configs/r10b/decomposition_gate_t4.toml`, `kaggle/experiments.toml` |
 
 `cargo test --workspace --locked` passes with no failures.
-`cargo fmt --all -- --check` is clean. The Python suite passes too — 60 tests —
-but **only after rebuilding the PyO3 wheel**, because the `0.3.1` envelope bump
-changed a constant the installed extension carries:
+`cargo fmt --all -- --check` is clean. The Python suite passes too — 67 tests —
+but **only after rebuilding the PyO3 wheel**, because the extension carries both
+the `0.3.1` envelope constant and the family corpora themselves, and R10b added
+four families to the latter:
 
 ```bash
 python -m maturin build --release --locked --manifest-path crates/world-py/Cargo.toml --out dist
@@ -36,7 +43,8 @@ python -m maturin build --release --locked --manifest-path crates/world-py/Cargo
 
 then force-reinstall the wheel from `dist/` and set `PYTHONPATH` to `python/`.
 A stale wheel makes four tests fail with an ABI-version mismatch that looks like
-a code defect and is not. Note also that the environment has
+a code defect and is not, and a wheel predating R10b reports the stage-A
+families as unknown. Note also that the environment has
 `transformers 5.3.0` where `requirements-kaggle.txt` pins `4.57.6`; the suite
 passes on both, but a Kaggle run uses the pin.
 
@@ -45,14 +53,111 @@ repository, and the verified decisive receipt is
 `audit/runs/pretraining-r10-seed-gate-grouped-e2dc185/receipt.json` for source
 `e2dc1856ab56e45f55d5fa01e63d0bd0f90035b6`. Do not relaunch R10.
 
-Five seed-family audit binaries emit JSON on stdout:
+Nine family audit binaries emit JSON on stdout:
 
 ```bash
 cargo run -p pretraining-card02-predictive-state --bin card02-audit
 ```
 
-The others are `card03-audit`, `card04-audit`, `card05-audit`, and
-`card06-audit`.
+The seed families are `card02-audit`, `card03-audit`, `card04-audit`,
+`card05-audit`, and `card06-audit`. The four R10b stage-A families are
+`card04a-audit`, `card03a-audit`, `card05a-audit`, and `card06a-audit`, in
+`crates/card04a-goal-use`, `crates/card03a-body-identification`,
+`crates/card05a-reveal-use`, and `crates/card06a-visible-reassignment`. Each
+stage-A audit carries a `removed_from_composite` record stating, in the
+certificate's own vocabulary, which decision or construct left — so an
+implementation can be checked against its certificate instead of trusted.
+
+## What R10b closed
+
+R10b is the re-entry row for the four `decomposed/deferred` cards. It did two
+things: it implemented every decomposition certificate as a real world version,
+and it gated the four under one newly declared AdmissionProfile,
+`configs/r10b/decomposition_gate.toml`.
+
+| Family | Contract | Cases / distinct | Decomposes | Macro argmax `0 -> 64` | Case kinds at the rung |
+|---|---|---:|---|---|---|
+| `card04a` | `06a36ac33c3f952b` | 16 / 16 | Card 04 | `0.3750 -> 0.3750` | witness `0.2500`, controls `0.3750` and `0.5000` |
+| `card03a` | `235c0a6ad2efb10d` | 12 / 12 | Card 03 | `0.5000 -> 0.8333` | witness `0.5000`, both controls `1.0000` |
+| `card05a` | `4941b2e1e1c8c390` | 12 / 6 | Card 05 | `0.8333 -> 0.8333` | witness `0.5000`, both controls `1.0000` |
+| `card06a` | `b6f762bb89601096` | 20 / 14 | Card 06 | `0.2500 -> 0.7500` | all three kinds `0.7500` |
+
+The profile inherits the decisive R10 repair's learner core, initialization
+policy, grouped action-query objective, batch, and 64-update / 256-presentation
+budget, and changes only the world. Its barrier is the one each certificate
+states for itself — predeclared exact full-support fit — and deliberately not
+R10's `0.80` final macro, `0.25` gain, and `0.60` every-case-kind numbers, which
+were heuristic and unpowered and remain binding for R10 alone. The receipt
+carries the counterfactual anyway: all four families miss R10's barrier too, so
+the outcome does not depend on which barrier was declared.
+
+**The result is `decomposition_gate_incomplete`, and the honest reading is that
+four predictions were wrong.** Each certificate said the composite's difficulty
+lay in the factor it removed. Removing the factor did not move the barrier. The
+classification is learner/support fit rather than a world or apparatus defect:
+every family passes its own semantic audit, and every apparatus check passes —
+ABI and bounds, finite parameters, no timeout, exactly 256 presentations per
+family, and falling training loss on three of the four. Card 04's stage A is the
+starkest: its macro did not move from `0.3750` at any recorded rung and its loss
+fell only `1.0985 -> 1.0720`.
+
+Two things follow, and neither is a licence to tune. The profile's predeclared
+incomplete action forbids re-running it with different numbers. And the
+certificates' staging is not entered: nothing adds absence back to Card 06, or a
+probe back to Card 05, on top of a stage that was not itself fit.
+
+One deviation is recorded rather than smoothed over. This gate ran on local CPU
+in `469.1 s` at fp32; the decisive R10 result was one T4 at fp16. The learner
+core, initialization policy, objective, batch, and budget are the same, but the
+pairing is not byte-identical, and "the same fixed learner" is a phrase the
+certificates use. That left one apparatus question open, and **R10c closes it**:
+the user authorized GPU work, and the *unchanged* profile is replicated on one
+T4 at fp16 under `configs/r10b/decomposition_gate_t4.toml`. The validator admits
+exactly two device spellings and no third, and a test asserts that the two
+configurations differ in nothing else, so the replication cannot drift into a
+second profile.
+
+The R10c interpretation was fixed before launch and is in the chart row: all
+four exact means the CPU outcome was a device/precision artifact and the
+certificates are not falsified; none means the falsification stands on the
+matched learner; a mixture is read per family; anything incomplete is `unscored`
+and an apparatus defect. No branch admits a composite, reopens R10, authorizes
+R11, or permits tuning. **The R10b CPU receipt is preserved either way** — it is
+a completed run whose learner deviated, not a failure to be overwritten.
+
+Compact evidence, including per-family receipts and the preflight, is under
+`audit/runs/pretraining-r10b-stage-a-decomposition-gate-local/`.
+
+## What building the stage-A families found
+
+Four of these are new, and each one is a thing the composite could not have
+shown.
+
+**A decomposition can delete its own control.** Card 05's stage A drops the
+probe, so the composite's uninformative-reveal control drops with it: a decoy
+that costs nothing to follow is worth exactly as much as a blind commit, and a
+control that moves no value is testing nothing. It survives as an *information*
+orbit instead, where it moves the public ceiling `99 -> 49.5`. The composite's
+own lesson — the value orbit is blind to information transformations — is what
+makes the reduced family well posed rather than merely smaller.
+
+**A closed ambiguity gap can be the measurement.** Card 06's stage A has a zero
+public/known-assignment gap where the composite's is `98` against `49`. That is
+not a weakened world; it is the removed factor stated as a number, and the
+`values_made_invisible_across_the_boundary` orbit reopens it to `49` on demand.
+
+**An inherited verdict can be false in the reduced family.** The composite
+treats hiding Card 06's assignment-change boundary as meaning-changing. With the
+values continuously visible it is *preserving*, because the marker carries
+nothing the values do not. The stage-A audit declares and checks it as
+preserving and records the divergence; inheriting the composite's verdict would
+have asserted an invariance this family does not have.
+
+**A single decision needs two labels on one edge.** Card 03's stage A removes
+the planning half, and with one decision left every goal cell would name exactly
+one command — the body would stop mattering. `Leap` and `Vault` both drive the
+`+2` edge and the witness body supports one of them, which is the card's own
+declared coupling variant carrying the whole content of the decision.
 
 ## What R9 completed
 

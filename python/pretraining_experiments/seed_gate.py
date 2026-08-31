@@ -53,6 +53,36 @@ CONTRACT_HASHES = {
     "card06": "76a08f38947c8cae",
 }
 CARD06_SCALE_PROFILE = "r10a-card06-compatibility-scale-v1"
+
+# R10b: the stage-A decompositions of the four families R10a deferred. These are
+# separate world versions with their own contract hashes, not new seeds of the
+# composites, and they are gated under their own AdmissionProfile. Nothing here
+# can admit a composite, reopen R10, or authorize R11.
+DECOMPOSITION_GATE_PROFILE = "r10b-stage-a-decomposition-gate-v1"
+STAGE_A_FAMILIES = ("card04a", "card03a", "card05a", "card06a")
+STAGE_A_DISTINCT_EPISODE_COUNTS = {
+    "card04a": 16,
+    "card03a": 12,
+    "card05a": 6,
+    "card06a": 14,
+}
+STAGE_A_CONTRACT_HASHES = {
+    "card04a": "06a36ac33c3f952b",
+    "card03a": "235c0a6ad2efb10d",
+    "card05a": "4941b2e1e1c8c390",
+    "card06a": "b6f762bb89601096",
+}
+# The composite each stage-A family decomposes, so a receipt names the pair.
+STAGE_A_COMPOSITE = {
+    "card04a": "card04",
+    "card03a": "card03",
+    "card05a": "card05",
+    "card06a": "card06",
+}
+ALL_FAMILIES = FAMILIES + STAGE_A_FAMILIES
+ALL_DISTINCT_EPISODE_COUNTS = {**DISTINCT_EPISODE_COUNTS, **STAGE_A_DISTINCT_EPISODE_COUNTS}
+ALL_CONTRACT_HASHES = {**CONTRACT_HASHES, **STAGE_A_CONTRACT_HASHES}
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -61,14 +91,25 @@ def is_card06_scale_diagnostic(config: dict[str, Any]) -> bool:
     return "scale_diagnostic" in config
 
 
+def is_decomposition_gate(config: dict[str, Any]) -> bool:
+    """True only for the separately versioned R10b stage-A gate."""
+    return "decomposition_gate" in config
+
+
 def profile_gate(config: dict[str, Any]) -> dict[str, Any]:
     """Return the execution contract for the selected receipt profile."""
-    return config["scale_diagnostic"] if is_card06_scale_diagnostic(config) else config["seed_gate"]
+    if is_card06_scale_diagnostic(config):
+        return config["scale_diagnostic"]
+    if is_decomposition_gate(config):
+        return config["decomposition_gate"]
+    return config["seed_gate"]
 
 
 def profile_families(config: dict[str, Any]) -> tuple[str, ...]:
     if is_card06_scale_diagnostic(config):
         return ("card06",)
+    if is_decomposition_gate(config):
+        return tuple(config["decomposition_gate"]["family_order"])
     return FAMILIES
 
 
@@ -82,6 +123,9 @@ def validate_seed_gate_config(config: dict[str, Any]) -> None:
     """Reject drift from the fixed R10 scientific and execution contracts."""
     if is_card06_scale_diagnostic(config):
         _validate_card06_scale_diagnostic_config(config)
+        return
+    if is_decomposition_gate(config):
+        _validate_decomposition_gate_config(config)
         return
     gate = config.get("seed_gate", {})
     run = config.get("run", {})
@@ -247,6 +291,160 @@ def _validate_card06_scale_diagnostic_config(config: dict[str, Any]) -> None:
             f"{expected_execution | {'config': expected_config}}, got "
             f"{execution | {'config': actual_config}}"
         )
+
+
+def _validate_decomposition_gate_config(config: dict[str, Any]) -> None:
+    """Pin the R10b stage-A gate without touching either closed R10 contract."""
+    if "seed_gate" in config or "scale_diagnostic" in config:
+        raise ValueError("the decomposition gate must not declare an R10 or R10a section")
+    if config.get("schema_version") != 1:
+        raise ValueError("the decomposition gate requires schema_version=1")
+    gate = config.get("decomposition_gate", {})
+    run = config.get("run", {})
+    model = config.get("model", {})
+    expected = {
+        "profile": DECOMPOSITION_GATE_PROFILE,
+        "family_order": list(STAGE_A_FAMILIES),
+        "root_seed": 20260831,
+        "certificates_finalized": True,
+        "reopens_r10": False,
+        "authorizes_r11": False,
+        "admits_composite": False,
+        "evaluation_steps": [0, 16, 32, 48, 64],
+        "decision_rung": 64,
+        "timing_updates": 4,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "action_query_objective": "grouped_action_query_cross_entropy",
+        "distinct_episode_counts": STAGE_A_DISTINCT_EPISODE_COUNTS,
+        "contract_hashes": STAGE_A_CONTRACT_HASHES,
+        "decomposes": STAGE_A_COMPOSITE,
+        "exact_fit_action": (
+            "stage-A frontier for its own basic relation only; no composite admission, "
+            "no R10 reopening, no R11 authorization"
+        ),
+        "incomplete_action": (
+            "the certificate falsifier fires: the removed factor was not the barrier; record "
+            "and do not tune this profile"
+        ),
+    }
+    actual = {key: gate.get(key) for key in expected}
+    if actual != expected:
+        raise ValueError(f"R10b decomposition gate contract drift: expected {expected}, got {actual}")
+    seeds = gate.get("family_seeds")
+    expected_seeds = {
+        family: {
+            "init": 2026083101 + index,
+            "train": 2026083201 + index,
+            "eval": 2026083301 + index,
+        }
+        for index, family in enumerate(STAGE_A_FAMILIES)
+    }
+    if seeds != expected_seeds:
+        raise ValueError("R10b per-family seed schedule drift")
+    science = {
+        "max_updates": run.get("max_updates"),
+        "per_device_batch_size": run.get("per_device_batch_size"),
+        "gradient_accumulation_steps": run.get("gradient_accumulation_steps"),
+        "learning_rate": run.get("learning_rate"),
+        "weight_decay": run.get("weight_decay"),
+        "warmup_updates": run.get("warmup_updates"),
+        "max_grad_norm": run.get("max_grad_norm"),
+        "log_every": run.get("log_every"),
+        "seed": run.get("seed"),
+        "entrypoint": run.get("entrypoint"),
+        "sequence_length": model.get("sequence_length"),
+        "token_abi_version": model.get("token_abi_version"),
+    }
+    expected_science = {
+        # The same fixed learner, objective, and 64-update / 256-presentation
+        # budget the decisive R10 repair used. Every certificate says "the same
+        # fixed learner", so the budget is inherited rather than chosen; only
+        # the world is simpler. Nothing in this block varies by device.
+        "max_updates": 64,
+        "per_device_batch_size": 4,
+        "gradient_accumulation_steps": 1,
+        "learning_rate": 3.0e-4,
+        "weight_decay": 0.1,
+        "warmup_updates": 4,
+        "max_grad_norm": 1.0,
+        "log_every": 16,
+        "seed": 20260831,
+        "entrypoint": "seed_gate",
+        "sequence_length": 192,
+        "token_abi_version": "physical-event-abi-0.3.1",
+    }
+    if science != expected_science:
+        raise ValueError(
+            f"R10b decomposition gate execution drift: expected {expected_science}, got {science}"
+        )
+    # Only the device, its precision, and the wall-clock bounds that follow from
+    # it may vary, and only between the two spellings below. The `cuda` variant
+    # is the device- and precision-matched replication of the `cpu` one: the
+    # certificates say "the same fixed learner", and R10's decisive learner was
+    # one T4 at fp16, so a matched pairing is a different execution of the same
+    # profile rather than a different profile.
+    execution = {
+        "device": run.get("device"),
+        "mixed_precision": run.get("mixed_precision"),
+        "per_family_timeout_seconds": gate.get("per_family_timeout_seconds"),
+        "total_timeout_seconds": gate.get("total_timeout_seconds"),
+        "timing_updates_max_seconds": gate.get("timing_updates_max_seconds"),
+        "timing_eval_max_seconds": gate.get("timing_eval_max_seconds"),
+        "seed_gate_phase_timeout_seconds": run.get("seed_gate_phase_timeout_seconds"),
+        "max_wall_clock_seconds": run.get("max_wall_clock_seconds"),
+    }
+    allowed_execution = {
+        "cpu": {
+            "device": "cpu",
+            "mixed_precision": "no",
+            "per_family_timeout_seconds": 300,
+            "total_timeout_seconds": 1500,
+            "timing_updates_max_seconds": 30,
+            "timing_eval_max_seconds": 30,
+            "seed_gate_phase_timeout_seconds": None,
+            "max_wall_clock_seconds": None,
+        },
+        "cuda": {
+            "device": "cuda",
+            "mixed_precision": "fp16",
+            "per_family_timeout_seconds": 120,
+            "total_timeout_seconds": 720,
+            "timing_updates_max_seconds": 10,
+            "timing_eval_max_seconds": 10,
+            "seed_gate_phase_timeout_seconds": 900,
+            "max_wall_clock_seconds": 4800,
+        },
+    }
+    if execution not in allowed_execution.values():
+        raise ValueError(f"R10b decomposition gate execution contract drift: {execution}")
+
+
+def decomposition_gate_decision(*, result: dict[str, Any], decision_rung: int) -> dict[str, Any]:
+    """Apply the certificates' own barrier: predeclared exact full-support fit.
+
+    R10's 0.80 final macro, 0.25 gain, and 0.60 every-case-kind numbers are
+    deliberately not reused. They were heuristic and unpowered, they remain
+    binding only for the gate they were declared for, and importing them here
+    would carry an unpowered threshold into a decision it was never declared
+    against. Every stage-A certificate states its own falsifier as exact
+    full-support fit on the newly audited family, so that is the barrier.
+    """
+    evaluation = result.get("evaluations", {}).get(int(decision_rung))
+    if evaluation is None:
+        raise ValueError(f"stage-A result lacks its decision-rung evaluation {decision_rung}")
+    kinds = evaluation.get("by_case_kind", {})
+    exact = bool(
+        evaluation.get("macro_argmax") == 1.0
+        and kinds
+        and all(row.get("argmax") == 1.0 for row in kinds.values())
+    )
+    return {
+        "decision_rung": int(decision_rung),
+        "macro_argmax_at_rung": evaluation.get("macro_argmax"),
+        "case_kind_argmax_at_rung": {name: row.get("argmax") for name, row in kinds.items()},
+        "exact_full_support_fit": exact,
+        "classification": "exact_support_fit" if exact else "support_fit_incomplete",
+    }
 
 
 def uses_grouped_action_query_objective(gate: dict[str, Any]) -> bool:
@@ -657,8 +855,9 @@ def run_all_seed_gate_pilots(config: dict[str, Any], output_root: Path) -> dict[
     is_scale = is_card06_scale_diagnostic(config)
     output_root.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
+    is_decomposition = is_decomposition_gate(config)
     receipt: dict[str, Any] = {
-        "row": "R10a" if is_scale else "R10",
+        "row": "R10a" if is_scale else ("R10b" if is_decomposition else "R10"),
         "preflight": None,
         "pilots": [],
         "transfer_claim": False,
@@ -668,7 +867,18 @@ def run_all_seed_gate_pilots(config: dict[str, Any], output_root: Path) -> dict[
         receipt["profile"] = gate["profile"]
         receipt["r10_replication"] = bool(gate["r10_replication"])
         receipt["schedule_horizon_updates"] = int(config["run"]["max_updates"])
-    if not bool(gate.get("r9_finalized", False)):
+    if is_decomposition:
+        receipt["profile"] = gate["profile"]
+        receipt["decomposes"] = gate["decomposes"]
+        receipt["admits_composite"] = False
+        receipt["reopens_r10"] = False
+        receipt["authorizes_r11"] = False
+    gate_is_final = bool(
+        gate.get("certificates_finalized", False)
+        if is_decomposition
+        else gate.get("r9_finalized", False)
+    )
+    if not gate_is_final:
         receipt["classification"] = "blocked_r9_manifest_not_final"
         (output_root / "seed-gate-receipt.json").write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
         return receipt
@@ -691,6 +901,12 @@ def run_all_seed_gate_pilots(config: dict[str, Any], output_root: Path) -> dict[
                 if all(value == "exact_support_fit" for value in classifications)
                 else "scale_diagnostic_incomplete"
             )
+        elif is_decomposition:
+            receipt["classification"] = (
+                "decomposition_gate_complete"
+                if all(value == "exact_support_fit" for value in classifications)
+                else "decomposition_gate_incomplete"
+            )
         else:
             receipt["classification"] = "seed_gate_complete" if all(value == "admitted" for value in classifications) else "seed_gate_incomplete"
     receipt["elapsed_seconds"] = time.perf_counter() - started
@@ -703,7 +919,7 @@ def main() -> None:
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
     parser.add_argument("--preflight-only", action="store_true")
-    parser.add_argument("--family", choices=FAMILIES)
+    parser.add_argument("--family", choices=ALL_FAMILIES)
     args = parser.parse_args()
     if args.preflight_only and args.family:
         parser.error("--preflight-only and --family are mutually exclusive")
@@ -754,8 +970,8 @@ def run_seed_gate_pilot(
     count_values = {int(value) for name, value in zip(manifest_families, manifest_counts) if name == family}
     hash_values = {str(value) for name, value in zip(manifest_families, manifest_hashes) if name == family}
     abi_and_bounds_ok = (
-        count_values == {DISTINCT_EPISODE_COUNTS[family]}
-        and hash_values == {CONTRACT_HASHES[family]}
+        count_values == {ALL_DISTINCT_EPISODE_COUNTS[family]}
+        and hash_values == {ALL_CONTRACT_HASHES[family]}
         and manifest.get("token_abi_version") == "physical-event-abi-0.3.1"
         and manifest.get("interpretation_profile") == "finite-g0-discrete"
     )
@@ -796,7 +1012,7 @@ def run_seed_gate_pilot(
         world_size=int(trainer.args.world_size),
     )
     result: dict[str, Any] = {
-        "family": family, "contract_hash": CONTRACT_HASHES[family], "classification": "pending",
+        "family": family, "contract_hash": ALL_CONTRACT_HASHES[family], "classification": "pending",
         "device": str(run["device"]),
         "action_query_objective": str(gate.get("action_query_objective", "rowwise_l1_legacy")),
         "seeds": dict(family_seed), "evaluation_support": "full_distinct_public_corpus",
@@ -832,6 +1048,35 @@ def run_seed_gate_pilot(
         action_key = {
             "exact_support_fit": "stable_exact_action",
             "unstable_support_fit": "unstable_action",
+            "support_fit_incomplete": "incomplete_action",
+        }.get(decision["classification"])
+        if action_key is not None:
+            result["prospective_action"] = gate[action_key]
+        result["classification"] = decision["classification"]
+    elif is_decomposition_gate(config):
+        if complete and result["finite"] and result["abi_and_bounds_ok"] and not result["timed_out"]:
+            decision = decomposition_gate_decision(
+                result=result, decision_rung=int(gate["decision_rung"])
+            )
+        else:
+            decision = {
+                "decision_rung": int(gate["decision_rung"]),
+                "macro_argmax_at_rung": None,
+                "case_kind_argmax_at_rung": {},
+                "exact_full_support_fit": None,
+                "classification": "unscored",
+            }
+        result["profile"] = gate["profile"]
+        result["stage"] = "A"
+        result["decomposes"] = gate["decomposes"][family]
+        result["composite_contract_hash"] = CONTRACT_HASHES[gate["decomposes"][family]]
+        result["admits_composite"] = False
+        result["reopens_r10"] = False
+        result["authorizes_r11"] = False
+        result["trainer_log_history"] = trainer.state.log_history
+        result.update(decision)
+        action_key = {
+            "exact_support_fit": "exact_fit_action",
             "support_fit_incomplete": "incomplete_action",
         }.get(decision["classification"])
         if action_key is not None:

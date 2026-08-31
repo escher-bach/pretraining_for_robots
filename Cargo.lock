@@ -123,12 +123,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "pretraining-card03a-body-identification"
+version = "0.1.0"
+dependencies = [
+ "pretraining-g0-contract",
+ "pretraining-g0-render",
+ "pretraining-world",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "pretraining-card04-norm-swap"
 version = "0.1.0"
 dependencies = [
  "pretraining-g0-contract",
  "pretraining-g0-render",
  "pretraining-profiled-event",
+ "pretraining-world",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "pretraining-card04a-goal-use"
+version = "0.1.0"
+dependencies = [
+ "pretraining-g0-contract",
+ "pretraining-g0-render",
  "pretraining-world",
  "serde",
  "serde_json",
@@ -147,7 +169,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "pretraining-card05a-reveal-use"
+version = "0.1.0"
+dependencies = [
+ "pretraining-g0-contract",
+ "pretraining-g0-render",
+ "pretraining-world",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "pretraining-card06-perceptual-organization"
+version = "0.1.0"
+dependencies = [
+ "pretraining-g0-contract",
+ "pretraining-g0-render",
+ "pretraining-world",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "pretraining-card06a-visible-reassignment"
 version = "0.1.0"
 dependencies = [
  "pretraining-g0-contract",
@@ -219,9 +263,13 @@ version = "0.2.0"
 dependencies = [
  "pretraining-card02-predictive-state",
  "pretraining-card03-affordance",
+ "pretraining-card03a-body-identification",
  "pretraining-card04-norm-swap",
+ "pretraining-card04a-goal-use",
  "pretraining-card05-active-experimentation",
+ "pretraining-card05a-reveal-use",
  "pretraining-card06-perceptual-organization",
+ "pretraining-card06a-visible-reassignment",
  "pretraining-eviction-world",
  "pretraining-g0-render",
  "pretraining-goal-conditioned-world",

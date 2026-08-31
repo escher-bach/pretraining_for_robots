@@ -1,0 +1,294 @@
+{
+  "abi_and_bounds_ok": true,
+  "action_query_objective": "grouped_action_query_cross_entropy",
+  "actual_tokens": 25,
+  "admits_composite": false,
+  "authorizes_r11": false,
+  "case_kind_argmax_at_rung": {
+    "negative_constant_goal": 0.375,
+    "negative_goal_predictable_from_state": 0.5,
+    "witness_goal_changes_action": 0.25
+  },
+  "classification": "support_fit_incomplete",
+  "complete": true,
+  "composite_contract_hash": "d975c3a646591ccf",
+  "contract_hash": "06a36ac33c3f952b",
+  "decision_rung": 64,
+  "decomposes": "card04",
+  "device": "cpu",
+  "elapsed_seconds": 137.52193140005693,
+  "episode_presentations": 256,
+  "evaluation_support": "full_distinct_public_corpus",
+  "evaluations": {
+    "0": {
+      "by_case_kind": {
+        "negative_constant_goal": {
+          "argmax": 0.375,
+          "decisions": 8
+        },
+        "negative_goal_predictable_from_state": {
+          "argmax": 0.5,
+          "decisions": 8
+        },
+        "witness_goal_changes_action": {
+          "argmax": 0.25,
+          "decisions": 16
+        }
+      },
+      "by_family": {
+        "card04a": {
+          "argmax": 0.34375,
+          "decisions": 32
+        }
+      },
+      "by_primary_case_kind": {
+        "negative_constant_goal": {
+          "argmax": 0.375,
+          "decisions": 8
+        },
+        "negative_goal_predictable_from_state": {
+          "argmax": 0.5,
+          "decisions": 8
+        },
+        "witness_goal_changes_action": {
+          "argmax": 0.25,
+          "decisions": 16
+        }
+      },
+      "decisions": 32,
+      "macro_argmax": 0.375
+    },
+    "16": {
+      "by_case_kind": {
+        "negative_constant_goal": {
+          "argmax": 0.375,
+          "decisions": 8
+        },
+        "negative_goal_predictable_from_state": {
+          "argmax": 0.5,
+          "decisions": 8
+        },
+        "witness_goal_changes_action": {
+          "argmax": 0.25,
+          "decisions": 16
+        }
+      },
+      "by_family": {
+        "card04a": {
+          "argmax": 0.34375,
+          "decisions": 32
+        }
+      },
+      "by_primary_case_kind": {
+        "negative_constant_goal": {
+          "argmax": 0.375,
+          "decisions": 8
+        },
+        "negative_goal_predictable_from_state": {
+          "argmax": 0.5,
+          "decisions": 8
+        },
+        "witness_goal_changes_action": {
+          "argmax": 0.25,
+          "decisions": 16
+        }
+      },
+      "decisions": 32,
+      "macro_argmax": 0.375
+    },
+    "32": {
+      "by_case_kind": {
+        "negative_constant_goal": {
+          "argmax": 0.375,
+          "decisions": 8
+        },
+        "negative_goal_predictable_from_state": {
+          "argmax": 0.5,
+          "decisions": 8
+        },
+        "witness_goal_changes_action": {
+          "argmax": 0.25,
+          "decisions": 16
+        }
+      },
+      "by_family": {
+        "card04a": {
+          "argmax": 0.34375,
+          "decisions": 32
+        }
+      },
+      "by_primary_case_kind": {
+        "negative_constant_goal": {
+          "argmax": 0.375,
+          "decisions": 8
+        },
+        "negative_goal_predictable_from_state": {
+          "argmax": 0.5,
+          "decisions": 8
+        },
+        "witness_goal_changes_action": {
+          "argmax": 0.25,
+          "decisions": 16
+        }
+      },
+      "decisions": 32,
+      "macro_argmax": 0.375
+    },
+    "48": {
+      "by_case_kind": {
+        "negative_constant_goal": {
+          "argmax": 0.375,
+          "decisions": 8
+        },
+        "negative_goal_predictable_from_state": {
+          "argmax": 0.5,
+          "decisions": 8
+        },
+        "witness_goal_changes_action": {
+          "argmax": 0.25,
+          "decisions": 16
+        }
+      },
+      "by_family": {
+        "card04a": {
+          "argmax": 0.34375,
+          "decisions": 32
+        }
+      },
+      "by_primary_case_kind": {
+        "negative_constant_goal": {
+          "argmax": 0.375,
+          "decisions": 8
+        },
+        "negative_goal_predictable_from_state": {
+          "argmax": 0.5,
+          "decisions": 8
+        },
+        "witness_goal_changes_action": {
+          "argmax": 0.25,
+          "decisions": 16
+        }
+      },
+      "decisions": 32,
+      "macro_argmax": 0.375
+    },
+    "64": {
+      "by_case_kind": {
+        "negative_constant_goal": {
+          "argmax": 0.375,
+          "decisions": 8
+        },
+        "negative_goal_predictable_from_state": {
+          "argmax": 0.5,
+          "decisions": 8
+        },
+        "witness_goal_changes_action": {
+          "argmax": 0.25,
+          "decisions": 16
+        }
+      },
+      "by_family": {
+        "card04a": {
+          "argmax": 0.34375,
+          "decisions": 32
+        }
+      },
+      "by_primary_case_kind": {
+        "negative_constant_goal": {
+          "argmax": 0.375,
+          "decisions": 8
+        },
+        "negative_goal_predictable_from_state": {
+          "argmax": 0.5,
+          "decisions": 8
+        },
+        "witness_goal_changes_action": {
+          "argmax": 0.25,
+          "decisions": 16
+        }
+      },
+      "decisions": 32,
+      "macro_argmax": 0.375
+    }
+  },
+  "exact_full_support_fit": false,
+  "family": "card04a",
+  "finite": true,
+  "macro_argmax_at_rung": 0.375,
+  "padding_strategy": "family_max_profiled_length_under_cap",
+  "profile": "r10b-stage-a-decomposition-gate-v1",
+  "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+  "reopens_r10": false,
+  "scored_action_query_targets": 1536,
+  "seeds": {
+    "eval": 2026083301,
+    "init": 2026083101,
+    "train": 2026083201
+  },
+  "sequence_cap": 192,
+  "stage": "A",
+  "timed_out": false,
+  "trainer_log_history": [
+    {
+      "epoch": 0.015625,
+      "grad_norm": 0.03563109040260315,
+      "learning_rate": 0.0,
+      "loss": 1.098483681678772,
+      "num_input_tokens_seen": 100,
+      "step": 1,
+      "train_runtime": 4.7138,
+      "train_tokens_per_second": 21.214
+    },
+    {
+      "epoch": 0.25,
+      "grad_norm": 0.05935849994421005,
+      "learning_rate": 0.0002758005851918136,
+      "loss": 1.1009625752766927,
+      "num_input_tokens_seen": 1600,
+      "step": 16,
+      "train_runtime": 51.424,
+      "train_tokens_per_second": 31.114
+    },
+    {
+      "epoch": 0.5,
+      "grad_norm": 0.4859321117401123,
+      "learning_rate": 0.00017346516975603462,
+      "loss": 1.0905208587646484,
+      "num_input_tokens_seen": 3200,
+      "step": 32,
+      "train_runtime": 82.9755,
+      "train_tokens_per_second": 38.566
+    },
+    {
+      "epoch": 0.75,
+      "grad_norm": 0.9039173722267151,
+      "learning_rate": 5.56019413425244e-05,
+      "loss": 1.0800445079803467,
+      "num_input_tokens_seen": 4800,
+      "step": 48,
+      "train_runtime": 107.8149,
+      "train_tokens_per_second": 44.521
+    },
+    {
+      "epoch": 1.0,
+      "grad_norm": 1.1742178201675415,
+      "learning_rate": 2.05569786813925e-07,
+      "loss": 1.0719562768936157,
+      "num_input_tokens_seen": 6400,
+      "step": 64,
+      "train_runtime": 135.9987,
+      "train_tokens_per_second": 47.059
+    },
+    {
+      "epoch": 1.0,
+      "num_input_tokens_seen": 6400,
+      "step": 64,
+      "total_flos": 816110630400.0,
+      "train_loss": 1.0858323220163584,
+      "train_runtime": 135.9992,
+      "train_samples_per_second": 1.882,
+      "train_steps_per_second": 0.471
+    }
+  ],
+  "transfer_claim": false
+}

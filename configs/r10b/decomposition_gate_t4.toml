@@ -1,0 +1,108 @@
+schema_version = 1
+
+# R10c: the device- and precision-matched replication of the R10b stage-A gate.
+#
+# Nothing scientific differs from `decomposition_gate.toml`. Same four contract
+# hashes, same distinct-episode accounting, same per-family seeds, same grouped
+# action-query objective, same 64-update / 256-presentation budget, same
+# barrier of predeclared exact full-support fit. The only changes are the device
+# and its precision, and the wall-clock bounds that follow from them.
+#
+# The reason it exists: every stage-A certificate says "the same fixed learner",
+# and R10's decisive learner was one T4 at fp16. The R10b run was cpu/fp32, so
+# that pairing was not byte-identical and left one apparatus question open. This
+# closes it.
+#
+# Predeclared interpretation, fixed before launch:
+#   * all four reach exact full-support fit -> the R10b CPU result was a
+#     device/precision artifact, the certificates are NOT falsified, and each
+#     stage-A family is frontier for its own basic relation only;
+#   * none reach it -> the falsification stands on the matched learner and the
+#     four certificates' predictions are wrong;
+#   * a mixture -> read per family and make no aggregate claim;
+#   * any incomplete, non-finite, ABI/bounds, or timeout outcome -> `unscored`,
+#     an apparatus defect, and the receipt is preserved rather than retried.
+# In none of these branches is a composite admitted, R10 reopened, or R11
+# authorized, and in none of them is this profile tuned.
+
+[decomposition_gate]
+profile = "r10b-stage-a-decomposition-gate-v1"
+family_order = ["card04a", "card03a", "card05a", "card06a"]
+root_seed = 20260831
+certificates_finalized = true
+reopens_r10 = false
+authorizes_r11 = false
+admits_composite = false
+evaluation_steps = [0, 16, 32, 48, 64]
+decision_rung = 64
+per_family_timeout_seconds = 120
+total_timeout_seconds = 720
+timing_updates = 4
+timing_updates_max_seconds = 10
+timing_eval_max_seconds = 10
+padding_strategy = "family_max_profiled_length_under_cap"
+action_query_objective = "grouped_action_query_cross_entropy"
+exact_fit_action = "stage-A frontier for its own basic relation only; no composite admission, no R10 reopening, no R11 authorization"
+incomplete_action = "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile"
+
+[decomposition_gate.distinct_episode_counts]
+card04a = 16
+card03a = 12
+card05a = 6
+card06a = 14
+
+[decomposition_gate.contract_hashes]
+card04a = "06a36ac33c3f952b"
+card03a = "235c0a6ad2efb10d"
+card05a = "4941b2e1e1c8c390"
+card06a = "b6f762bb89601096"
+
+[decomposition_gate.decomposes]
+card04a = "card04"
+card03a = "card03"
+card05a = "card05"
+card06a = "card06"
+
+[decomposition_gate.family_seeds.card04a]
+init = 2026083101
+train = 2026083201
+eval = 2026083301
+
+[decomposition_gate.family_seeds.card03a]
+init = 2026083102
+train = 2026083202
+eval = 2026083302
+
+[decomposition_gate.family_seeds.card05a]
+init = 2026083103
+train = 2026083203
+eval = 2026083303
+
+[decomposition_gate.family_seeds.card06a]
+init = 2026083104
+train = 2026083204
+eval = 2026083304
+
+[run]
+name = "r10c-stage-a-decomposition-gate-t4"
+purpose = "device- and precision-matched replication of the unchanged R10b stage-A profile on one T4; not R10 admission, not transfer"
+checkpoint_label = "r10c-stage-a-decomposition-gate"
+entrypoint = "seed_gate"
+max_wall_clock_seconds = 4800
+seed_gate_phase_timeout_seconds = 900
+seed = 20260831
+device = "cuda"
+mixed_precision = "fp16"
+max_updates = 64
+per_device_batch_size = 4
+gradient_accumulation_steps = 1
+learning_rate = 0.0003
+weight_decay = 0.1
+warmup_updates = 4
+max_grad_norm = 1.0
+log_every = 16
+
+[model]
+config = "artifacts/icrt-derived-small/model_config.json"
+sequence_length = 192
+token_abi_version = "physical-event-abi-0.3.1"

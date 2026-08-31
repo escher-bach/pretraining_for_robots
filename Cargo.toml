@@ -14,4 +14,8 @@ members = [
     "crates/card04-norm-swap",
     "crates/card05-active-experimentation",
     "crates/card06-perceptual-organization",
+    "crates/card03a-body-identification",
+    "crates/card04a-goal-use",
+    "crates/card05a-reveal-use",
+    "crates/card06a-visible-reassignment",
 ]
