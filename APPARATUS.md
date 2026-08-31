@@ -145,7 +145,14 @@ path before the strict profile comparison. Its failed receipt is preserved.
 The bounded apparatus repair permits only that equivalent resolved path and
 keeps all scientific settings and other execution fields fixed.
 
-Launch only from a committed, reachable SHA:
+The repaired profile completed at source
+`f4fd45edcda699f7a2e1fe4ec54c1a0a5117a2fc`. Its fixed classification is
+`support_fit_incomplete`: exact full-support fit was false at all three rungs.
+The verified receipt is
+`audit/runs/pretraining-r10a-c06-scale-f4fd45e/receipt.json`. Do not launch the
+profile again; its prospective action is Card 06 decomposition or deferral.
+
+The completed command was:
 
 ```powershell
 python tools/kaggle_run.py launch --experiment r10a-card06-compatibility-scale

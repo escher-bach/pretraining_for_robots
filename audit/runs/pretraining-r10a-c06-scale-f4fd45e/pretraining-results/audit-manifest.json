@@ -1,0 +1,78 @@
+{
+  "artifacts": [
+    {
+      "path": "card06/seed-gate-receipt.json",
+      "sha256": "f590b7d8dd7eb74249fc872cb27ff6bb949d2930622c32b9a6aeb66fe4ca525b",
+      "size": 10643
+    },
+    {
+      "path": "environment.json",
+      "sha256": "3ad5405a309a56397282ce9ff20eae960eed09d480223c5b15c40cfe85dacdba",
+      "size": 2980
+    },
+    {
+      "path": "logs/maturin-build.log",
+      "sha256": "9747a0ffec1bef83ec4c78b63730027392d08a7ad60f61f87b4338ffafea8cac",
+      "size": 5950
+    },
+    {
+      "path": "logs/pip-install.log",
+      "sha256": "95ea220cdd4896e06fea4c067a55ca3f4677d79d598199bcca0d5da69a29ceea",
+      "size": 12502
+    },
+    {
+      "path": "logs/python-tests.log",
+      "sha256": "0fe050b9c9b7b7cf3349d5d5bcb01cd5878e46f192a80e022c0312b2fe4ecbbb",
+      "size": 14142
+    },
+    {
+      "path": "logs/rust-tests.log",
+      "sha256": "a567a66b0d75be3aff326bde8723c3b6a7bad5e0d80dec47ad9e6164458c39a5",
+      "size": 29656
+    },
+    {
+      "path": "logs/rust-toolchain.log",
+      "sha256": "eb407fb00aaa6c2362c6109acc534c26432350bc77ddebf3eb3280663466babe",
+      "size": 251
+    },
+    {
+      "path": "logs/rustup-download.log",
+      "sha256": "65ab67427918399433c826dc3d69d1a19dc47a96b0439717ad27931fb699e6ce",
+      "size": 111
+    },
+    {
+      "path": "logs/rustup-install.log",
+      "sha256": "2b1de893e77f9176eea810f2065325e56010d224aa58a758482a3b7ca25b0fa3",
+      "size": 1489
+    },
+    {
+      "path": "logs/seed-gate.log",
+      "sha256": "5d85449b828dee155c3b29e424edb7da0a72d32e4237365cdb4d94b552bba44b",
+      "size": 12802
+    },
+    {
+      "path": "logs/world-wheel-install.log",
+      "sha256": "eeacb1c3d9398a021181ef7732ba4a0596422ca3912d5fd910cdeddc06411841",
+      "size": 353
+    },
+    {
+      "path": "phase_status.json",
+      "sha256": "a9b7d252541a6ad2e49742efad06f3d2f9837a3ea87e91974ad3f3137a28f96c",
+      "size": 824
+    },
+    {
+      "path": "seed-gate-receipt.json",
+      "sha256": "1cd78b476b44cde9dce9355ebbf02d7e1d8e3a05f8df93d7911df4d7c19d6dd2",
+      "size": 13098
+    },
+    {
+      "path": "timing-preflight-receipt.json",
+      "sha256": "cea2f107aa5dd0c83007c8cb8efc3dc3fb2c8dc37a55791bac8e5f39199ff437",
+      "size": 385
+    }
+  ],
+  "config_sha256": "4454cd9f2b7950d1f73cd7692966177b958d8d5ece69dfe7ef535ec71c65dff6",
+  "error": null,
+  "git_sha": "f4fd45edcda699f7a2e1fe4ec54c1a0a5117a2fc",
+  "status": "complete"
+}

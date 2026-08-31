@@ -23,10 +23,10 @@ compatibility-characterized but inconclusive. R11 remains blocked.**
 | R8 card 05 active experimentation | Complete | `crates/card05-active-experimentation` |
 | R9 card 06 perceptual organization | Complete | `crates/card06-perceptual-organization` |
 | R10 seed gate | Complete — `seed_gate_incomplete` | `crates/world-py`, `python/pretraining_experiments/seed_gate.py`, `configs/r10` |
-| R10a post-gate compatibility triage | Ready; card-local only | `CARDS.md`, `DEVELOPMENT-PATH.md` |
+| R10a post-gate compatibility triage | Complete — Card 06 `support_fit_incomplete` | `CARDS.md`, `DEVELOPMENT-PATH.md`, `configs/r10/card06_compatibility_scale_t4.toml` |
 
 `cargo test --workspace --locked` passes with no failures.
-`cargo fmt --all -- --check` is clean. The Python suite passes too — 56 tests —
+`cargo fmt --all -- --check` is clean. The Python suite passes too — 60 tests —
 but **only after rebuilding the PyO3 wheel**, because the `0.3.1` envelope bump
 changed a constant the installed extension carries:
 
@@ -110,7 +110,7 @@ evidence only, not transfer evidence. R10 permits no second repair and does
 not authorize R11. The original L1 run remains a preserved apparatus failure;
 the grouped objective and exact accounting were its one bounded repair.
 
-R10a is the active decision row, not a rerun of R10: decompose/defer Card 04;
+R10a is complete and was not a rerun of R10: decompose/defer Card 04;
 decompose body identification from planning for Card 03 (scale only under a
 separately justified profile); decompose reveal use from probe value for Card
 05; and allow one Card-06-only scale diagnostic because its curve rose through
@@ -119,12 +119,20 @@ separately justified profile); decompose reveal use from probe value for Card
 `a9f118018261241812b991811cb33aebf51b1f7c` stopped before training because the
 validator rejected the runner-resolved absolute spelling of the pinned model
 configuration path. Its audit-verified failure receipt is preserved under
-`audit/runs/pretraining-r10a-c06-scale-a9f1180/`. A bounded repair now treats
+`audit/runs/pretraining-r10a-c06-scale-a9f1180/`. The bounded repair treated
 only the equivalent relative and resolved paths alike while retaining strict
-validation of every other execution field. Commit and push that repair, then
-launch registry entry `r10a-card06-compatibility-scale` once from its exact SHA.
-Its stable, unstable, or incomplete support-fit result cannot reopen R10 or
-authorize R11.
+validation of every other execution field.
+
+The repaired run at source `f4fd45edcda699f7a2e1fe4ec54c1a0a5117a2fc`
+completed 256 updates and 1,024 presentations with verified artifacts. Exact
+fit was false at 64, 128, and 256 updates. Macro case-kind argmax rose
+`0.2500 -> 0.7250 -> 0.7875 -> 0.8750`, but the decisive witness moved
+`0.2500 -> 0.6250 -> 0.4375 -> 0.5000`; three simpler controls reached
+`1.0000`, and identity-tag reached `0.8750`. This is
+`support_fit_incomplete`, not a world or apparatus defect. The composite Card
+06 is decomposed/deferred under the certificate in `CARDS.md`. Do not rerun or
+tune this profile, reopen R10, or authorize R11. Compact evidence is under
+`audit/runs/pretraining-r10a-c06-scale-f4fd45e/`.
 
 ## What building these four families actually found
 

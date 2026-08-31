@@ -1,0 +1,602 @@
+{
+  "architecture_gate_passed": null,
+  "architecture_gate_progress": null,
+  "audit_verified": true,
+  "collected_at_unix": 1788138687.2721682,
+  "configuration": {
+    "path": "configs/r10/card06_compatibility_scale_t4.toml",
+    "sha256": "4454cd9f2b7950d1f73cd7692966177b958d8d5ece69dfe7ef535ec71c65dff6"
+  },
+  "downloaded_files": [
+    {
+      "path": "pretraining-r10a-c06-scale-f4fd45e.log",
+      "sha256": "d37575643446c14dba48099b7bc9ebff61842f5294bbd47ca95d590b24190033",
+      "size": 273345
+    },
+    {
+      "path": "pretraining-results/audit-manifest.json",
+      "sha256": "3c4147c01f328f31f4a4a055fcca711e196263297785c8df26d1308674bee5f3",
+      "size": 2396
+    },
+    {
+      "path": "pretraining-results/card06/seed-gate-receipt.json",
+      "sha256": "f590b7d8dd7eb74249fc872cb27ff6bb949d2930622c32b9a6aeb66fe4ca525b",
+      "size": 10643
+    },
+    {
+      "path": "pretraining-results/environment.json",
+      "sha256": "3ad5405a309a56397282ce9ff20eae960eed09d480223c5b15c40cfe85dacdba",
+      "size": 2980
+    },
+    {
+      "path": "pretraining-results/logs/maturin-build.log",
+      "sha256": "9747a0ffec1bef83ec4c78b63730027392d08a7ad60f61f87b4338ffafea8cac",
+      "size": 5950
+    },
+    {
+      "path": "pretraining-results/logs/pip-install.log",
+      "sha256": "95ea220cdd4896e06fea4c067a55ca3f4677d79d598199bcca0d5da69a29ceea",
+      "size": 12502
+    },
+    {
+      "path": "pretraining-results/logs/python-tests.log",
+      "sha256": "0fe050b9c9b7b7cf3349d5d5bcb01cd5878e46f192a80e022c0312b2fe4ecbbb",
+      "size": 14142
+    },
+    {
+      "path": "pretraining-results/logs/rust-tests.log",
+      "sha256": "a567a66b0d75be3aff326bde8723c3b6a7bad5e0d80dec47ad9e6164458c39a5",
+      "size": 29656
+    },
+    {
+      "path": "pretraining-results/logs/rust-toolchain.log",
+      "sha256": "eb407fb00aaa6c2362c6109acc534c26432350bc77ddebf3eb3280663466babe",
+      "size": 251
+    },
+    {
+      "path": "pretraining-results/logs/rustup-download.log",
+      "sha256": "65ab67427918399433c826dc3d69d1a19dc47a96b0439717ad27931fb699e6ce",
+      "size": 111
+    },
+    {
+      "path": "pretraining-results/logs/rustup-install.log",
+      "sha256": "2b1de893e77f9176eea810f2065325e56010d224aa58a758482a3b7ca25b0fa3",
+      "size": 1489
+    },
+    {
+      "path": "pretraining-results/logs/seed-gate.log",
+      "sha256": "5d85449b828dee155c3b29e424edb7da0a72d32e4237365cdb4d94b552bba44b",
+      "size": 12802
+    },
+    {
+      "path": "pretraining-results/logs/world-wheel-install.log",
+      "sha256": "eeacb1c3d9398a021181ef7732ba4a0596422ca3912d5fd910cdeddc06411841",
+      "size": 353
+    },
+    {
+      "path": "pretraining-results/phase_status.json",
+      "sha256": "a9b7d252541a6ad2e49742efad06f3d2f9837a3ea87e91974ad3f3137a28f96c",
+      "size": 824
+    },
+    {
+      "path": "pretraining-results/seed-gate-receipt.json",
+      "sha256": "1cd78b476b44cde9dce9355ebbf02d7e1d8e3a05f8df93d7911df4d7c19d6dd2",
+      "size": 13098
+    },
+    {
+      "path": "pretraining-results/summary.json",
+      "sha256": "1b126105e5de2a3db9f107e757e4d8f90c5c80c923b5b83bed7e064433ddef2f",
+      "size": 15306
+    },
+    {
+      "path": "pretraining-results/timing-preflight-receipt.json",
+      "sha256": "cea2f107aa5dd0c83007c8cb8efc3dc3fb2c8dc37a55791bac8e5f39199ff437",
+      "size": 385
+    }
+  ],
+  "experiment": "r10a-card06-compatibility-scale",
+  "kaggle": {
+    "completion_time": "2026-08-31T01:05:57.843000",
+    "owner_slug_version": "aniruddhavarma/pretraining-r10a-c06-scale-f4fd45e/1",
+    "push_url": "https://www.kaggle.com/code/aniruddhavarma/pretraining-r10a-c06-scale-f4fd45e",
+    "terminal_status": "aniruddhavarma/pretraining-r10a-c06-scale-f4fd45e/1 has status \"KernelWorkerStatus.COMPLETE\"",
+    "url": "https://www.kaggle.com/code/aniruddhavarma/pretraining-r10a-c06-scale-f4fd45e/versions/1"
+  },
+  "kernel": "aniruddhavarma/pretraining-r10a-c06-scale-f4fd45e",
+  "model_sha256": null,
+  "observed_accelerator_inventory": null,
+  "recovery_artifact": null,
+  "remote_manifest_sha256": "3c4147c01f328f31f4a4a055fcca711e196263297785c8df26d1308674bee5f3",
+  "requested_accelerator": "NvidiaTeslaT4",
+  "root_seed": 20260829,
+  "run_id": "aniruddhavarma/pretraining-r10a-c06-scale-f4fd45e/1",
+  "schema_version": 1,
+  "scientific_report": {
+    "classification": "scale_diagnostic_incomplete",
+    "elapsed_seconds": 68.34753699700002,
+    "pilots": [
+      {
+        "abi_and_bounds_ok": true,
+        "action_query_objective": "grouped_action_query_cross_entropy",
+        "actual_tokens": 30,
+        "classification": "support_fit_incomplete",
+        "complete": true,
+        "contract_hash": "76a08f38947c8cae",
+        "decision_rungs": [
+          64,
+          128,
+          256
+        ],
+        "device": "cuda",
+        "earliest_exact_fit_step": null,
+        "elapsed_seconds": 63.805963976000044,
+        "episode_presentations": 1024,
+        "evaluation_support": "full_distinct_public_corpus",
+        "evaluations": {
+          "0": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card06": {
+                "argmax": 0.25,
+                "decisions": 64
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.25,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "decisions": 64,
+            "macro_argmax": 0.25
+          },
+          "128": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.75,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.75,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 1.0,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.4375,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card06": {
+                "argmax": 0.765625,
+                "decisions": 64
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.75,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.75,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 1.0,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.4375,
+                "decisions": 16
+              }
+            },
+            "decisions": 64,
+            "macro_argmax": 0.7875
+          },
+          "256": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.875,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 1.0,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.5,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card06": {
+                "argmax": 0.84375,
+                "decisions": 64
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.875,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 1.0,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.5,
+                "decisions": 16
+              }
+            },
+            "decisions": 64,
+            "macro_argmax": 0.875
+          },
+          "64": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.625,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.875,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.625,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.875,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.625,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card06": {
+                "argmax": 0.71875,
+                "decisions": 64
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.625,
+                "decisions": 8
+              },
+              "frozen_during_absence": {
+                "argmax": 0.875,
+                "decisions": 8
+              },
+              "identity_tag": {
+                "argmax": 0.625,
+                "decisions": 16
+              },
+              "shuffled_covariance": {
+                "argmax": 0.875,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.625,
+                "decisions": 16
+              }
+            },
+            "decisions": 64,
+            "macro_argmax": 0.725
+          }
+        },
+        "exact_fit_by_step": {
+          "128": false,
+          "256": false,
+          "64": false
+        },
+        "family": "card06",
+        "finite": true,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "profile": "r10a-card06-compatibility-scale-v1",
+        "prospective_action": "decompose Card06 into a more basic capability or defer Card06",
+        "r10_replication": false,
+        "schedule_horizon_updates": 256,
+        "scored_action_query_targets": 8192,
+        "seeds": {
+          "eval": 2026083105,
+          "init": 2026082905,
+          "train": 2026083005
+        },
+        "sequence_cap": 192,
+        "timed_out": false,
+        "trainer_log_history": [
+          {
+            "epoch": 0.00390625,
+            "grad_norm": 0.30753201246261597,
+            "learning_rate": 0.0,
+            "loss": 1.3855,
+            "num_input_tokens_seen": 240,
+            "step": 1,
+            "train_runtime": 0.3894,
+            "train_tokens_per_second": 616.275
+          },
+          {
+            "epoch": 0.0625,
+            "grad_norm": 8.27738094329834,
+            "learning_rate": 0.00029859179916195787,
+            "loss": 1.3045,
+            "num_input_tokens_seen": 3840,
+            "step": 16,
+            "train_runtime": 4.05,
+            "train_tokens_per_second": 948.154
+          },
+          {
+            "epoch": 0.125,
+            "grad_norm": 221.8594512939453,
+            "learning_rate": 0.0002915824995462551,
+            "loss": 0.904,
+            "num_input_tokens_seen": 7680,
+            "step": 32,
+            "train_runtime": 8.0028,
+            "train_tokens_per_second": 959.668
+          },
+          {
+            "epoch": 0.1875,
+            "grad_norm": 34.99713897705078,
+            "learning_rate": 0.00027895874247017854,
+            "loss": 1.1827,
+            "num_input_tokens_seen": 11520,
+            "step": 48,
+            "train_runtime": 12.0234,
+            "train_tokens_per_second": 958.13
+          },
+          {
+            "epoch": 0.25,
+            "grad_norm": 1.8217792510986328,
+            "learning_rate": 0.000261221123327374,
+            "loss": 0.8534,
+            "num_input_tokens_seen": 15360,
+            "step": 64,
+            "train_runtime": 16.0428,
+            "train_tokens_per_second": 957.442
+          },
+          {
+            "epoch": 0.3125,
+            "grad_norm": 85.2522964477539,
+            "learning_rate": 0.0002390730278360252,
+            "loss": 0.8263,
+            "num_input_tokens_seen": 19200,
+            "step": 80,
+            "train_runtime": 19.9602,
+            "train_tokens_per_second": 961.915
+          },
+          {
+            "epoch": 0.375,
+            "grad_norm": 13.245915412902832,
+            "learning_rate": 0.0002133927392611049,
+            "loss": 0.6737,
+            "num_input_tokens_seen": 23040,
+            "step": 96,
+            "train_runtime": 23.831,
+            "train_tokens_per_second": 966.809
+          },
+          {
+            "epoch": 0.4375,
+            "grad_norm": 24.756332397460938,
+            "learning_rate": 0.00018519861007015729,
+            "loss": 0.7042,
+            "num_input_tokens_seen": 26880,
+            "step": 112,
+            "train_runtime": 27.7397,
+            "train_tokens_per_second": 969.009
+          },
+          {
+            "epoch": 0.5,
+            "grad_norm": 40.79861831665039,
+            "learning_rate": 0.00015560867914144887,
+            "loss": 0.5942,
+            "num_input_tokens_seen": 30720,
+            "step": 128,
+            "train_runtime": 31.6935,
+            "train_tokens_per_second": 969.283
+          },
+          {
+            "epoch": 0.5625,
+            "grad_norm": 1.1717917919158936,
+            "learning_rate": 0.000125796335905079,
+            "loss": 0.4952,
+            "num_input_tokens_seen": 34560,
+            "step": 144,
+            "train_runtime": 35.6803,
+            "train_tokens_per_second": 968.602
+          },
+          {
+            "epoch": 0.625,
+            "grad_norm": 1.5237599611282349,
+            "learning_rate": 9.694378955661278e-05,
+            "loss": 0.4838,
+            "num_input_tokens_seen": 38400,
+            "step": 160,
+            "train_runtime": 39.5587,
+            "train_tokens_per_second": 970.71
+          },
+          {
+            "epoch": 0.6875,
+            "grad_norm": 1.2464640140533447,
+            "learning_rate": 7.019518852269953e-05,
+            "loss": 0.518,
+            "num_input_tokens_seen": 42240,
+            "step": 176,
+            "train_runtime": 43.506,
+            "train_tokens_per_second": 970.901
+          },
+          {
+            "epoch": 0.75,
+            "grad_norm": 8.043526649475098,
+            "learning_rate": 4.661124922740794e-05,
+            "loss": 0.4338,
+            "num_input_tokens_seen": 46080,
+            "step": 192,
+            "train_runtime": 47.4232,
+            "train_tokens_per_second": 971.677
+          },
+          {
+            "epoch": 0.8125,
+            "grad_norm": 1235.0147705078125,
+            "learning_rate": 2.7127193356651213e-05,
+            "loss": 0.4359,
+            "num_input_tokens_seen": 49920,
+            "step": 208,
+            "train_runtime": 51.3712,
+            "train_tokens_per_second": 971.75
+          },
+          {
+            "epoch": 0.875,
+            "grad_norm": 6.221418857574463,
+            "learning_rate": 1.251566161950357e-05,
+            "loss": 0.4277,
+            "num_input_tokens_seen": 53760,
+            "step": 224,
+            "train_runtime": 55.2598,
+            "train_tokens_per_second": 972.858
+          },
+          {
+            "epoch": 0.9375,
+            "grad_norm": 1325.85302734375,
+            "learning_rate": 3.356074662104319e-06,
+            "loss": 0.4593,
+            "num_input_tokens_seen": 57600,
+            "step": 240,
+            "train_runtime": 59.1605,
+            "train_tokens_per_second": 973.622
+          },
+          {
+            "epoch": 1.0,
+            "grad_norm": 23.369831085205078,
+            "learning_rate": 1.1656127853770791e-08,
+            "loss": 0.4237,
+            "num_input_tokens_seen": 61440,
+            "step": 256,
+            "train_runtime": 63.102,
+            "train_tokens_per_second": 973.662
+          },
+          {
+            "epoch": 1.0,
+            "num_input_tokens_seen": 61440,
+            "step": 256,
+            "total_flos": 7834662051840.0,
+            "train_loss": 0.6703394572250545,
+            "train_runtime": 63.1021,
+            "train_samples_per_second": 32.455,
+            "train_steps_per_second": 4.057
+          }
+        ],
+        "transfer_claim": false
+      }
+    ],
+    "preflight": {
+      "actual_tokens": 30,
+      "classification": "preflight_passed",
+      "device": "cuda",
+      "family": "card06",
+      "full_corpus_eval_limit_seconds": 10,
+      "full_corpus_eval_seconds": 0.5918359620000047,
+      "padding_strategy": "family_max_profiled_length_under_cap",
+      "passed": true,
+      "sequence_cap": 192,
+      "update_limit_seconds": 10,
+      "update_seconds": 2.693109755000023,
+      "updates": 4
+    },
+    "profile": "r10a-card06-compatibility-scale-v1",
+    "r10_replication": false,
+    "row": "R10a",
+    "schedule_horizon_updates": 256,
+    "transfer_claim": false
+  },
+  "source": {
+    "git_remote": "origin",
+    "git_remote_url": "https://github.com/escher-bach/pretraining_for_robots.git",
+    "git_sha": "f4fd45edcda699f7a2e1fe4ec54c1a0a5117a2fc"
+  },
+  "status": "complete",
+  "upstream_kaggle_versions": [],
+  "verified_manifest_entries": [
+    "card06/seed-gate-receipt.json",
+    "environment.json",
+    "logs/maturin-build.log",
+    "logs/pip-install.log",
+    "logs/python-tests.log",
+    "logs/rust-tests.log",
+    "logs/rust-toolchain.log",
+    "logs/rustup-download.log",
+    "logs/rustup-install.log",
+    "logs/seed-gate.log",
+    "logs/world-wheel-install.log",
+    "phase_status.json",
+    "seed-gate-receipt.json",
+    "timing-preflight-receipt.json"
+  ],
+  "world_size": null
+}

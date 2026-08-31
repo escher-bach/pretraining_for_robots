@@ -1,0 +1,28 @@
+{
+  "capture_environment": {
+    "elapsed_seconds": 0.43314504623413086,
+    "started_at": 1788138367.9436183,
+    "status": "complete",
+    "timestamp": 1788138368.3767633
+  },
+  "correctness_tests": {
+    "elapsed_seconds": 79.2997477054596,
+    "started_at": 1788138435.6530273,
+    "status": "complete",
+    "timestamp": 1788138514.952775
+  },
+  "install_and_build": {
+    "elapsed_seconds": 67.27554321289062,
+    "started_at": 1788138368.377147,
+    "status": "complete",
+    "timestamp": 1788138435.6526902,
+    "wheel_sha256": "a941a6ccb108e6711d0e91eacf94036de511082ff0764a578b101d06efbd2fa6"
+  },
+  "seed_gate": {
+    "classification": "scale_diagnostic_incomplete",
+    "elapsed_seconds": 81.50293111801147,
+    "started_at": 1788138514.9531827,
+    "status": "complete",
+    "timestamp": 1788138596.4561138
+  }
+}

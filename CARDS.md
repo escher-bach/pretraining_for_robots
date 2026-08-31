@@ -372,9 +372,8 @@ curves falsify it.
 ## Card 06: Perceptual Organization
 
 **Trunk:** T4 binding and relational abstraction. **Fragment:** G0. **State:**
-implemented, audited, rendered, and compatibility-characterized by R10. It is
-not frontier-admitted under that profile, but its rising curve warrants one
-Card-06-only scaling diagnostic.
+implemented, audited, rendered, compatibility-characterized, and
+decomposed/deferred after R10a. It is not frontier-admitted.
 
 **Claim.** The learner binds observations to persistent causes rather than to
 channel identity, keeps a cause individuated through absence, and re-identifies
@@ -424,10 +423,44 @@ argmax `0.2500 -> 0.6875`, final all-case-kind minimum `0.5625`. It is
 inconclusive under the fixed profile, not a world defect, but its monotone
 improvement across the recorded cadence justifies one Card-06-only scaling
 diagnostic with a newly fixed AdmissionProfile. That diagnostic neither
-reopens R10 nor authorizes R11. Admit only if the learner beats channel-based
-policies on the witness, each surgical control restores its associated simple
-baseline, and both preserving and changing orbits separate correctly. The
-downstream visual family contains near-identical movable objects, an effector,
+reopens R10 nor authorizes R11. The audit-verified R10a diagnostic completed
+256 updates and 1,024 presentations. Exact full-support fit was false at 64,
+128, and 256 updates. Macro case-kind argmax rose
+`0.2500 -> 0.7250 -> 0.7875 -> 0.8750`, while the witness moved
+`0.2500 -> 0.6250 -> 0.4375 -> 0.5000`; channel-locked,
+frozen-through-absence, and shuffled-covariance controls reached `1.0000`, and
+identity-tag reached `0.8750`. The fixed classification is
+`support_fit_incomplete`. The controls show that the learner acquired simpler
+shortcuts while failing the history-based binding witness, so this is a
+learner/support-fit result rather than evidence of a degenerate world. More
+undirected scaling is not authorized.
+
+**Decomposition certificate.** The original relation is persistent-cause
+binding across hidden channel reassignment, absence, continued latent motion,
+matched-marginal noise, and a goal named by interaction history. The next basic
+relation is binding the history-named source across one public channel-change
+boundary while both source values remain continuously visible. It removes
+absence, latent evolution while absent, and occlusion noise, but retains source
+exchangeability, hidden assignment, the history-named goal, action effects,
+source/channel permutations, noninterference, and the channel-locked and
+identity-tag contrasts. This isolates relational reassignment from memory
+through absence, matching the observed ability to learn the controls but not
+the composite witness. It is falsified if the same fixed learner cannot reach
+predeclared exact full-support fit on a newly audited visible-reassignment
+family, or if a channel-identity policy succeeds on its visible-reassignment
+witness; the controls should instead restore their associated simple
+baselines. Re-entry requires that new version and contract hash pass its
+semantic audit and fixed AdmissionProfile; only then may a later version add
+absence without hidden
+evolution, followed by evolution and matched noise one factor at a time. The
+current composite remains deferred until every prerequisite stage has its own
+evidence.
+
+The original admission condition remains: the learner must beat channel-based
+policies on the witness, each surgical control must restore its associated
+simple baseline, and both preserving and changing orbits must separate
+correctly. The downstream visual family contains near-identical movable
+objects, an effector,
 occlusion, motion during absence, and goals that name objects by interaction
 history. Every arm uses the same fixed pixel encoder trained only on downstream
 visual data; only core initialization differs. Compare scratch, this card, a
