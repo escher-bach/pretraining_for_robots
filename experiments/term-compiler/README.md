@@ -4,6 +4,12 @@ This is an isolated R3c experiment in the `codex/term-compiler-spike`
 worktree. It is not connected to any existing card crate, learner renderer,
 profile, training configuration, or GPU path.
 
+Before extending the world language further, see
+[`LEARNER-INTERFACE-AUDIT.md`](LEARNER-INTERFACE-AUDIT.md) and the standalone
+[`../prompted-interface`](../prompted-interface) fixture. They identify the
+prompt, goal-carrier, actor/embodiment, and supervision boundaries that the
+current production learner ABI does not yet represent.
+
 ## Executable boundary
 
 ```text
