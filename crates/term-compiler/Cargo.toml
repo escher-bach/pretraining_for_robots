@@ -7,10 +7,12 @@ edition = "2021"
 name = "pretraining_term_compiler"
 
 [dependencies]
+blake3 = "1.5"
 pretraining-g0-contract = { path = "../g0-contract" }
 rand = "0.8.5"
 rand_chacha = "0.3.1"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 [dev-dependencies]
 pretraining-card03-affordance = { path = "../card03-affordance" }

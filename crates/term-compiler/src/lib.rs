@@ -97,6 +97,17 @@ pub struct Actuator {
     pub id: u16,
     pub name: String,
     pub displacement: i32,
+    pub role: ActionRole,
+}
+
+/// Action roles are semantic: only a movement can be body-supported, while a
+/// fallback terminates scoring without adding a fake terminal configuration to
+/// the ring.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ActionRole {
+    Movement,
+    Hold,
+    Fallback,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -137,6 +148,44 @@ pub struct NormTerm {
     pub visibility: Visibility,
 }
 
+/// Reward/cost semantics are term data rather than a card-local evaluator.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ScoringTerm {
+    pub goal_reward: i32,
+    pub action_cost: i32,
+    pub fallback_reward: i32,
+    pub violation_penalty: i32,
+}
+
+impl Default for ScoringTerm {
+    fn default() -> Self {
+        Self {
+            goal_reward: 100,
+            action_cost: 1,
+            fallback_reward: 0,
+            violation_penalty: -100,
+        }
+    }
+}
+
+/// An action prelude.  It runs before the first scored decision with the
+/// scored clock held at zero, and its cumulative cells may be public.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CalibrationTerm {
+    pub pulses: Vec<u16>,
+    pub publishes_cells: bool,
+}
+
+/// A public, announced restoration of one body actuator.  The support effect
+/// begins only after `after_step` scored actions, never during calibration.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SupportRestoration {
+    pub actuator: u16,
+    pub after_step: usize,
+    pub announcement_port: String,
+    pub announcement_value: i64,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SignalTerm {
     pub output_port: String,
@@ -161,6 +210,9 @@ pub struct CouplingTerm {
     pub coupling: Coupling,
     /// The declared list order is the writer order for `Override`.
     pub writers: Vec<CoupledWriter>,
+    /// Defined output when no writer guard is active.  This closes the error
+    /// case that `Coupling::resolve` intentionally exposes at the kernel level.
+    pub inactive_value: i32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -189,6 +241,9 @@ pub struct WorldTerm {
     pub body: BodyTerm,
     pub environment: EnvironmentTerm,
     pub norm: NormTerm,
+    pub scoring: ScoringTerm,
+    pub calibration: Option<CalibrationTerm>,
+    pub restorations: Vec<SupportRestoration>,
     pub disturbance: Option<ProcessTerm>,
     pub scaffold: Option<ProcessTerm>,
     pub couplings: Vec<CouplingTerm>,
@@ -352,16 +407,36 @@ impl WorldTerm {
             ));
         }
         let mut actuator_ids = BTreeSet::new();
+        let mut fallback_count = 0usize;
         for actuator in &self.body.actuation.actuators {
             if usize::from(actuator.id) >= IndexSet::CAPACITY || !actuator_ids.insert(actuator.id) {
                 return Err(CompileError::Invalid(
                     "actuator ids must be unique values in 0..32".into(),
                 ));
             }
+            if actuator.role == ActionRole::Fallback {
+                fallback_count += 1;
+            }
+            if actuator.role != ActionRole::Movement
+                && !self
+                    .body
+                    .actuation
+                    .supported
+                    .contains(usize::from(actuator.id))
+            {
+                return Err(CompileError::Invalid(
+                    "hold and fallback actions must remain body-supported".into(),
+                ));
+            }
         }
         if actuator_ids.is_empty() {
             return Err(CompileError::Invalid(
                 "body needs at least one actuator".into(),
+            ));
+        }
+        if fallback_count > 1 {
+            return Err(CompileError::Invalid(
+                "a body may declare at most one fallback action".into(),
             ));
         }
         if self
@@ -379,6 +454,66 @@ impl WorldTerm {
             if *cell >= self.body.morphology.cells || !actuator_ids.contains(action) {
                 return Err(CompileError::Invalid(
                     "blocked edge refers to an unknown cell or actuator".into(),
+                ));
+            }
+        }
+        if self.scoring.action_cost < 0 {
+            return Err(CompileError::Invalid(
+                "action cost cannot be negative".into(),
+            ));
+        }
+        if let Some(calibration) = &self.calibration {
+            if calibration.pulses.is_empty() {
+                return Err(CompileError::Invalid(
+                    "a calibration prelude needs at least one pulse".into(),
+                ));
+            }
+            if calibration
+                .pulses
+                .iter()
+                .any(|action| !actuator_ids.contains(action))
+            {
+                return Err(CompileError::Invalid(
+                    "calibration pulse refers to an undeclared actuator".into(),
+                ));
+            }
+        }
+        let mut restored = BTreeSet::new();
+        for restoration in &self.restorations {
+            let actuator = self
+                .body
+                .actuation
+                .actuators
+                .iter()
+                .find(|actuator| actuator.id == restoration.actuator)
+                .ok_or_else(|| {
+                    CompileError::Invalid("restoration refers to an undeclared actuator".into())
+                })?;
+            if actuator.role != ActionRole::Movement {
+                return Err(CompileError::Invalid(
+                    "only a movement actuator may be restored".into(),
+                ));
+            }
+            if self
+                .body
+                .actuation
+                .supported
+                .contains(usize::from(restoration.actuator))
+                || !restored.insert(restoration.actuator)
+            {
+                return Err(CompileError::Invalid(
+                    "a restoration must name one initially unsupported actuator once".into(),
+                ));
+            }
+            let port = ports
+                .get(restoration.announcement_port.as_str())
+                .ok_or_else(|| CompileError::UnknownPort(restoration.announcement_port.clone()))?;
+            if !(port.direction == PortDirection::Output
+                && port.value == PortValue::Signal
+                && port.visibility == Visibility::Public)
+            {
+                return Err(CompileError::Invalid(
+                    "a support restoration must have a public signal announcement".into(),
                 ));
             }
         }
@@ -554,8 +689,15 @@ impl WorldTerm {
                     horizon,
                     norm: self.norm.expression.clone(),
                     norm_public: self.norm.visibility == Visibility::Public,
+                    scoring: self.scoring.clone(),
+                    calibration: self.calibration.clone(),
+                    restorations: self.restorations.clone(),
                     restrictions: self.restrictions.clone(),
-                    couplings: self.couplings.clone(),
+                    couplings: self
+                        .couplings
+                        .iter()
+                        .map(LoweredCoupling::from_term)
+                        .collect(),
                     disturbance: self.disturbance.clone(),
                     scaffold: self.scaffold.clone(),
                     interrupts: self.interrupts.clone(),
@@ -578,103 +720,28 @@ impl WorldTerm {
     /// body support distinct from environment edge deletions even when their
     /// transitions happen to agree.
     pub fn family_hash(&self) -> String {
-        let mut pieces = vec![
-            format!(
-                "cells={};horizon={};start={};support={}",
-                self.body.morphology.cells,
-                self.horizon,
-                self.environment.start,
-                self.body.actuation.supported.0
-            ),
-            format!(
-                "norm={:?};norm_view={:?}",
-                self.norm.expression, self.norm.visibility
-            ),
-            format!(
-                "sensor={}:{}",
-                self.body.sensorium.publishes_cell, self.body.sensorium.cell_port
-            ),
-        ];
-        let mut ports: Vec<_> = self
+        let mut canonical = self.clone();
+        canonical.name.clear();
+        canonical
             .ports
-            .iter()
-            .map(|port| format!("port={:?}", port))
-            .collect();
-        ports.sort();
-        pieces.extend(ports);
-        let mut wiring: Vec<_> = self
+            .sort_by(|left, right| left.name.cmp(&right.name));
+        canonical
             .wiring
-            .iter()
-            .map(|wire| format!("wire={}:{}", wire.from, wire.to))
-            .collect();
-        wiring.sort();
-        pieces.extend(wiring);
-        let mut actuators: Vec<_> = self
+            .sort_by(|left, right| (&left.from, &left.to).cmp(&(&right.from, &right.to)));
+        canonical
             .body
             .actuation
             .actuators
-            .iter()
-            .map(|actuator| {
-                format!(
-                    "act={}:{}:{}",
-                    actuator.id, actuator.name, actuator.displacement
-                )
-            })
-            .collect();
-        actuators.sort();
-        pieces.extend(actuators);
-        let mut edges: Vec<_> = self
-            .environment
-            .blocked_edges
-            .iter()
-            .map(|edge| format!("edge={}:{}", edge.0, edge.1))
-            .collect();
-        edges.sort();
-        pieces.extend(edges);
-        let mut restrictions: Vec<_> = self
-            .restrictions
-            .iter()
-            .map(|restriction| format!("restrict={restriction:?}"))
-            .collect();
-        restrictions.sort();
-        pieces.extend(restrictions);
-        let mut reveals: Vec<_> = self
-            .reveals
-            .iter()
-            .map(|reveal| format!("reveal={reveal:?}"))
-            .collect();
-        reveals.sort();
-        pieces.extend(reveals);
-        for coupling in &self.couplings {
-            // Writer order is semantic under Override, so it is intentionally
-            // retained rather than sorted.
-            pieces.push(format!("coupling={coupling:?}"));
-        }
-        for process in [self.disturbance.as_ref(), self.scaffold.as_ref()]
-            .into_iter()
-            .flatten()
-        {
-            let mut signals: Vec<_> = process
-                .signals
-                .iter()
-                .map(|signal| format!("{signal:?}"))
-                .collect();
-            signals.sort();
-            pieces.push(format!("process={}:{}", process.name, signals.join(",")));
-        }
-        let mut interrupts: Vec<_> = self
-            .interrupts
-            .iter()
-            .map(|interrupt| format!("interrupt={interrupt:?}"))
-            .collect();
-        interrupts.sort();
-        pieces.extend(interrupts);
-        let mut state = 0xcbf29ce484222325u64;
-        for byte in pieces.join("|").bytes() {
-            state ^= u64::from(byte);
-            state = state.wrapping_mul(0x100000001b3);
-        }
-        format!("{state:016x}")
+            .sort_by_key(|actuator| actuator.id);
+        canonical.environment.blocked_edges.sort_unstable();
+        canonical.environment.blocked_edges.dedup();
+        // Preserve orders that affect execution: process signals, norm trees,
+        // restriction precedence, restoration announcements, and Override
+        // writer order.  `serde_json` provides a maintained canonical byte
+        // encoding for this already-canonical term, and BLAKE3 provides the
+        // stable digest rather than a local hash implementation.
+        let bytes = serde_json::to_vec(&canonical).expect("world terms serialize");
+        blake3::hash(&bytes).to_hex().to_string()
     }
 }
 
@@ -689,13 +756,56 @@ struct CompiledProgram {
     horizon: usize,
     norm: Norm,
     norm_public: bool,
+    scoring: ScoringTerm,
+    calibration: Option<CalibrationTerm>,
+    restorations: Vec<SupportRestoration>,
     restrictions: Vec<Restriction>,
-    couplings: Vec<CouplingTerm>,
+    couplings: Vec<LoweredCoupling>,
     disturbance: Option<ProcessTerm>,
     scaffold: Option<ProcessTerm>,
     interrupts: Vec<InterruptTerm>,
     reveals: Vec<RevealTerm>,
     ports: BTreeMap<String, Port>,
+}
+
+/// Runtime coupling is total because the compiler has provided a declared
+/// inactive value and rejected ambiguous conflict writer sets.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct LoweredCoupling {
+    rule: CouplingRule,
+    writers: Vec<CoupledWriter>,
+    inactive_value: i32,
+}
+
+impl LoweredCoupling {
+    fn from_term(term: &CouplingTerm) -> Self {
+        Self {
+            rule: term.coupling.rule,
+            writers: term.writers.clone(),
+            inactive_value: term.inactive_value,
+        }
+    }
+
+    fn resolve(&self, context: GuardContext) -> i32 {
+        let writes: Vec<i32> = self
+            .writers
+            .iter()
+            .filter(|writer| writer.guard.fired(context))
+            .map(|writer| writer.value)
+            .collect();
+        match self.rule {
+            CouplingRule::Sum => {
+                if writes.is_empty() {
+                    self.inactive_value
+                } else {
+                    writes.into_iter().sum()
+                }
+            }
+            CouplingRule::Override | CouplingRule::Conflict => {
+                writes.last().copied().unwrap_or(self.inactive_value)
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -727,8 +837,15 @@ impl CompiledProgram {
             .find(|candidate| candidate.id == action)
     }
 
-    fn action_supported(&self, action: u16) -> bool {
+    fn action_supported(&self, action: u16, executed: usize) -> bool {
         self.supported.contains(usize::from(action))
+            || self.restorations.iter().any(|restoration| {
+                restoration.actuator == action && executed > restoration.after_step
+            })
+    }
+
+    fn action_permitted(&self, action: u16, executed: usize) -> bool {
+        self.action_supported(action, executed)
             && self
                 .restrictions
                 .iter()
@@ -771,16 +888,60 @@ impl CompiledProgram {
     fn coupling_displacement(&self, context: GuardContext) -> i32 {
         self.couplings
             .iter()
-            .map(|term| {
-                let writes: Vec<f64> = term
-                    .writers
-                    .iter()
-                    .filter(|writer| writer.guard.fired(context))
-                    .map(|writer| writer.value as f64)
-                    .collect();
-                term.coupling.resolve(&writes).unwrap_or(0.0) as i32
-            })
+            .map(|term| term.resolve(context))
             .sum()
+    }
+
+    fn transition(&self, cell: usize, executed: usize, action: u16) -> usize {
+        if self
+            .restrictions
+            .iter()
+            .any(|restriction| !restriction.admits_cell(cell))
+        {
+            return cell;
+        }
+        let Some(actuator) = self.actuator(action) else {
+            return cell;
+        };
+        if actuator.role == ActionRole::Fallback
+            || !self.action_permitted(action, executed)
+            || self.blocked_edges.contains(&(cell, action))
+        {
+            return cell;
+        }
+        let context = guard_context(executed + 1, Some(action), cell);
+        let displacement = actuator.displacement + self.coupling_displacement(context);
+        let moved = (cell as i32 + displacement).rem_euclid(self.cells as i32) as usize;
+        for restriction in &self.restrictions {
+            if !restriction.admits_cell(moved) {
+                return match restriction.boundary_effect() {
+                    Some(BoundaryEffect::Reset) => self.start,
+                    Some(BoundaryEffect::Absorbing) => moved,
+                    None => moved,
+                };
+            }
+        }
+        moved
+    }
+
+    fn calibration_trace(&self) -> Option<Vec<usize>> {
+        let calibration = self.calibration.as_ref()?;
+        let mut cell = self.start;
+        let mut trace = vec![cell];
+        for action in &calibration.pulses {
+            // A prelude action is not a scored decision.  Its support is read
+            // at scored index zero and can never consume or advance that clock.
+            cell = self.transition(cell, 0, *action);
+            trace.push(cell);
+        }
+        Some(trace)
+    }
+
+    fn fallback_step(&self, actions: &[u16]) -> Option<usize> {
+        actions.iter().position(|action| {
+            self.actuator(*action)
+                .is_some_and(|actuator| actuator.role == ActionRole::Fallback)
+        })
     }
 }
 
@@ -801,33 +962,7 @@ impl Fragment for CompiledFragment {
     }
 
     fn step(&self, contract: &Self::Contract, cell: usize, executed: usize, action: u16) -> usize {
-        let program = &contract.program;
-        if program
-            .restrictions
-            .iter()
-            .any(|restriction| !restriction.admits_cell(cell))
-        {
-            return cell;
-        }
-        let Some(actuator) = program.actuator(action) else {
-            return cell;
-        };
-        if !program.action_supported(action) || program.blocked_edges.contains(&(cell, action)) {
-            return cell;
-        }
-        let context = guard_context(executed + 1, Some(action), cell);
-        let displacement = actuator.displacement + program.coupling_displacement(context);
-        let moved = (cell as i32 + displacement).rem_euclid(program.cells as i32) as usize;
-        for restriction in &program.restrictions {
-            if !restriction.admits_cell(moved) {
-                return match restriction.boundary_effect() {
-                    Some(BoundaryEffect::Reset) => program.start,
-                    Some(BoundaryEffect::Absorbing) => moved,
-                    None => moved,
-                };
-            }
-        }
-        moved
+        contract.program.transition(cell, executed, action)
     }
 
     fn value(
@@ -836,6 +971,10 @@ impl Fragment for CompiledFragment {
         trajectory: &[usize],
         actions: &[Self::Action],
     ) -> i32 {
+        if let Some(step) = contract.program.fallback_step(actions) {
+            return contract.program.scoring.fallback_reward
+                - contract.program.scoring.action_cost * step as i32;
+        }
         let last = *trajectory.last().unwrap_or(&contract.program.start);
         let last_action = actions.last().copied();
         let verdict = contract
@@ -843,9 +982,11 @@ impl Fragment for CompiledFragment {
             .norm
             .evaluate(trajectory, guard_context(actions.len(), last_action, last));
         if verdict.met {
-            100 - actions.len() as i32
+            let cost_steps = verdict.settle_steps.unwrap_or(actions.len());
+            contract.program.scoring.goal_reward
+                - contract.program.scoring.action_cost * cost_steps as i32
         } else if verdict.violated_prohibition {
-            -100
+            contract.program.scoring.violation_penalty
         } else {
             0
         }
@@ -857,14 +998,35 @@ impl PubliclyObservable for CompiledFragment {
         let program = &contract.program;
         let mut cell = program.start;
         let mut trace = Vec::new();
-        if program.publishes_cell {
+        if let Some(calibration) = program.calibration_trace() {
+            if program
+                .calibration
+                .as_ref()
+                .is_some_and(|calibration| calibration.publishes_cells)
+            {
+                trace.extend(calibration.into_iter().map(|cell| cell as i64));
+            }
+        } else if program.publishes_cell {
             trace.push(cell as i64);
         }
         if program.norm_public {
             trace.push(norm_code(&program.norm));
         }
+        trace.extend(
+            program
+                .restorations
+                .iter()
+                .map(|restoration| restoration.announcement_value),
+        );
         trace.extend(program.public_events(0, None, cell));
         for (executed, action) in actions.iter().enumerate() {
+            if program
+                .actuator(*action)
+                .is_some_and(|actuator| actuator.role == ActionRole::Fallback)
+            {
+                trace.push(-1);
+                break;
+            }
             cell = self.step(contract, cell, executed, *action);
             if program.publishes_cell {
                 trace.push(cell as i64);
@@ -882,6 +1044,43 @@ impl CompiledWorld {
 
     pub fn actions(&self) -> Vec<u16> {
         self.fragment.actions()
+    }
+
+    /// Execute a scored sequence once, exposing only generic scoring facts.
+    /// A caller that needs a named goal can inspect the term's norm separately;
+    /// no card-specific outcome type is embedded in the compiler.
+    pub fn outcome(&self, actions: &[u16]) -> ExecutionOutcome {
+        let fallback_step = self.contract.program.fallback_step(actions);
+        // A fallback is absorbing in scoring/public execution, not in the
+        // ring's `Fragment::step` state.  Continue to use the generic
+        // trajectory for enumeration, but report the terminal configuration
+        // from the scored prefix so later supplied actions are unscored.
+        let scored_actions = fallback_step.map_or(actions, |step| &actions[..step]);
+        let trajectory =
+            pretraining_g0_contract::trajectory(&self.fragment, &self.contract, scored_actions);
+        let final_cell = *trajectory.last().expect("a trajectory includes start");
+        let last_action = actions.last().copied();
+        let norm_met = fallback_step.is_none()
+            && self
+                .contract
+                .program
+                .norm
+                .evaluate(
+                    &trajectory,
+                    guard_context(actions.len(), last_action, final_cell),
+                )
+                .met;
+        ExecutionOutcome {
+            value: self.fragment.value(
+                &self.contract,
+                &pretraining_g0_contract::trajectory(&self.fragment, &self.contract, actions),
+                actions,
+            ),
+            norm_met,
+            fell_back: fallback_step.is_some(),
+            fallback_step,
+            final_cell,
+        }
     }
 
     /// Learner-visible data only.  There is no conversion from this view to
@@ -935,6 +1134,15 @@ pub struct PublicView {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ExecutionOutcome {
+    pub value: i32,
+    pub norm_met: bool,
+    pub fell_back: bool,
+    pub fallback_step: Option<usize>,
+    pub final_cell: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PrivilegedView {
     pub trajectory: Vec<usize>,
     pub blocked_edges: Vec<(usize, u16)>,
@@ -979,15 +1187,95 @@ impl GeneratedWorld {
     }
 }
 
+/// A generated embodiment contrast, not three unrelated sampled worlds.  The
+/// body-limited witness is paired with its unrestricted control and with an
+/// environment-edge twin that preserves the witness's executable behavior.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GeneratedEmbodimentFamily {
+    pub body_limited: GeneratedWorld,
+    pub unrestricted_control: GeneratedWorld,
+    pub environment_twin: GeneratedWorld,
+    pub receipt: EmbodimentValidityReceipt,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EmbodimentValidityReceipt {
+    pub sequences_checked: usize,
+    pub goal_differs_from_start: bool,
+    pub body_limitation_changes_ceiling: bool,
+    pub twin_trajectories_equal: bool,
+    pub twin_values_equal: bool,
+    pub twin_optimal_sequences_equal: bool,
+    pub valid: bool,
+}
+
+impl GeneratedEmbodimentFamily {
+    /// Re-run the exact finite filter that admits one generated family.  The
+    /// receipt is evidence about executable terms, not learner evidence.
+    pub fn verify(&self) -> Result<EmbodimentValidityReceipt, CompileError> {
+        let body = self.body_limited.compile()?;
+        let unrestricted = self.unrestricted_control.compile()?;
+        let twin = self.environment_twin.compile()?;
+        if body.actions() != unrestricted.actions()
+            || body.actions() != twin.actions()
+            || body.horizon() != unrestricted.horizon()
+            || body.horizon() != twin.horizon()
+        {
+            return Err(CompileError::Invalid(
+                "an embodiment family must share action alphabet and scored horizon".into(),
+            ));
+        }
+        let goal_differs_from_start = match &self.body_limited.term.norm.expression {
+            Norm::Settle { cell } | Norm::Visit { cell } => *cell != body.contract.program.start,
+            _ => false,
+        };
+        let (body_ceiling, body_optimal) =
+            pretraining_g0_contract::value_bounds(&body.fragment, &body.contract);
+        let (unrestricted_ceiling, _) =
+            pretraining_g0_contract::value_bounds(&unrestricted.fragment, &unrestricted.contract);
+        let (twin_ceiling, twin_optimal) =
+            pretraining_g0_contract::value_bounds(&twin.fragment, &twin.contract);
+        let mut trajectories_equal = true;
+        let mut values_equal = true;
+        let actions = body.actions();
+        let sequences = pretraining_g0_contract::sequences_of_length(&actions, body.horizon());
+        for sequence in &sequences {
+            let body_path =
+                pretraining_g0_contract::trajectory(&body.fragment, &body.contract, sequence);
+            let twin_path =
+                pretraining_g0_contract::trajectory(&twin.fragment, &twin.contract, sequence);
+            trajectories_equal &= body_path == twin_path;
+            values_equal &= body.fragment.value(&body.contract, &body_path, sequence)
+                == twin.fragment.value(&twin.contract, &twin_path, sequence);
+        }
+        let receipt = EmbodimentValidityReceipt {
+            sequences_checked: sequences.len(),
+            goal_differs_from_start,
+            body_limitation_changes_ceiling: body_ceiling != unrestricted_ceiling,
+            twin_trajectories_equal: trajectories_equal,
+            twin_values_equal: values_equal,
+            twin_optimal_sequences_equal: body_ceiling == twin_ceiling
+                && body_optimal == twin_optimal,
+            valid: goal_differs_from_start
+                && body_ceiling != unrestricted_ceiling
+                && trajectories_equal
+                && values_equal
+                && body_ceiling == twin_ceiling
+                && body_optimal == twin_optimal,
+        };
+        Ok(receipt)
+    }
+}
+
 impl Default for GenerationSpec {
     fn default() -> Self {
         Self {
             seed: 0,
             count: 4,
-            min_cells: 3,
+            min_cells: 5,
             max_cells: 6,
             min_horizon: 2,
-            max_horizon: 4,
+            max_horizon: 3,
         }
     }
 }
@@ -1015,39 +1303,194 @@ impl GenerationSpec {
         Ok(())
     }
 
-    pub fn generate(&self) -> Result<Vec<GeneratedWorld>, CompileError> {
+    /// The only general generator entry point emits receipt-filtered paired
+    /// families.  It deliberately does not emit independent random worlds.
+    pub fn generate(&self) -> Result<Vec<GeneratedEmbodimentFamily>, CompileError> {
+        self.generate_embodiment_families()
+    }
+
+    /// Deterministically construct receipt-filtered embodiment contrasts.  A
+    /// rejected candidate is not emitted, which prevents a sampled world from
+    /// being mistaken for a valid family merely because it compiled.
+    pub fn generate_embodiment_families(
+        &self,
+    ) -> Result<Vec<GeneratedEmbodimentFamily>, CompileError> {
         self.validate()?;
+        if self.max_cells < 4 || self.max_horizon < 2 {
+            return Err(CompileError::Invalid(
+                "embodiment families need at least four cells and two scored steps".into(),
+            ));
+        }
         let mut rng = ChaCha8Rng::seed_from_u64(self.seed);
-        let mut worlds = Vec::with_capacity(self.count);
+        let mut families = Vec::with_capacity(self.count);
         for index in 0..self.count {
-            let cells = rng.gen_range(self.min_cells..=self.max_cells);
-            let horizon = rng.gen_range(self.min_horizon..=self.max_horizon);
-            let goal = rng.gen_range(0..cells);
-            let support = if index % 2 == 0 {
-                IndexSet::from_indices([0, 1])
-            } else {
-                IndexSet::from_indices([0])
-            };
-            let mut term = base_term(format!("generated-{index}"), cells, horizon, goal, support);
-            if index % 3 == 0 {
-                term.reveals.push(RevealTerm {
-                    source_visibility: Visibility::Privileged,
-                    output_port: "reveal".into(),
-                    guard: Guard::AfterStep(0),
-                    value: index as i64,
-                });
+            let lower_cells = self.min_cells.max(4);
+            if lower_cells > self.max_cells {
+                return Err(CompileError::Invalid(
+                    "embodiment family cell range is empty".into(),
+                ));
             }
-            let generated = GeneratedWorld {
-                term,
-                generator_metadata: GeneratorMetadata {
-                    seed: self.seed,
-                    index,
+            let cells = rng.gen_range(lower_cells..=self.max_cells);
+            let max_horizon = self.max_horizon.min(cells - 2);
+            let min_horizon = self.min_horizon.max(2);
+            if min_horizon > max_horizon {
+                return Err(CompileError::Invalid(
+                    "no horizon leaves the body-limited goal outside forward reach".into(),
+                ));
+            }
+            let horizon = rng.gen_range(min_horizon..=max_horizon);
+            let goal = cells - 1;
+            let full_support = IndexSet::from_indices([0, 1, 2, 3]);
+            let limited_support = IndexSet::from_indices([0, 2, 3]);
+            let body_term = embodiment_term(
+                format!("embodiment-{index}-body"),
+                cells,
+                horizon,
+                goal,
+                limited_support,
+                Vec::new(),
+            );
+            let unrestricted_term = embodiment_term(
+                format!("embodiment-{index}-unrestricted"),
+                cells,
+                horizon,
+                goal,
+                full_support,
+                Vec::new(),
+            );
+            // Blocking the withheld command at every configuration makes the
+            // environment twin behaviorally identical for every finite action
+            // sequence while retaining a different typed provenance.
+            let twin_term = embodiment_term(
+                format!("embodiment-{index}-environment"),
+                cells,
+                horizon,
+                goal,
+                full_support,
+                (0..cells).map(|cell| (cell, 1)).collect(),
+            );
+            let metadata = GeneratorMetadata {
+                seed: self.seed,
+                index,
+            };
+            let mut family = GeneratedEmbodimentFamily {
+                body_limited: GeneratedWorld {
+                    term: body_term,
+                    generator_metadata: metadata.clone(),
+                },
+                unrestricted_control: GeneratedWorld {
+                    term: unrestricted_term,
+                    generator_metadata: metadata.clone(),
+                },
+                environment_twin: GeneratedWorld {
+                    term: twin_term,
+                    generator_metadata: metadata,
+                },
+                receipt: EmbodimentValidityReceipt {
+                    sequences_checked: 0,
+                    goal_differs_from_start: false,
+                    body_limitation_changes_ceiling: false,
+                    twin_trajectories_equal: false,
+                    twin_values_equal: false,
+                    twin_optimal_sequences_equal: false,
+                    valid: false,
                 },
             };
-            generated.compile()?;
-            worlds.push(generated);
+            family.receipt = family.verify()?;
+            if !family.receipt.valid {
+                return Err(CompileError::Invalid(
+                    "generated embodiment candidate failed its exact validity filter".into(),
+                ));
+            }
+            families.push(family);
         }
-        Ok(worlds)
+        Ok(families)
+    }
+}
+
+fn embodiment_term(
+    name: impl Into<String>,
+    cells: usize,
+    horizon: usize,
+    goal: usize,
+    supported: IndexSet,
+    blocked_edges: Vec<(usize, u16)>,
+) -> WorldTerm {
+    WorldTerm {
+        name: name.into(),
+        horizon,
+        ports: vec![
+            Port::new("learner_action", PortDirection::Output, PortValue::Command).public(),
+            Port::new("body_command", PortDirection::Input, PortValue::Command).public(),
+            Port::new("cell", PortDirection::Output, PortValue::Cell).public(),
+            Port::new("reveal", PortDirection::Output, PortValue::Signal).public(),
+        ],
+        wiring: vec![Wiring {
+            from: "learner_action".into(),
+            to: "body_command".into(),
+        }],
+        body: BodyTerm {
+            morphology: Morphology { cells },
+            actuation: Actuation {
+                command_port: "body_command".into(),
+                actuators: vec![
+                    Actuator {
+                        id: 0,
+                        name: "advance".into(),
+                        displacement: 1,
+                        role: ActionRole::Movement,
+                    },
+                    Actuator {
+                        id: 1,
+                        name: "retreat".into(),
+                        displacement: -1,
+                        role: ActionRole::Movement,
+                    },
+                    Actuator {
+                        id: 2,
+                        name: "hold".into(),
+                        displacement: 0,
+                        role: ActionRole::Hold,
+                    },
+                    Actuator {
+                        id: 3,
+                        name: "fallback".into(),
+                        displacement: 0,
+                        role: ActionRole::Fallback,
+                    },
+                ],
+                supported,
+            },
+            sensorium: Sensorium {
+                cell_port: "cell".into(),
+                publishes_cell: true,
+            },
+        },
+        environment: EnvironmentTerm {
+            start: 0,
+            blocked_edges,
+        },
+        norm: NormTerm {
+            expression: Norm::Settle { cell: goal },
+            visibility: Visibility::Public,
+        },
+        scoring: ScoringTerm {
+            goal_reward: 100,
+            action_cost: 1,
+            fallback_reward: 50,
+            violation_penalty: -100,
+        },
+        calibration: Some(CalibrationTerm {
+            pulses: vec![0, 1],
+            publishes_cells: true,
+        }),
+        restorations: Vec::new(),
+        disturbance: None,
+        scaffold: None,
+        couplings: Vec::new(),
+        interrupts: Vec::new(),
+        restrictions: Vec::new(),
+        reveals: Vec::new(),
     }
 }
 
@@ -1081,11 +1524,13 @@ pub fn base_term(
                         id: 0,
                         name: "advance".into(),
                         displacement: 1,
+                        role: ActionRole::Movement,
                     },
                     Actuator {
                         id: 1,
                         name: "retreat".into(),
                         displacement: -1,
+                        role: ActionRole::Movement,
                     },
                 ],
                 supported,
@@ -1103,6 +1548,9 @@ pub fn base_term(
             expression: Norm::Settle { cell: goal },
             visibility: Visibility::Public,
         },
+        scoring: ScoringTerm::default(),
+        calibration: None,
+        restorations: Vec::new(),
         disturbance: None,
         scaffold: None,
         couplings: Vec::new(),
@@ -1159,6 +1607,7 @@ mod tests {
                 guard: Guard::Never,
                 value: 1,
             }],
+            inactive_value: 0,
         });
         term.scaffold = Some(ProcessTerm {
             name: "scaffold".into(),
@@ -1193,6 +1642,76 @@ mod tests {
                 norm_algebra: true
             }
         );
+    }
+
+    #[test]
+    fn lowered_coupling_has_a_total_inactive_case_and_conflicts_fail_at_compile_time() {
+        let mut term = base_term("coupling", 5, 2, 3, IndexSet::from_indices([0, 1]));
+        term.couplings.push(CouplingTerm {
+            coupling: Coupling::new(0, CouplingRule::Override),
+            writers: vec![CoupledWriter {
+                guard: Guard::Never,
+                value: 99,
+            }],
+            inactive_value: 1,
+        });
+        let compiled = term.compile().unwrap();
+        assert_eq!(compiled.fragment.step(&compiled.contract, 0, 0, 0), 2);
+
+        term.couplings[0] = CouplingTerm {
+            coupling: Coupling::new(0, CouplingRule::Conflict),
+            writers: vec![
+                CoupledWriter {
+                    guard: Guard::AtStart,
+                    value: 1,
+                },
+                CoupledWriter {
+                    guard: Guard::AtStart,
+                    value: 2,
+                },
+            ],
+            inactive_value: 0,
+        };
+        assert!(matches!(term.compile(), Err(CompileError::Invalid(_))));
+    }
+
+    #[test]
+    fn restoration_and_calibration_do_not_share_a_clock() {
+        let mut term = base_term("restoration", 5, 2, 4, IndexSet::from_indices([0]));
+        term.calibration = Some(CalibrationTerm {
+            pulses: vec![0, 1],
+            publishes_cells: true,
+        });
+        term.restorations.push(SupportRestoration {
+            actuator: 1,
+            after_step: 0,
+            announcement_port: "reveal".into(),
+            announcement_value: 401,
+        });
+        let compiled = term.compile().unwrap();
+        assert_eq!(compiled.public_view(&[]).trace[..3], [0, 1, 1]);
+        assert_eq!(compiled.fragment.step(&compiled.contract, 0, 0, 1), 0);
+        assert_eq!(compiled.fragment.step(&compiled.contract, 0, 1, 1), 4);
+        assert!(compiled.public_view(&[]).trace.contains(&401));
+    }
+
+    #[test]
+    fn fallback_is_absorbing_in_outcomes_and_scoring() {
+        let term = embodiment_term(
+            "fallback",
+            5,
+            2,
+            4,
+            IndexSet::from_indices([0, 2, 3]),
+            Vec::new(),
+        );
+        let compiled = term.compile().unwrap();
+        let outcome = compiled.outcome(&[3, 0]);
+        assert_eq!(outcome.value, 50);
+        assert!(outcome.fell_back);
+        assert_eq!(outcome.fallback_step, Some(0));
+        assert_eq!(outcome.final_cell, 0);
+        assert_eq!(compiled.public_view(&[3, 0]).trace.last(), Some(&-1));
     }
 
     #[test]
@@ -1296,7 +1815,7 @@ mod tests {
     }
 
     #[test]
-    fn generated_terms_are_bounded_deterministic_and_executable() {
+    fn generated_families_are_bounded_deterministic_and_receipt_valid() {
         let specification = GenerationSpec {
             seed: 42,
             count: 6,
@@ -1305,8 +1824,10 @@ mod tests {
         let first = specification.generate().unwrap();
         let second = specification.generate().unwrap();
         assert_eq!(first, second);
-        for term in first {
-            let compiled = term.compile().unwrap();
+        for family in first {
+            assert!(family.receipt.valid, "{:#?}", family.receipt);
+            assert_eq!(family.verify().unwrap(), family.receipt);
+            let compiled = family.body_limited.compile().unwrap();
             let actions = compiled.actions();
             let path = trajectory(
                 &compiled.fragment,
@@ -1332,6 +1853,16 @@ mod tests {
             left.family_hash(),
             right.family_hash(),
             "edge provenance is semantic"
+        );
+        right.environment.blocked_edges.clear();
+        right.calibration = Some(CalibrationTerm {
+            pulses: vec![0],
+            publishes_cells: true,
+        });
+        assert_ne!(
+            left.family_hash(),
+            right.family_hash(),
+            "prelude behavior is semantic"
         );
 
         let first = GeneratedWorld {

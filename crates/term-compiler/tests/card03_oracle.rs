@@ -12,8 +12,9 @@ use pretraining_card03_affordance::{
 };
 use pretraining_g0_contract::{trajectory, Fragment, Norm};
 use pretraining_term_compiler::{
-    Actuation, Actuator, BodyTerm, EnvironmentTerm, Morphology, NormTerm, Port, PortDirection,
-    PortValue, Sensorium, Visibility, Wiring, WorldTerm,
+    ActionRole, Actuation, Actuator, BodyTerm, CalibrationTerm, EnvironmentTerm, Morphology,
+    NormTerm, Port, PortDirection, PortValue, ScoringTerm, Sensorium, SupportRestoration,
+    Visibility, Wiring, WorldTerm,
 };
 
 const CELLS: usize = 9;
@@ -31,6 +32,11 @@ fn actuator(action: Action) -> Actuator {
         id: action.index() as u16,
         name: action.name().to_string(),
         displacement: action.displacement() as i32,
+        role: match action {
+            Action::Hold => ActionRole::Hold,
+            Action::Fallback => ActionRole::Fallback,
+            Action::Step | Action::Leap | Action::Back => ActionRole::Movement,
+        },
     }
 }
 
@@ -48,8 +54,8 @@ fn term_for(name: &str, contract: &Contract) -> WorldTerm {
             Port::new("learner_action", PortDirection::Output, PortValue::Command).public(),
             Port::new("body_command", PortDirection::Input, PortValue::Command).public(),
             Port::new("cell", PortDirection::Output, PortValue::Cell).public(),
-            // The signal is present so the term has a typed home for a future
-            // reveal implementation; static cases intentionally emit none.
+            // Restoration announcements and ordinary reveals share this
+            // explicit public signal boundary.
             Port::new("reveal", PortDirection::Output, PortValue::Signal).public(),
         ],
         wiring: vec![Wiring {
@@ -82,6 +88,30 @@ fn term_for(name: &str, contract: &Contract) -> WorldTerm {
             },
             visibility: Visibility::Public,
         },
+        scoring: ScoringTerm {
+            goal_reward: 100,
+            action_cost: 1,
+            fallback_reward: 50,
+            violation_penalty: -100,
+        },
+        calibration: Some(CalibrationTerm {
+            pulses: contract
+                .calibration_pulses()
+                .into_iter()
+                .map(|action| action.index() as u16)
+                .collect(),
+            publishes_cells: true,
+        }),
+        restorations: contract
+            .restore
+            .map(|restore| SupportRestoration {
+                actuator: restore.actuator as u16,
+                after_step: restore.after_step,
+                announcement_port: "reveal".into(),
+                announcement_value: (restore.actuator * 100 + restore.after_step + 1) as i64,
+            })
+            .into_iter()
+            .collect(),
         disturbance: None,
         scaffold: None,
         couplings: Vec::new(),
@@ -95,58 +125,26 @@ fn ids(actions: &[Action]) -> Vec<u16> {
     actions.iter().map(|action| action.index() as u16).collect()
 }
 
-/// Roll the compiled transition while retaining Card 03's fallback semantics.
-/// This is intentionally a test oracle, not a second production evaluator: it
-/// lets the harness compare the compiler's transition path before the compiler
-/// gains the Card 03-specific scoring primitive.
+/// Map generic compiler facts to the handwritten oracle's named outcome.  The
+/// compiler, rather than this harness, owns transition, absorption, and value.
 fn compiled_outcome_with_goal(
     term: &pretraining_term_compiler::CompiledWorld,
     goal: usize,
     actions: &[Action],
 ) -> Outcome {
-    let mut cell = term.fragment.start(&term.contract);
-    let mut path = vec![cell];
-    let mut fallback_step = None;
-    for (executed, action) in actions.iter().copied().enumerate() {
-        if fallback_step.is_some() {
-            path.push(cell);
-            continue;
-        }
-        if action == Action::Fallback {
-            fallback_step = Some(executed);
-            path.push(cell);
-            continue;
-        }
-        cell = term
-            .fragment
-            .step(&term.contract, cell, executed, action.index() as u16);
-        path.push(cell);
-    }
-    if let Some(step) = fallback_step {
-        return Outcome {
-            value: 50 - step as i32,
-            reached_goal: false,
-            fell_back: true,
-            fallback_step: Some(step),
-            final_cell: cell,
-        };
-    }
-    let settle = (0..path.len()).find(|index| path[*index..].iter().all(|entry| *entry == goal));
+    let outcome = term.outcome(&ids(actions));
     Outcome {
-        value: settle.map_or(0, |steps| 100 - steps as i32),
-        reached_goal: settle.is_some(),
-        fell_back: false,
-        fallback_step: None,
-        final_cell: cell,
+        value: outcome.value,
+        reached_goal: outcome.norm_met && outcome.final_cell == goal,
+        fell_back: outcome.fell_back,
+        fallback_step: outcome.fallback_step,
+        final_cell: outcome.final_cell,
     }
 }
 
 #[test]
-fn static_card03_cases_match_all_transition_and_outcome_sequences() {
-    for case in card_cases()
-        .into_iter()
-        .filter(|case| case.contract.restore.is_none())
-    {
+fn card03_cases_match_all_transition_and_outcome_sequences_including_restoration() {
+    for case in card_cases() {
         let term = term_for(case.kind.label(), &case.contract);
         let compiled = term.compile().expect("static Card 03 term validates");
         assert_eq!(compiled.actions(), ids(&ACTIONS));
@@ -220,7 +218,6 @@ fn public_view_has_no_support_or_edge_fields_and_privileged_view_keeps_them() {
 
     // Public views are a trace-only type and do not expose the private support
     // or edge representation. The typed public ports are shared too.
-    assert_eq!(body.public_view(&[]), environment.public_view(&[]));
     assert!(body
         .audit_metadata()
         .public_ports
@@ -230,15 +227,63 @@ fn public_view_has_no_support_or_edge_fields_and_privileged_view_keeps_them() {
 }
 
 #[test]
-fn the_current_compiler_gates_are_explicitly_separate_from_pending_card03_gates() {
-    // This assertion is deliberately about status, so future implementation
-    // work cannot silently call the partial harness a full Card 03 audit.
-    let static_cases = card_cases()
+fn calibration_is_unscored_public_and_restoration_is_announced_before_scoring() {
+    let mut visible_swaps = 0usize;
+    for case in card_cases()
         .into_iter()
         .filter(|case| case.contract.restore.is_none())
-        .count();
-    assert_eq!(static_cases, 10);
-    assert_eq!(12 - static_cases, 2);
-    // Pending: calibration prelude/public trace, support restoration, compiler
-    // value(), exact ambiguity/orbit/query parity, and profiled rendering.
+    {
+        let compiled = term_for(case.kind.label(), &case.contract)
+            .compile()
+            .unwrap();
+        let trace = compiled.public_view(&[]).trace;
+        let calibration: Vec<i64> = case
+            .contract
+            .calibration_trace()
+            .into_iter()
+            .map(|cell| cell as i64)
+            .collect();
+        assert_eq!(&trace[..calibration.len()], calibration);
+        let swapped = term_for("environment", &body_environment_swap(&case.contract))
+            .compile()
+            .unwrap();
+        visible_swaps += usize::from(compiled.public_view(&[]) != swapped.public_view(&[]));
+    }
+    assert_eq!(visible_swaps, 3);
+
+    for case in card_cases()
+        .into_iter()
+        .filter(|case| case.contract.restore.is_some())
+    {
+        let compiled = term_for(case.kind.label(), &case.contract)
+            .compile()
+            .unwrap();
+        let trace = compiled.public_view(&[]).trace;
+        let calibration_len = case.contract.calibration_trace().len();
+        let restoration = case.contract.restore.unwrap();
+        assert_eq!(
+            trace[calibration_len + 1],
+            (restoration.actuator * 100 + restoration.after_step + 1) as i64
+        );
+        // Restoration follows the absolute scored clock: unsupported at action
+        // zero, available at action one for the audited fixture.
+        assert_eq!(
+            compiled.fragment.step(
+                &compiled.contract,
+                case.contract.start,
+                0,
+                restoration.actuator as u16
+            ),
+            case.contract.start
+        );
+        assert_ne!(
+            compiled.fragment.step(
+                &compiled.contract,
+                case.contract.start,
+                1,
+                restoration.actuator as u16
+            ),
+            case.contract.start
+        );
+    }
 }
