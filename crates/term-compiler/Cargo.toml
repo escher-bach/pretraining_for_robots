@@ -1,0 +1,13 @@
+[package]
+name = "pretraining-term-compiler"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pretraining_term_compiler"
+
+[dependencies]
+pretraining-g0-contract = { path = "../g0-contract" }
+rand = "0.8.5"
+rand_chacha = "0.3.1"
+serde = { version = "1.0", features = ["derive"] }
