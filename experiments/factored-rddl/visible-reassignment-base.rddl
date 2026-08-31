@@ -11,8 +11,8 @@ instance visible-reassignment-base {
     init-state {
         assigned(s0, c0);
         assigned(s1, c1);
-        source-value(s0) = 7;
-        source-value(s1) = 3;
+        source-value(s0) = 0;
+        source-value(s1) = 0;
     };
     max-nondef-actions = 1;
     horizon = 2;

@@ -81,6 +81,20 @@ semantic filter, with these predicates:
 
 A candidate that fails the receipt filter is not emitted.
 
+## Expressiveness boundary
+
+Arbitrary finite graphs are sufficient as a bounded execution IR, but opaque
+state identifiers do not preserve the object, relation, and permutation
+structure needed to state T4 capability contrasts. The architecture decision
+is recorded in `FACTORED-CAPABILITY-ADR.md`: a deterministic finite RDDL source
+layer should ground into this graph executor instead of creating a parallel
+runtime or a collection of topology-specific generators.
+
+The first source-format conformance witness lives in
+`../factored-rddl/`. It checks visible reassignment of two exchangeable hidden
+sources through public channel actions and observations. It is not yet a Rust
+lowering, card migration, or learner-facing family.
+
 ## Verification
 
 Run locally from this worktree:

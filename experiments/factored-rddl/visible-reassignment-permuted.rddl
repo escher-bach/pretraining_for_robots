@@ -12,8 +12,8 @@ instance visible-reassignment-permuted {
     init-state {
         assigned(s0, c1);
         assigned(s1, c0);
-        source-value(s0) = 3;
-        source-value(s1) = 7;
+        source-value(s0) = 0;
+        source-value(s1) = 0;
     };
     max-nondef-actions = 1;
     horizon = 2;

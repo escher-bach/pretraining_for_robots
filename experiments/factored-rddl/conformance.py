@@ -135,6 +135,11 @@ def assert_preserving_permutation() -> None:
         ],
     )
     assert [step["reward"] for step in base_trace] == [0.0, 1.0]
+    assert base_trace[0]["public_observation"] == {
+        "boundary": True,
+        "channel-value___c0": 0,
+        "channel-value___c1": 1,
+    }
     assert [step["reward"] for step in base_trace] == [step["reward"] for step in permuted_trace]
     for left, right in zip(base_trace, permuted_trace, strict=True):
         assert left["public_observation"] == right["public_observation"]
@@ -150,6 +155,11 @@ def assert_meaning_changing_relation_edit() -> None:
     assert replay(base, [first, new_channel])[-1]["reward"] == 1.0
     assert replay(edit, [first, new_channel])[-1]["reward"] == 0.0
     assert replay(edit, [first, old_channel])[-1]["reward"] == 1.0
+    assert replay(edit, [first])[0]["public_observation"] == {
+        "boundary": True,
+        "channel-value___c0": 1,
+        "channel-value___c1": 0,
+    }
 
 
 def assert_hidden_boundary() -> None:

@@ -9,8 +9,9 @@ source-to-channel assignment, hidden source values and bound-source state, a
 public channel-value observation, a public reassignment boundary, a relational
 action precondition, and deterministic conditional transition functions. The
 only public action is `pulse(channel)`: it binds the source reached at the
-first channel, then the declared boundary reassigns sources. A successful
-second pulse must follow that same hidden source to its new public channel.
+first channel and increments that otherwise exchangeable source, then the
+declared boundary reassigns sources. A successful second pulse must follow the
+action-created public value marker to that same hidden source's new channel.
 The four instances form one preserving source-permutation pair, one
 meaning-changing target-relation edit, and one hidden-only boundary variant.
 

@@ -1,5 +1,6 @@
 // This differs from the base only in the target relation.  The base's
-// post-swap select(s0,c1) is no longer legal, so this is meaning-changing.
+// post-boundary correct pulse changes from c1 to c0, so this is
+// meaning-changing.
 instance visible-reassignment-relation-edit {
     domain = visible-reassignment;
     objects {
@@ -13,8 +14,8 @@ instance visible-reassignment-relation-edit {
     init-state {
         assigned(s0, c0);
         assigned(s1, c1);
-        source-value(s0) = 7;
-        source-value(s1) = 3;
+        source-value(s0) = 0;
+        source-value(s1) = 0;
     };
     max-nondef-actions = 1;
     horizon = 2;
