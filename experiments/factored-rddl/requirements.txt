@@ -1,0 +1,2 @@
+# Keep this experiment isolated from the repository's learner dependencies.
+pyRDDLGym==2.7

@@ -1,0 +1,21 @@
+// The base instance after the preserving source permutation s0 <-> s1.
+instance visible-reassignment-permuted {
+    domain = visible-reassignment;
+    objects {
+        source : {s0, s1};
+        channel : {c0, c1};
+    };
+    non-fluents {
+        target-map(s0, c0);
+        target-map(s1, c1);
+    };
+    init-state {
+        assigned(s0, c1);
+        assigned(s1, c0);
+        source-value(s0) = 3;
+        source-value(s1) = 7;
+    };
+    max-nondef-actions = 1;
+    horizon = 2;
+    discount = 1.0;
+}

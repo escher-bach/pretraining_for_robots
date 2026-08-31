@@ -1,0 +1,52 @@
+// Deterministic, partially observed, relational source model.
+//
+// A public pulse acts on a channel, not a source. On the first step the world
+// binds the source at that channel, reassigns sources to channels, and emits a
+// public boundary. The second pulse must follow the same hidden source to its
+// new public channel value.
+domain visible-reassignment {
+    requirements {
+        partially-observed,
+        cpf-deterministic
+    };
+
+    types {
+        source : object;
+        channel : object;
+    };
+
+    pvariables {
+        target-map(source, channel) : { non-fluent, bool, default = false };
+        private-token : { non-fluent, bool, default = false };
+
+        assigned(source, channel) : { state-fluent, bool, default = false };
+        source-value(source) : { state-fluent, int, default = 0 };
+        bound(source) : { state-fluent, bool, default = false };
+        boundary-fired : { state-fluent, bool, default = false };
+
+        pulse(channel) : { action-fluent, bool, default = false };
+
+        channel-value(channel) : { observ-fluent, int };
+        boundary : { observ-fluent, bool };
+    };
+
+    cpfs {
+        assigned'(?s, ?c) = if (~boundary-fired) then target-map(?s, ?c) else assigned(?s, ?c);
+        source-value'(?s) = source-value(?s);
+        bound'(?s) = if (~boundary-fired) then
+            exists_{?c : channel} [pulse(?c) ^ assigned(?s, ?c)]
+            else bound(?s);
+        boundary-fired' = true;
+        channel-value(?c) = sum_{?s : source}
+            if (assigned'(?s, ?c)) then source-value'(?s) else 0;
+        boundary = boundary-fired';
+    };
+
+    // Every channel must be backed by some source before it can be pulsed.
+    action-preconditions {
+        forall_{?c : channel} [pulse(?c) => exists_{?s : source} assigned(?s, ?c)];
+    };
+
+    reward = sum_{?s : source, ?c : channel}
+        if (boundary-fired ^ bound(?s) ^ pulse(?c) ^ assigned(?s, ?c)) then 1 else 0;
+}
