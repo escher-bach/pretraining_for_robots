@@ -209,6 +209,7 @@ dependencies = [
 name = "pretraining-term-compiler"
 version = "0.1.0"
 dependencies = [
+ "pretraining-card03-affordance",
  "pretraining-g0-contract",
  "rand",
  "rand_chacha",

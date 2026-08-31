@@ -11,3 +11,6 @@ pretraining-g0-contract = { path = "../g0-contract" }
 rand = "0.8.5"
 rand_chacha = "0.3.1"
 serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+pretraining-card03-affordance = { path = "../card03-affordance" }
