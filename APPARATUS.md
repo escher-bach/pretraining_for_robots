@@ -83,9 +83,10 @@ python -m unittest discover -s python/tests -v
 
 ## R10 seed gate
 
-The fixed CPU pilot and later lineage contracts are
+The preserved CPU pilot and later lineage contracts are
 `configs/r10/seed_gate_cpu.toml` and `configs/r10/lineage_contract.toml`.
-Run the timing decision before any pilot is scored:
+The CPU timing command remains reproducible, but R10 is closed and it is not an
+instruction to score another pilot:
 
 ```powershell
 $env:PYTHONPATH = (Resolve-Path python).Path
@@ -95,26 +96,53 @@ python -m pretraining_experiments.seed_gate `
   --preflight-only
 ```
 
-The current local receipt is unscored: four selected-core updates at the
+The preserved local receipt is unscored: four selected-core updates at the
 per-family maximum padded length took 8.43 seconds, over the fixed three-second
 limit. Do not run the CPU pilots after that verdict. The fixed one-T4 execution
-contract is `configs/r10/seed_gate_t4.toml`; launch it through the same exact-SHA
-control plane:
+contract was `configs/r10/seed_gate_t4.toml`:
 
 ```powershell
 python tools/kaggle_run.py launch --experiment r10-seed-gate
 ```
 
-That first T4 run completed but is retained as an apparatus result, not learner
-evidence: row-wise action L1 decreased while the declared grouped ActionQuery
-argmax did not improve, and iterable prefetch overstated presentations. The
-only authorized follow-up preserves every scientific setting and replaces just
-that objective with standard categorical cross-entropy over the public query
-alternatives; group addresses remain loss-only metadata. Use the versioned
-contract and registry entry (never overwrite the first receipt):
+That first T4 run is retained as apparatus evidence: row-wise action L1 did not
+optimize declared grouped ActionQuery argmax, and iterable prefetch overstated
+presentations. The one permitted repair used standard categorical cross-entropy
+over public query alternatives; group addresses remained loss-only metadata.
+Its versioned contract and registry entry were:
 
 ```powershell
 python tools/kaggle_run.py launch --experiment r10-seed-gate-grouped
+```
+
+It is complete and decisive; do not run this command again for R10. Verified
+receipt: `audit/runs/pretraining-r10-seed-gate-grouped-e2dc185/receipt.json`.
+At source `e2dc1856ab56e45f55d5fa01e63d0bd0f90035b6`, CUDA preflight was 3.0558
+seconds for four updates and 0.7171 seconds for full evaluation. Each family
+used 256 consumed presentations. Card 02 was frontier-admitted; Cards 04, 03,
+05, and 06 were valid but inconclusive, so the classifier is
+`seed_gate_incomplete` and R11 remains blocked. The structural gate checks are
+audited; the `0.80` final, `0.25` gain, `0.60` every-case-kind, and cadence
+barriers were predeclared heuristic/unpowered decision thresholds. The
+configuration's `primary` field name is stale: classification actually checked
+all `by_case_kind` values, with no outcome changed.
+
+## R10a Card 06 compatibility scale
+
+`configs/r10/card06_compatibility_scale_t4.toml` is a separate diagnostic
+profile, not an R10 retry. It preserves Card 06 contract `76a08f38947c8cae`,
+the selected core, grouped raw-logit objective/evaluator, seeds, batch, and
+optimizer, while declaring a new 256-update cosine horizon. Decision rungs are
+64, 128, and 256 updates; the receipt records the earliest exact full-support
+fit and whether it remains exact through all later rungs. Stable exact fit may
+only open a separately declared generalization profile. Unstable or incomplete
+fit sends Card 06 to optimization diagnosis, decomposition, or deferral. None
+of these outcomes changes R10 or authorizes R11.
+
+Launch only from a committed, reachable SHA:
+
+```powershell
+python tools/kaggle_run.py launch --experiment r10a-card06-compatibility-scale
 ```
 
 At repository creation, 116 Rust tests and 37 Python tests pass.

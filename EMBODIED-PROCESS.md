@@ -394,10 +394,16 @@ For a capability selected from the graph:
 6. Declare preserving and meaning-changing transformations.
 7. Compile the family contract through the shared views and queries.
 8. Audit non-interference, ambiguity, bounds, baselines, replay, and orbits.
-9. Render through the common learner event boundary and run a bounded pilot.
-10. Promote the family only if it produces a usable progress signal.
-11. Run the matched descendant comparison when its decision gate is reached.
-12. Update the graph from transfer evidence, not from source mastery.
+9. Render through the common learner event boundary and run a bounded pilot
+   under an explicit AdmissionProfile.
+10. Classify the result as a world defect, apparatus defect, learner/support
+    fit, scaling question, or transfer/generalization result before changing
+    the family.
+11. Promote the family only if it produces a usable progress signal under that
+    profile. If it is valid but incompatible, issue a decomposition certificate
+    or defer it with a concrete re-entry condition.
+12. Run the matched descendant comparison when its decision gate is reached.
+13. Update the graph from transfer evidence, not from source mastery.
 
 A process operator or world family enters the apparatus only if it changes
 possible public histories or attainable outcomes, isolates that change in a

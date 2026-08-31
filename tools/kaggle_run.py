@@ -383,7 +383,7 @@ def collect(kernel: str) -> Path:
     training_result = (
         json.loads(training_files[0].read_text(encoding="utf-8")) if len(training_files) == 1 else {}
     )
-    seed_gate = summary.get("seed_gate")
+    finite_g0_report = summary.get("card06_scale_diagnostic") or summary.get("seed_gate")
     receipt = {
         "schema_version": 1,
         "run_id": versioned_kernel,
@@ -416,7 +416,7 @@ def collect(kernel: str) -> Path:
         "recovery_artifact": summary.get("recovery_artifact"),
         "architecture_gate_passed": summary.get("architecture_gate_passed"),
         "architecture_gate_progress": summary.get("architecture_gate_progress"),
-        "scientific_report": seed_gate,
+        "scientific_report": finite_g0_report,
         "audit_verified": True,
         "verified_manifest_entries": verified_entries,
         "remote_manifest_sha256": hashlib.sha256(

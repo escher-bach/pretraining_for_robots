@@ -1,0 +1,14 @@
+{
+  "actual_tokens": 30,
+  "classification": "preflight_passed",
+  "device": "cuda",
+  "family": "card04",
+  "full_corpus_eval_limit_seconds": 10,
+  "full_corpus_eval_seconds": 0.7170875389999765,
+  "padding_strategy": "family_max_profiled_length_under_cap",
+  "passed": true,
+  "sequence_cap": 192,
+  "update_limit_seconds": 10,
+  "update_seconds": 3.0558106789999897,
+  "updates": 4
+}

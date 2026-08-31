@@ -104,6 +104,16 @@ class KaggleContractTests(unittest.TestCase):
         self.assertEqual(config["seed_gate"]["action_query_objective"], "grouped_action_query_cross_entropy")
         self.assertEqual(config["seed_gate"]["apparatus_repair"], "r10-grouped-action-query-objective-v1")
 
+    def test_card06_scale_diagnostic_has_its_own_registry_and_not_an_r10_section(self) -> None:
+        control = load_control_plane()
+        _, experiment = control.experiment("r10a-card06-compatibility-scale")
+        self.assertEqual(experiment["config"], "configs/r10/card06_compatibility_scale_t4.toml")
+        config_path = ROOT / experiment["config"]
+        config = __import__("tomllib").loads(config_path.read_text(encoding="utf-8"))
+        self.assertNotIn("seed_gate", config)
+        self.assertEqual(config["scale_diagnostic"]["family"], "card06")
+        self.assertEqual(config["run"]["max_updates"], 256)
+
 
 if __name__ == "__main__":
     unittest.main()

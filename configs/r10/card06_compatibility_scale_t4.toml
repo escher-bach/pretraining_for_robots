@@ -1,0 +1,56 @@
+schema_version = 1
+
+[scale_diagnostic]
+profile = "r10a-card06-compatibility-scale-v1"
+family = "card06"
+root_seed = 20260829
+r9_finalized = true
+# This is a new scale-profile scheduler horizon, not a continuation or
+# replication of the 64-update R10 pilot.
+evaluation_steps = [0, 64, 128, 256]
+# Step 0 is initialization-only. The rungs below are the prospective scale
+# decisions; an exact fit must persist through the final rung.
+decision_rungs = [64, 128, 256]
+schedule_horizon_updates = 256
+r10_replication = false
+per_family_timeout_seconds = 300
+total_timeout_seconds = 600
+timing_updates = 4
+timing_updates_max_seconds = 10
+timing_eval_max_seconds = 10
+padding_strategy = "family_max_profiled_length_under_cap"
+action_query_objective = "grouped_action_query_cross_entropy"
+contract_hash = "76a08f38947c8cae"
+distinct_episode_count = 32
+stable_exact_action = "support-compatible; eligible only for a separately declared Card06 generalization profile; no R10 admission or R11 claim"
+unstable_action = "optimization-stability investigation or defer Card06"
+incomplete_action = "decompose Card06 into a more basic capability or defer Card06"
+
+[scale_diagnostic.family_seed]
+init = 2026082905
+train = 2026083005
+eval = 2026083105
+
+[run]
+name = "r10a-card06-compatibility-scale-t4"
+purpose = "separate Card06 finite-support compatibility scale diagnostic; not R10 admission or transfer"
+checkpoint_label = "r10a-card06-compatibility-scale"
+entrypoint = "seed_gate"
+max_wall_clock_seconds = 3600
+seed_gate_phase_timeout_seconds = 600
+seed = 20260829
+device = "cuda"
+mixed_precision = "fp16"
+max_updates = 256
+per_device_batch_size = 4
+gradient_accumulation_steps = 1
+learning_rate = 0.0003
+weight_decay = 0.1
+warmup_updates = 4
+max_grad_norm = 1.0
+log_every = 16
+
+[model]
+config = "artifacts/icrt-derived-small/model_config.json"
+sequence_length = 192
+token_abi_version = "physical-event-abi-0.3.1"

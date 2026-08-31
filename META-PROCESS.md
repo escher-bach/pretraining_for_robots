@@ -90,3 +90,33 @@ Report in this order:
 
 An apparatus failure says the measurement could not be made. It is not evidence
 against a world or capability. A source-world learner result is not transfer.
+
+## Compatibility discipline
+
+Before a learner gate, record an `AdmissionProfile`: contract hash, learner and
+initialization, loss, public support, evaluator, presentations and updates,
+cadence, thresholds, and stop rule. Separate two kinds of barriers in the
+report:
+
+- Structural barriers are grounded by executable contracts and audits: public
+  information separation, valid baselines and ceilings, nondegenerate controls,
+  deduplicated public support, exact accounting, sealed transfer, and a working
+  learner/evaluator boundary.
+- Numeric barriers are predeclared decision thresholds. They may be useful for
+  a gate, but without calibration or power analysis they are heuristic and
+  unpowered; crossing or missing one must not be narrated as a natural
+  learnability boundary.
+
+For R10 specifically, the 64-update budget, `0.80` final macro, `0.25` gain,
+`0.60` every-case-kind requirement, and evaluation cadence were such heuristic,
+unpowered barriers. They remain binding for the closed gate because changing
+them after observing outcomes would erase the decision they were meant to make.
+
+When a profile misses admission, classify the result before modifying a world:
+world defect (the semantic contrast or controls fail), apparatus defect (the
+measurement is invalid), learner/support fit (the valid fixed pairing is
+inconclusive), scaling question (a rising curve justifies a card-local scaling
+profile), or generalization failure (a matched transfer curve fails). Preserve
+the receipt and state the classification. A world is simplified only through a
+new, auditable capability decomposition, never by quietly relaxing its witness
+or controls to accommodate a learner.

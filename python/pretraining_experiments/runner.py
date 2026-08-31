@@ -429,7 +429,7 @@ def main() -> None:
             )
             receipt_path = output_root / "seed-gate-receipt.json"
             if not receipt_path.is_file():
-                raise RuntimeError("R10 seed gate finished without its compact receipt")
+                raise RuntimeError("finite-G0 profile finished without its compact receipt")
             receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
             phase_update(
                 phase_path,
@@ -597,9 +597,13 @@ def main() -> None:
                 (output_root / "trivial-policy-baselines.json").read_text(encoding="utf-8")
             )
         if (output_root / "seed-gate-receipt.json").exists():
-            summary["seed_gate"] = json.loads(
+            finite_g0_receipt = json.loads(
                 (output_root / "seed-gate-receipt.json").read_text(encoding="utf-8")
             )
+            if "scale_diagnostic" in config:
+                summary["card06_scale_diagnostic"] = finite_g0_receipt
+            else:
+                summary["seed_gate"] = finite_g0_receipt
         atomic_json(output_root / "summary.json", summary)
 
     if status != "complete":

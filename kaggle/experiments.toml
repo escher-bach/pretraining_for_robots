@@ -21,3 +21,9 @@ title = "R10 five-family finite-G0 seed gate: grouped-objective repair"
 slug_prefix = "pretraining-r10-seed-gate-grouped"
 config = "configs/r10/seed_gate_t4_grouped.toml"
 purpose = "run the single bounded grouped ActionQuery apparatus repair on one T4"
+
+[experiments.r10a-card06-compatibility-scale]
+title = "Card06 finite-support compatibility scale diagnostic"
+slug_prefix = "pretraining-r10a-card06-compatibility-scale"
+config = "configs/r10/card06_compatibility_scale_t4.toml"
+purpose = "run the separate 256-update Card06 support-fit diagnostic on one T4"

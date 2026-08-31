@@ -85,17 +85,36 @@ hash; a learner-facing rendering; and a downstream falsifier.
 ## Family lifecycle
 
 ```text
-proposed -> candidate -> audited -> frontier -> replay/sentinel -> archived
+proposed -> candidate -> audited -> compatibility-characterized -> frontier
+         -> replay/sentinel -> archived
+                         \-> decomposed/deferred -> re-entry
 ```
 
 - `candidate`: executable contract and minimal witness exist.
 - `audited`: semantics, information boundary, baselines, ambiguity, negatives,
   replay, and invariance pass.
-- `frontier`: a bounded pilot proves the common learner/evaluator can interact
-  with the family and exposes a nontrivial learning-progress signal.
+- `compatibility-characterized`: a fixed learner, objective, support, and
+  budget have been run with a recorded `AdmissionProfile`. It says which
+  learner/world pairing was tested; it does not yet assert that the world is
+  easy, hard, or developmentally ordered.
+- `frontier`: a compatibility-characterized pilot satisfies its declared
+  AdmissionProfile and exposes a nontrivial learning-progress signal.
+- `decomposed/deferred`: a valid family that is not frontier under its declared
+  profile has a small capability decomposition certificate and a precise
+  re-entry condition. It is not silently weakened or retried.
 - A semantic change creates a new version. A new seed does not.
 - A failed family gets one bounded repair when the claim stays unchanged;
   otherwise it is deferred or archived and does not block unrelated trunks.
+
+An `AdmissionProfile` fixes the learner core and initialization policy,
+objective, public training support, evaluator, update and presentation budget,
+cadence, thresholds, and stop rule. Its thresholds are decision barriers, not
+estimates of a natural learnability boundary: they must be declared before the
+run and justified as sufficient to choose a path, but are not treated as
+scientifically derived without power or calibration evidence. Structural gate
+requirements (valid contracts, no leakage, distinct public episodes, fixed
+comparators, sealed transfer, and exact accounting) are grounded by the
+contracts and audits; numeric cadence and thresholds are not.
 
 ## Seed gate
 
@@ -115,6 +134,36 @@ Multi-world pretraining begins when:
 Cards 01, 07, and 08 and complete visual grounding are not prerequisites for
 this gate.
 
+## Compatibility diagnosis and re-entry
+
+A failed admission barrier is a classification problem, not permission to tune
+until a score crosses it. Use the cheapest observation that can distinguish the
+following evidence classes before scheduling another learner run.
+
+| Observation | Classification | Permitted next action | Not established |
+|---|---|---|---|
+| Broken contract, leaked target, wrong public policy, invalid orbit/baseline, or a degenerate solution that survives the card controls | World defect | Repair or replace the contract, then re-audit under a new hash. | A learner limitation or a capability claim. |
+| ABI/bounds failure, objective/evaluator mismatch, incorrect accounting, timeout, nondeterminism, or unsupported training path | Apparatus defect | One bounded apparatus repair with worlds, profile budget, and claim fixed; preserve the failed receipt. | Evidence against the world or learner. |
+| Audits and apparatus pass, but the fixed profile fails its barrier | Learner/support fit | Mark compatibility-characterized and inconclusive; issue a decomposition certificate or defer. | That the world is defective, impossible to learn, or unsuitable for every learner. |
+| Improvement is present but misses a barrier, or support/cadence is too small to characterize the curve | Scaling question | A card-local scaling profile only when the curve and a predeclared decision make it informative. | Admission, transfer, or a reason to alter the portfolio gate. |
+| An admitted source signal does not improve a held-out matched descendant versus scratch and alternative pretraining | Generalization/transfer failure | Remove or narrow the predicted graph edge; retain source evidence separately. | That the source world was invalid. |
+
+Every `decomposed/deferred` record carries a **decomposition certificate**:
+the original behavioural relation; the proposed more basic relation; which
+world component or decision is removed; the controls and invariances retained;
+why the resulting target is more compatible with the observed learner profile;
+the falsifier; and the exact re-entry condition. A certificate may defer a
+composite world to a later trunk, but may not relabel a new capability as a
+repair of the old one.
+
+A **scaling profile** is a new, card-local AdmissionProfile, not a relaxed
+version of an old gate. It fixes the unchanged contract hash, learner and
+objective, support, scale points, accounting, stopping rule, and the decision
+that each scale point can change. It must say why the existing learning curve,
+rather than hope, warrants scale. Re-entry requires a completed certificate or
+scaling profile, a fresh path row, and explicit compute authorization; neither
+can reopen a closed portfolio gate.
+
 ## Progress chart
 
 Every piece of work names one row.
@@ -133,8 +182,9 @@ Every piece of work names one row.
 | R7 | Card 02 predictive-state family | Complete | Seven-cell ring, three decisions, ten cases. Ablating the latch costs exactly half the ceiling on the witness and nothing on either control; the required memory span is sharp at three; the aliasing interval separates no two modes under any probe; all sixteen value-orbit and four information-orbit verdicts hold. |
 | R8 | Card 05 active-experimentation family | Complete | Three outcome cells, two decisions, sixteen cases. Privileged 99, public 98, no-probe 49.5: the first non-vacuous ambiguity gap in the portfolio. Probing is the correct public opening on the witness and on no control; the matched control holds where the probe is matched and informative, and the audit names which clause each control breaks. |
 | R9 | Card 06 perceptual-organization family | Complete | Contract `76a08f38947c8cae`: 36 exact cases and 32 distinct public episodes. Two evolving latent sources execute shared `Override` coupling and continue/freeze interruption; the audit reports the exact shared posterior, agent-equivalence ambiguity, noninterference, four preserving orbits, three meaning-changing/information orbits, all four controls, and learner round-trips. |
-| R10 | Four-trunk seed portfolio | One bounded apparatus repair queued | The preserved exact-SHA one-T4 pilot completed its timing and all five family runs, but no family was admitted. Across every family the row-wise L1 training loss fell while grouped ActionQuery argmax stayed flat or regressed, showing that the training objective did not optimize the declared categorical measure; iterable prefetch also inflated reported presentations (520 versus 256 consumed). The worlds, seeds, core, budgets, thresholds, and evaluator are unchanged. `seed_gate_t4_grouped.toml` declares the sole permitted repair: supervision-only group addresses with categorical cross-entropy over query alternatives, plus completed-step accounting. Its result decides conditions 1 and 4; no further R10 repair is authorized. |
-| R11 | Multi-world learner lineage | Blocked by R10 and GPU authorization | Matched fixed-mixture and direct hill-climbing sessions over immutable checkpoints, with concurrent preparation permitted, retention, full cost, and stop rules. |
+| R10 | Four-trunk seed portfolio | Complete — seed gate incomplete | The one permitted grouped-objective repair is audit-verified at source `e2dc1856ab56e45f55d5fa01e63d0bd0f90035b6`: CUDA preflight passed (four updates 3.0558 s; full-corpus evaluation 0.7171 s), and every finite pilot completed with ABI/bounds checks and exactly 256 consumed presentations. Only Card 02 (`74b2d0da16ad3b31`) is frontier-admitted: macro grouped argmax `0.1667 -> 0.9375`, final all-case-kind minimum `0.8333`. Cards 04 (`0.3395 -> 0.4259`, minimum `0.3333`), 03 (`0.4667 -> 0.6000`, minimum `0.2500`), 05 (`0.1250 -> 0.6875`, minimum `0.2500`), and 06 (`0.2500 -> 0.6875`, minimum `0.5625`) are audited and inconclusive under the fixed `0.80` final / `0.25` gain / `0.60` every-case-kind barriers. The configuration's `required_primary_case_kind_argmax` name is stale: classification used all `by_case_kind` entries, not only primary kinds; that stricter implementation changes no outcome. The overall classifier is `seed_gate_incomplete`; no second R10 repair or R11 launch is authorized. Compact evidence: `audit/runs/pretraining-r10-seed-gate-grouped-e2dc185/receipt.json`; run: `https://www.kaggle.com/code/aniruddhavarma/pretraining-r10-seed-gate-grouped-e2dc185`. This is source-family learner evidence, not transfer evidence. |
+| R10a | Post-gate compatibility triage | Ready; does not reopen R10 | Use the fixed R10 result to choose the next smallest card-local diagnostic, not a new portfolio gate or R11 launch. Card 04: decompose goal-use from switch/viability and defer the composite. Card 03: decompose body identification from reachability planning; scale only after a separately justified profile. Card 05: decompose reveal use from probe value. Card 06: permit one Card-06-only scale diagnostic because its grouped curve rose `0.2500 -> 0.6875` at 64 updates, while preserving its contract and recording a new AdmissionProfile. |
+| R11 | Multi-world learner lineage | Blocked by incomplete R10 seed gate | Matched fixed-mixture and direct hill-climbing sessions over immutable checkpoints require frontier families across T1, T2, T3, and T4. R10 admitted only Card 02 (T1), so no lineage may launch. |
 | R12 | Held-out transfer claim | Blocked by R11 | Learning-curve advantage over scratch and alternative pretraining with retention. |
 | R13 | Dependent composition, prompting, and grounding | Evidence-gated | Cards 01/07/08 and visual or physical descendants opened by R11–R12 evidence. |
 

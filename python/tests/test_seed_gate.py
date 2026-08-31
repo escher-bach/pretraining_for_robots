@@ -8,6 +8,9 @@ import torch
 from pretraining_experiments.data import MODEL_FIELDS, generate_g0_mixed_torch_batch, g0_corpus_manifest
 from pretraining_experiments.seed_gate import (
     CONTRACT_HASHES,
+    CARD06_SCALE_PROFILE,
+    card06_scale_decision,
+    classify_card06_scale_pilot,
     classify_seed_gate_pilot,
     consumed_training_cost,
     evaluate_g0_corpus,
@@ -126,6 +129,59 @@ class SeedGateTests(unittest.TestCase):
         self.assertEqual(original["model"], repaired["model"])
         self.assertEqual(repaired["seed_gate"]["action_query_objective"], "grouped_action_query_cross_entropy")
         self.assertEqual(repaired["seed_gate"]["apparatus_repair"], "r10-grouped-action-query-objective-v1")
+
+    def test_card06_scale_profile_is_a_separate_fixed_contract(self) -> None:
+        config = load_seed_gate_config(
+            ROOT / "configs" / "r10" / "card06_compatibility_scale_t4.toml"
+        )
+        gate = config["scale_diagnostic"]
+        self.assertNotIn("seed_gate", config)
+        self.assertEqual(gate["profile"], CARD06_SCALE_PROFILE)
+        self.assertEqual(gate["family"], "card06")
+        self.assertEqual(gate["contract_hash"], CONTRACT_HASHES["card06"])
+        self.assertEqual(gate["evaluation_steps"], [0, 64, 128, 256])
+        self.assertEqual(gate["schedule_horizon_updates"], 256)
+        self.assertFalse(gate["r10_replication"])
+        self.assertEqual(gate["decision_rungs"], [64, 128, 256])
+        self.assertEqual(
+            gate["stable_exact_action"],
+            "support-compatible; eligible only for a separately declared Card06 generalization profile; no R10 admission or R11 claim",
+        )
+        self.assertEqual(config["run"]["max_updates"], 256)
+        self.assertEqual(config["run"]["seed"], 20260829)
+        self.assertEqual(config["run"]["entrypoint"], "seed_gate")
+        self.assertEqual(config["run"]["max_grad_norm"], 1.0)
+        self.assertEqual(config["run"]["log_every"], 16)
+        self.assertEqual(config["run"]["seed_gate_phase_timeout_seconds"], 600)
+        self.assertEqual(config["run"]["max_wall_clock_seconds"], 3600)
+        self.assertEqual(config["model"]["config"], "artifacts/icrt-derived-small/model_config.json")
+
+    def test_card06_scale_classification_requires_exact_full_support_fit(self) -> None:
+        result = {
+            "complete": True, "finite": True, "abi_and_bounds_ok": True, "timed_out": False,
+            "evaluations": {
+                step: {
+                    "macro_argmax": 1.0,
+                    "by_case_kind": {"agent_equivalence": {"argmax": 1.0}},
+                }
+                for step in (64, 128, 256)
+            },
+        }
+        self.assertEqual(
+            classify_card06_scale_pilot(result=result, max_updates=256), "exact_support_fit"
+        )
+        decision = card06_scale_decision(result=result, max_updates=256)
+        self.assertEqual(decision["exact_fit_by_step"], {64: True, 128: True, 256: True})
+        self.assertEqual(decision["earliest_exact_fit_step"], 64)
+        result["evaluations"][128]["by_case_kind"]["agent_equivalence"]["argmax"] = 0.99
+        self.assertEqual(
+            classify_card06_scale_pilot(result=result, max_updates=256), "unstable_support_fit"
+        )
+        result["evaluations"][64]["by_case_kind"]["agent_equivalence"]["argmax"] = 0.99
+        result["evaluations"][256]["by_case_kind"]["agent_equivalence"]["argmax"] = 0.99
+        self.assertEqual(
+            classify_card06_scale_pilot(result=result, max_updates=256), "support_fit_incomplete"
+        )
 
     def test_completed_step_cost_excludes_iterable_prefetch(self) -> None:
         from pretraining_experiments import seed_gate

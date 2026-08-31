@@ -106,8 +106,8 @@ curves falsify that prediction.
 ## Card 02: Predictive State
 
 **Trunk:** T1 identification and regulation. **Fragment:** G0. **State:**
-implemented, audited, and rendered through the shared finite-G0 learner
-boundary. Frontier admission still needs a bounded pilot.
+implemented, audited, rendered, and frontier-admitted by the bounded R10
+learner pilot. This is source-family learner evidence, not transfer evidence.
 
 **Claim.** The learner retains exactly the earlier public information that
 changes action-conditioned futures. It does not retain equally salient but
@@ -149,12 +149,17 @@ early, and republishing the mode — leave the world's ceiling and correct actio
 untouched, so they are checked against what a latch-ablated learner can attain
 rather than through the value orbit, which would have passed them vacuously.
 
-**Admission and transfer.** Admit only if the learner beats the no-memory
-ceiling on the witness, does not act on the irrelevant latch, and discards the
-unneeded latch under memory cost. The memory-cost case is not an isolation
-negative: nothing simpler is optimal on it, and what it catches is a policy that
-retains *too much*, so its evidence is a designated-failure table rather than
-the bracket. The variance variant is not implemented — it needs an objective
+**Admission and transfer.** The audit-verified R10 grouped-ActionQuery pilot
+admitted contract `74b2d0da16ad3b31`: over 64 updates and 256 consumed
+presentations, full-corpus macro argmax rose from `0.1667` to `0.9375` and the
+final all-case-kind minimum was `0.8333`. (The configuration field retained a
+stale `primary` name, but the classifier used every `by_case_kind` entry.) This
+establishes a usable learner progress signal for this source family only; it
+does not establish the transfer
+prediction below. The memory-cost case is not an isolation negative: nothing
+simpler is optimal on it, and what it catches is a policy that retains *too
+much*, so its evidence is a designated-failure table rather than the bracket.
+The variance variant is not implemented — it needs an objective
 under which outcome spread changes the optimal action, and the deterministic G0
 fragment has none, so the `P6 -> M2` dispute stays open and undecided by this
 card. The transfer prediction is faster acquisition
@@ -164,8 +169,8 @@ it.
 ## Card 03: Affordance and Reachability
 
 **Trunk:** T1 identification and regulation. **Fragment:** G0. **State:**
-implemented, audited, and rendered through the shared finite-G0 learner
-boundary. Frontier admission still needs a bounded pilot.
+implemented, audited, rendered, and piloted. The R10 pilot was valid but
+inconclusive, so this family remains audited and deferred.
 
 **Claim.** Before a failed attempt, the learner changes its action allocation
 according to what this body can bring about in this environment.
@@ -212,9 +217,19 @@ episode with itself. Three of six swappable contracts are publicly visible, and
 the audit reports that count rather than claiming the transform bites
 everywhere.
 
-**Admission and transfer.** Admit only if unreachable goals cause fallback on
-the first scored decision, frequency matching does not reproduce that choice,
-the body/environment swap is invariant, and restored support changes behaviour.
+**Admission and transfer.** The audit-verified R10 pilot for contract
+`2442b372a18e1d66` ran 64 updates and 256 consumed presentations but did not
+meet frontier admission: macro argmax was `0.4667 -> 0.6000`, with final
+all-case-kind minimum `0.2500`. This is an inconclusive bounded learner result,
+not evidence against the family or a transfer result; R10 is closed and permits
+no second repair. Its R10a decomposition certificate separates public body
+identification from reachability planning: keep the existing controls and
+orbits, then remove the planning/fallback decision to test identification first.
+Scale the composite only under a separately justified Card-03-only scaling
+profile. Admit in a later, separately declared decision only if unreachable
+goals cause fallback on the first scored decision, frequency matching does not
+reproduce that choice, the body/environment swap is invariant, and restored
+support changes behaviour.
 The restoration is *announced* at episode start: the fallback is absorbing, so an
 unannounced restoration would arrive after a correctly ended episode and could
 not require any behaviour to update. The absorbing-wasted-budget variant is not
@@ -225,8 +240,9 @@ pretraining. Equal curves falsify it.
 ## Card 04: Norm Swap
 
 **Trunk:** T3 norm structure and selective control. **Fragment:** G0. **State:**
-semantic family audited and rendered through the shared finite-G0 learner
-boundary. Frontier admission still needs a bounded pilot.
+implemented, audited, rendered, and compatibility-characterized by R10. The
+valid 64-update pilot is inconclusive, so the composite is deferred rather than
+frontier-admitted.
 
 **Claim.** With the public state and history fixed, changing the requested
 outcome changes the correct action. Goal maintenance, inhibition, switching,
@@ -269,16 +285,21 @@ because four case labels name contracts that are literally identical and differ
 only in which family they are scored inside; a training mixture must count
 episodes, not labels.
 
-**Admission and transfer.** Semantic admission and learner rendering are
-complete. Frontier admission still requires a bounded learner pilot. The
-transfer prediction is faster acquisition of Card 07 segment selection than
-from single-goal pretraining. Equal Card 07 curves falsify it.
+**Admission and transfer.** The R10 grouped-ActionQuery pilot for
+`d975c3a646591ccf` used 64 updates and 256 consumed presentations: macro
+argmax `0.3395 -> 0.4259`, final all-case-kind minimum `0.3333`. It misses the
+fixed frontier profile and is learner/support-fit evidence, not a semantic
+defect or transfer result. R10a therefore decomposes public goal use from the
+switch and viability composite and defers this card; any re-entry needs a new
+Card-04 decomposition certificate and AdmissionProfile, not another R10
+repair. The transfer prediction is faster acquisition of Card 07 segment
+selection than from single-goal pretraining. Equal Card 07 curves falsify it.
 
 ## Card 05: Active Experimentation
 
 **Trunk:** T2 epistemic action. **Fragment:** G0. **State:** implemented,
-audited, and rendered through the shared finite-G0 learner boundary. Frontier
-admission still needs a bounded pilot.
+audited, rendered, and compatibility-characterized by R10. The valid pilot is
+inconclusive, so it remains audited rather than frontier-admitted.
 
 **Claim.** The learner pays for information exactly when it changes a later
 decision. Probe frequency alone is not evidence.
@@ -333,8 +354,14 @@ implemented. They need a prediction objective to make error measurable, and the
 finite-G0 profile emits no future query, so the `M2 -> M5` dispute is not decided
 by this card.
 
-**Admission and transfer.** Admit only if probe rate is high in the witness and
-low in all three primary controls. Each control breaks exactly one clause of the
+**Admission and transfer.** The R10 grouped-ActionQuery pilot for
+`cbe39880124b9d2d` used 64 updates and 256 consumed presentations: macro
+argmax `0.1250 -> 0.6875`, final all-case-kind minimum `0.2500`. It therefore
+misses the fixed frontier barrier despite a rising aggregate score. R10a
+decomposes reveal use from the value-of-probing decision, retaining matched
+controls and the information boundary; this is a new card-local decision, not
+a retrospective relaxation of R10. Admit only if probe rate is high in the
+witness and low in all three primary controls. Each control breaks exactly one clause of the
 matched-control verdict and the audit names which: publishing the gate breaks
 informativeness, making the probe consume the whole budget breaks cost matching,
 and the equally-valuable control breaks none — there the probe is matched and
@@ -345,8 +372,9 @@ curves falsify it.
 ## Card 06: Perceptual Organization
 
 **Trunk:** T4 binding and relational abstraction. **Fragment:** G0. **State:**
-implemented, audited, and rendered through the shared finite-G0 learner
-boundary. Frontier admission still needs a bounded pilot.
+implemented, audited, rendered, and compatibility-characterized by R10. It is
+not frontier-admitted under that profile, but its rising curve warrants one
+Card-06-only scaling diagnostic.
 
 **Claim.** The learner binds observations to persistent causes rather than to
 channel identity, keeps a cause individuated through absence, and re-identifies
@@ -390,7 +418,13 @@ meaning-changing, and information-orbit verdicts rather than recording them as
 labels. The 36 cases render as 32 distinct public episodes; mixture accounting
 uses the latter.
 
-**Admission and transfer.** Admit only if the learner beats channel-based
+**Admission and transfer.** The R10 grouped-ActionQuery pilot for
+`76a08f38947c8cae` used 64 updates and 256 consumed presentations: macro
+argmax `0.2500 -> 0.6875`, final all-case-kind minimum `0.5625`. It is
+inconclusive under the fixed profile, not a world defect, but its monotone
+improvement across the recorded cadence justifies one Card-06-only scaling
+diagnostic with a newly fixed AdmissionProfile. That diagnostic neither
+reopens R10 nor authorizes R11. Admit only if the learner beats channel-based
 policies on the witness, each surgical control restores its associated simple
 baseline, and both preserving and changing orbits separate correctly. The
 downstream visual family contains near-identical movable objects, an effector,

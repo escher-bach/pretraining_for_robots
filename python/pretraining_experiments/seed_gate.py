@@ -52,6 +52,23 @@ CONTRACT_HASHES = {
     "card05": "cbe39880124b9d2d",
     "card06": "76a08f38947c8cae",
 }
+CARD06_SCALE_PROFILE = "r10a-card06-compatibility-scale-v1"
+
+
+def is_card06_scale_diagnostic(config: dict[str, Any]) -> bool:
+    """True only for the separately versioned, non-R10 scale profile."""
+    return "scale_diagnostic" in config
+
+
+def profile_gate(config: dict[str, Any]) -> dict[str, Any]:
+    """Return the execution contract for the selected receipt profile."""
+    return config["scale_diagnostic"] if is_card06_scale_diagnostic(config) else config["seed_gate"]
+
+
+def profile_families(config: dict[str, Any]) -> tuple[str, ...]:
+    if is_card06_scale_diagnostic(config):
+        return ("card06",)
+    return FAMILIES
 
 
 def load_seed_gate_config(path: Path) -> dict[str, Any]:
@@ -62,6 +79,9 @@ def load_seed_gate_config(path: Path) -> dict[str, Any]:
 
 def validate_seed_gate_config(config: dict[str, Any]) -> None:
     """Reject drift from the fixed R10 scientific and execution contracts."""
+    if is_card06_scale_diagnostic(config):
+        _validate_card06_scale_diagnostic_config(config)
+        return
     gate = config.get("seed_gate", {})
     run = config.get("run", {})
     model = config.get("model", {})
@@ -145,6 +165,73 @@ def validate_seed_gate_config(config: dict[str, Any]) -> None:
             raise ValueError("the grouped R10 objective requires its declared bounded apparatus repair")
     elif repair is not None:
         raise ValueError("legacy R10 objective must not claim a grouped-objective repair")
+
+
+def _validate_card06_scale_diagnostic_config(config: dict[str, Any]) -> None:
+    """Pin the one-family compatibility probe without widening R10 itself."""
+    if "seed_gate" in config:
+        raise ValueError("the Card06 scale diagnostic must not declare an R10 seed_gate section")
+    if config.get("schema_version") != 1:
+        raise ValueError("the Card06 scale diagnostic requires schema_version=1")
+    gate = config.get("scale_diagnostic", {})
+    run = config.get("run", {})
+    model = config.get("model", {})
+    expected = {
+        "profile": CARD06_SCALE_PROFILE,
+        "family": "card06",
+        "root_seed": 20260829,
+        "r9_finalized": True,
+        "evaluation_steps": [0, 64, 128, 256],
+        "decision_rungs": [64, 128, 256],
+        "schedule_horizon_updates": 256,
+        "r10_replication": False,
+        "per_family_timeout_seconds": 300,
+        "total_timeout_seconds": 600,
+        "timing_updates": 4,
+        "timing_updates_max_seconds": 10,
+        "timing_eval_max_seconds": 10,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "action_query_objective": "grouped_action_query_cross_entropy",
+        "contract_hash": CONTRACT_HASHES["card06"],
+        "distinct_episode_count": DISTINCT_EPISODE_COUNTS["card06"],
+        "family_seed": {"init": 2026082905, "train": 2026083005, "eval": 2026083105},
+        "stable_exact_action": (
+            "support-compatible; eligible only for a separately declared Card06 generalization profile; "
+            "no R10 admission or R11 claim"
+        ),
+        "unstable_action": "optimization-stability investigation or defer Card06",
+        "incomplete_action": "decompose Card06 into a more basic capability or defer Card06",
+    }
+    actual = {key: gate.get(key) for key in expected}
+    if actual != expected:
+        raise ValueError(f"Card06 scale diagnostic contract drift: expected {expected}, got {actual}")
+    execution = {
+        "device": run.get("device"), "mixed_precision": run.get("mixed_precision"),
+        "max_updates": run.get("max_updates"), "per_device_batch_size": run.get("per_device_batch_size"),
+        "gradient_accumulation_steps": run.get("gradient_accumulation_steps"),
+        "learning_rate": run.get("learning_rate"), "weight_decay": run.get("weight_decay"),
+        "warmup_updates": run.get("warmup_updates"),
+        "seed": run.get("seed"), "entrypoint": run.get("entrypoint"),
+        "max_grad_norm": run.get("max_grad_norm"), "log_every": run.get("log_every"),
+        "seed_gate_phase_timeout_seconds": run.get("seed_gate_phase_timeout_seconds"),
+        "max_wall_clock_seconds": run.get("max_wall_clock_seconds"),
+        "config": model.get("config"),
+        "sequence_length": model.get("sequence_length"),
+        "token_abi_version": model.get("token_abi_version"),
+    }
+    expected_execution = {
+        "device": "cuda", "mixed_precision": "fp16", "max_updates": 256,
+        "per_device_batch_size": 4, "gradient_accumulation_steps": 1,
+        "learning_rate": 3.0e-4, "weight_decay": 0.1, "warmup_updates": 4,
+        "seed": 20260829, "entrypoint": "seed_gate", "max_grad_norm": 1.0, "log_every": 16,
+        "seed_gate_phase_timeout_seconds": 600, "max_wall_clock_seconds": 3600,
+        "config": "artifacts/icrt-derived-small/model_config.json",
+        "sequence_length": 192, "token_abi_version": "physical-event-abi-0.3.1",
+    }
+    if execution != expected_execution:
+        raise ValueError(
+            f"Card06 scale diagnostic execution drift: expected {expected_execution}, got {execution}"
+        )
 
 
 def uses_grouped_action_query_objective(gate: dict[str, Any]) -> bool:
@@ -437,11 +524,62 @@ def classify_seed_gate_pilot(
     return "inconclusive_not_admitted"
 
 
+def card06_scale_decision(
+    *, result: dict[str, Any], max_updates: int, decision_rungs: list[int] | tuple[int, ...] = (64, 128, 256)
+) -> dict[str, Any]:
+    """Apply the pinned prospective rung table for the separate scale probe."""
+    rungs = tuple(int(step) for step in decision_rungs)
+    if rungs != (64, 128, 256) or rungs[-1] != int(max_updates):
+        raise ValueError("Card06 scale decision rungs must be the pinned [64, 128, 256]")
+    exact_fit_by_step: dict[int, bool] = {}
+    for step in rungs:
+        evaluation = result.get("evaluations", {}).get(step)
+        if evaluation is None:
+            raise ValueError(f"Card06 scale result lacks decision-rung evaluation {step}")
+        kinds = evaluation.get("by_case_kind", {})
+        exact_fit_by_step[step] = bool(
+            evaluation.get("macro_argmax") == 1.0
+            and kinds
+            and all(row.get("argmax") == 1.0 for row in kinds.values())
+        )
+    earliest = next((step for step, exact in exact_fit_by_step.items() if exact), None)
+    if earliest is None:
+        classification = "support_fit_incomplete"
+    elif all(exact_fit_by_step[step] for step in rungs[rungs.index(earliest):]):
+        classification = "exact_support_fit"
+    else:
+        classification = "unstable_support_fit"
+    return {
+        "decision_rungs": list(rungs),
+        "exact_fit_by_step": exact_fit_by_step,
+        "earliest_exact_fit_step": earliest,
+        "classification": classification,
+    }
+
+
+def classify_card06_scale_pilot(
+    *, result: dict[str, Any], max_updates: int, decision_rungs: list[int] | tuple[int, ...] = (64, 128, 256)
+) -> str:
+    """Classify only exact finite-support fit for the separate scale probe.
+
+    This deliberately has no R10 admission or transfer outcome: it asks whether
+    the selected learner can memorize the already fixed public Card06 support
+    under a longer, separately declared schedule.
+    """
+    if not result.get("complete") or not result.get("finite") or not result.get("abi_and_bounds_ok"):
+        return "unscored"
+    if result.get("timed_out"):
+        return "unscored"
+    return card06_scale_decision(
+        result=result, max_updates=max_updates, decision_rungs=decision_rungs
+    )["classification"]
+
+
 def seed_gate_timing_preflight(config: dict[str, Any], output_root: Path) -> dict[str, Any]:
     """Measure the fixed timing bounds before a family can be scored."""
     validate_seed_gate_config(config)
-    gate, run, model_section = config["seed_gate"], config["run"], config["model"]
-    family = FAMILIES[0]
+    gate, run, model_section = profile_gate(config), config["run"], config["model"]
+    family = profile_families(config)[0]
     model_config = _seed_gate_model_config(model_section)
     assert_world_model_compatibility(model_config, profiled=True)
     use_cpu = str(run["device"]) == "cpu"
@@ -449,7 +587,8 @@ def seed_gate_timing_preflight(config: dict[str, Any], output_root: Path) -> dic
         raise RuntimeError("R10 CUDA seed-gate contract requires an available CUDA device")
     sequence_cap = int(model_section["sequence_length"])
     manifest, actual_tokens = compact_g0_corpus_manifest(family, sequence_cap)
-    set_seed(int(gate["family_seeds"][family]["init"]))
+    family_seed = gate["family_seed"] if is_card06_scale_diagnostic(config) else gate["family_seeds"][family]
+    set_seed(int(family_seed["init"]))
     model = PretrainingForTrajectoryPrediction(model_config)
     if not use_cpu:
         model.to("cuda")
@@ -459,7 +598,7 @@ def seed_gate_timing_preflight(config: dict[str, Any], output_root: Path) -> dic
     eval_seconds = time.perf_counter() - started_eval
 
     dataset = DistinctEpisodeDataset(
-        family, int(gate["family_seeds"][family]["train"]), actual_tokens,
+        family, int(family_seed["train"]), actual_tokens,
         include_action_decision_groups=uses_grouped_action_query_objective(gate),
     )
     started_updates = time.perf_counter()
@@ -497,18 +636,24 @@ def seed_gate_timing_preflight(config: dict[str, Any], output_root: Path) -> dic
 
 
 def run_all_seed_gate_pilots(config: dict[str, Any], output_root: Path) -> dict[str, Any]:
-    """Run the fixed R10 sequence, stopping before scoring after any hard cap."""
+    """Run the selected fixed profile, stopping before scoring after any hard cap."""
     validate_seed_gate_config(config)
+    gate = profile_gate(config)
+    is_scale = is_card06_scale_diagnostic(config)
     output_root.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
     receipt: dict[str, Any] = {
-        "row": "R10",
+        "row": "R10a" if is_scale else "R10",
         "preflight": None,
         "pilots": [],
         "transfer_claim": False,
         "classification": "unscored",
     }
-    if not bool(config["seed_gate"].get("r9_finalized", False)):
+    if is_scale:
+        receipt["profile"] = gate["profile"]
+        receipt["r10_replication"] = bool(gate["r10_replication"])
+        receipt["schedule_horizon_updates"] = int(config["run"]["max_updates"])
+    if not bool(gate.get("r9_finalized", False)):
         receipt["classification"] = "blocked_r9_manifest_not_final"
         (output_root / "seed-gate-receipt.json").write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
         return receipt
@@ -517,15 +662,22 @@ def run_all_seed_gate_pilots(config: dict[str, Any], output_root: Path) -> dict[
     if not preflight["passed"]:
         (output_root / "seed-gate-receipt.json").write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
         return receipt
-    for family in FAMILIES:
-        if time.perf_counter() - started > float(config["seed_gate"]["total_timeout_seconds"]):
+    for family in profile_families(config):
+        if time.perf_counter() - started > float(gate["total_timeout_seconds"]):
             receipt["classification"] = "unscored_total_timeout"
             break
-        remaining = float(config["seed_gate"]["total_timeout_seconds"]) - (time.perf_counter() - started)
+        remaining = float(gate["total_timeout_seconds"]) - (time.perf_counter() - started)
         receipt["pilots"].append(run_seed_gate_pilot(config, family, output_root, timeout_seconds=remaining))
     else:
         classifications = [pilot["classification"] for pilot in receipt["pilots"]]
-        receipt["classification"] = "seed_gate_complete" if all(value == "admitted" for value in classifications) else "seed_gate_incomplete"
+        if is_scale:
+            receipt["classification"] = (
+                "scale_diagnostic_complete"
+                if all(value == "exact_support_fit" for value in classifications)
+                else "scale_diagnostic_incomplete"
+            )
+        else:
+            receipt["classification"] = "seed_gate_complete" if all(value == "admitted" for value in classifications) else "seed_gate_incomplete"
     receipt["elapsed_seconds"] = time.perf_counter() - started
     (output_root / "seed-gate-receipt.json").write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
     return receipt
@@ -548,7 +700,9 @@ def main() -> None:
     if args.preflight_only:
         result = seed_gate_timing_preflight(config, args.output_root.resolve())
     elif args.family:
-        if not bool(config["seed_gate"].get("r9_finalized", False)):
+        if args.family not in profile_families(config):
+            parser.error(f"--family must be one of {', '.join(profile_families(config))}")
+        if not bool(profile_gate(config).get("r9_finalized", False)):
             result = {"classification": "blocked_r9_manifest_not_final", "transfer_claim": False}
         else:
             preflight = seed_gate_timing_preflight(config, args.output_root.resolve())
@@ -567,10 +721,10 @@ def run_seed_gate_pilot(
 ) -> dict[str, Any]:
     """Run one independently initialized selected-core family pilot."""
     validate_seed_gate_config(config)
-    if family not in FAMILIES:
-        raise ValueError(f"unknown R10 family {family!r}")
-    gate, run, model_section = config["seed_gate"], config["run"], config["model"]
-    family_seed = gate["family_seeds"][family]
+    if family not in profile_families(config):
+        raise ValueError(f"family {family!r} is outside the configured profile")
+    gate, run, model_section = profile_gate(config), config["run"], config["model"]
+    family_seed = gate["family_seed"] if is_card06_scale_diagnostic(config) else gate["family_seeds"][family]
     model_config = _seed_gate_model_config(model_section)
     assert_selected_parameter_report(parameter_report(PretrainingForTrajectoryPrediction(model_config)))
     assert_world_model_compatibility(model_config, profiled=True)
@@ -639,7 +793,37 @@ def run_seed_gate_pilot(
         **cost,
         "transfer_claim": False,
     }
-    result["classification"] = classify_seed_gate_pilot(result=result, gate={**gate, "max_updates": run["max_updates"]})
+    if is_card06_scale_diagnostic(config):
+        if complete and result["finite"] and result["abi_and_bounds_ok"] and not result["timed_out"]:
+            decision = card06_scale_decision(
+                result=result,
+                max_updates=int(run["max_updates"]),
+                decision_rungs=gate["decision_rungs"],
+            )
+        else:
+            decision = {
+                "decision_rungs": list(gate["decision_rungs"]),
+                "exact_fit_by_step": {
+                    int(step): None for step in gate["decision_rungs"]
+                },
+                "earliest_exact_fit_step": None,
+                "classification": "unscored",
+            }
+        result["profile"] = gate["profile"]
+        result["r10_replication"] = bool(gate["r10_replication"])
+        result["schedule_horizon_updates"] = int(run["max_updates"])
+        result["trainer_log_history"] = trainer.state.log_history
+        result.update(decision)
+        action_key = {
+            "exact_support_fit": "stable_exact_action",
+            "unstable_support_fit": "unstable_action",
+            "support_fit_incomplete": "incomplete_action",
+        }.get(decision["classification"])
+        if action_key is not None:
+            result["prospective_action"] = gate[action_key]
+        result["classification"] = decision["classification"]
+    else:
+        result["classification"] = classify_seed_gate_pilot(result=result, gate={**gate, "max_updates": run["max_updates"]})
     (output_root / family / "seed-gate-receipt.json").write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
     return result
 
