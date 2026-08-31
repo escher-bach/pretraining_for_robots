@@ -287,7 +287,8 @@ Its R10b pilot is `support_fit_incomplete`: macro case-kind argmax rose
 `0.5000 -> 0.8333` while both controls reached `1.0000` and the witness held at
 `0.5000`. The learner acquired the two arms where the body does not have to be
 read and not the one where it does, so removing the planning half did not move
-the barrier.
+the barrier. The R10c matched replication on a T4 reproduces every number
+exactly.
 
 ## Card 04: Norm Swap
 
@@ -394,10 +395,15 @@ guess. `Settle` and `Visit` coincide at this horizon, so the composite's
 goal-predicate transformation has no bite here; that is recorded rather than
 silently substituted. Run
 `cargo run -p pretraining-card04a-goal-use --bin card04a-audit`.
-Its R10b pilot is `support_fit_incomplete` and is the flattest of the four:
-macro case-kind argmax did not move from `0.3750` at any recorded rung, and the
-training loss fell only `1.0985 -> 1.0720`. Removing the prohibition, the
-switch, and the viability boundary left the composite's shortfall in place.
+Its R10b pilot is `support_fit_incomplete`. On CPU it was the flattest of the
+four — macro case-kind argmax never moved from `0.3750` and the training loss
+fell only `1.0985 -> 1.0720` — and it is the one family the R10c matched
+replication moved, to `0.3750 -> 0.7500` on a T4 at fp16. It misses the barrier
+on both, and on the matched learner its bracket is not restored either: the
+goal-predictable control reaches `1.0000` and the witness `0.7500`, but the
+constant-goal control, where a state-only policy is exactly optimal, is the
+worst kind at `0.5000`. Removing the prohibition, the switch, and the viability
+boundary left the composite's shortfall in place.
 
 ## Card 05: Active Experimentation
 
@@ -523,6 +529,7 @@ Its R10b pilot is `support_fit_incomplete`: macro case-kind argmax held at
 `0.8333` from initialization to the rung, with both controls at `1.0000` and the
 witness at `0.5000`. Conditioning a commit on already-published content is the
 weaker half of buying that content, and this learner did not acquire it either.
+The R10c matched replication on a T4 reproduces every number exactly.
 
 ## Card 06: Perceptual Organization
 
@@ -635,6 +642,7 @@ preserving rather than inherited as meaning-changing. Run
 Its R10b pilot is `support_fit_incomplete`: macro case-kind argmax rose
 `0.2500 -> 0.7500` with all three kinds level at `0.7500`, so unlike the
 composite's R10a diagnostic there is no control/witness separation to read. The
+R10c matched replication on a T4 reproduces every number exactly. The
 certificate's staging is therefore not entered: absence is not added on top of a
 stage that has not itself been fit.
 

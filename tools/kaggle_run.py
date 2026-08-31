@@ -395,7 +395,19 @@ def collect(kernel: str) -> Path:
     training_result = (
         json.loads(training_files[0].read_text(encoding="utf-8")) if len(training_files) == 1 else {}
     )
-    finite_g0_report = summary.get("card06_scale_diagnostic") or summary.get("seed_gate")
+    # Every finite-G0 profile the runner knows how to write. A profile whose
+    # summary key is missing here silently collects a null scientific report,
+    # which is how the R10c receipt was first written, so an unrecognized
+    # finite-G0 summary is refused rather than dropped.
+    FINITE_G0_SUMMARY_KEYS = ("card06_scale_diagnostic", "decomposition_gate", "seed_gate")
+    finite_g0_report = next(
+        (summary[key] for key in FINITE_G0_SUMMARY_KEYS if summary.get(key)), None
+    )
+    if finite_g0_report is None and (run_root / "pretraining-results" / "seed-gate-receipt.json").is_file():
+        raise SystemExit(
+            "the run produced a finite-G0 receipt under an unrecognized summary key; "
+            f"expected one of {FINITE_G0_SUMMARY_KEYS}, saw {sorted(summary)}"
+        )
     receipt = {
         "schema_version": 1,
         "run_id": versioned_kernel,

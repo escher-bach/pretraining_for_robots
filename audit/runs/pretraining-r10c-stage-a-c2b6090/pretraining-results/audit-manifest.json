@@ -1,0 +1,93 @@
+{
+  "artifacts": [
+    {
+      "path": "card03a/seed-gate-receipt.json",
+      "sha256": "c0e6b2a51e179b749ca2e876246ded667d0ac2924947e05155bf4e3cceff07ac",
+      "size": 7292
+    },
+    {
+      "path": "card04a/seed-gate-receipt.json",
+      "sha256": "188b35ed59536f7b73832129f775095b709bd6afc07a6885b7d16dbac58f2e72",
+      "size": 7343
+    },
+    {
+      "path": "card05a/seed-gate-receipt.json",
+      "sha256": "42aadeec314a99cca934ab65724dedc94a242ff3143f034f6ccc34bb38543dd5",
+      "size": 7378
+    },
+    {
+      "path": "card06a/seed-gate-receipt.json",
+      "sha256": "eaee22187401db927886c5e564bb978cbc771bf299337dbab6f5392b773b3f1a",
+      "size": 6780
+    },
+    {
+      "path": "environment.json",
+      "sha256": "06d791fe0b06f04702ea72807c762ee7b5c1056d96870841c7db05deae2794ba",
+      "size": 2973
+    },
+    {
+      "path": "logs/maturin-build.log",
+      "sha256": "0c3342af182f00580df28416b52db00711b2958caa482ca38c0898b22837b050",
+      "size": 6428
+    },
+    {
+      "path": "logs/pip-install.log",
+      "sha256": "1db045da7b5d20eaf5b2fb9b1eec0b2a85d8bc6048a94dfead7cd9c533b527e8",
+      "size": 12503
+    },
+    {
+      "path": "logs/python-tests.log",
+      "sha256": "01984fbd3cf554100ca2a62cac01aca971211e52301ead2a486a7b564aa0eb81",
+      "size": 15202
+    },
+    {
+      "path": "logs/rust-tests.log",
+      "sha256": "1de249eec42de9abfc6e21e765c514dbaaaa8f28350fa70b52cd967c13fe1a81",
+      "size": 35793
+    },
+    {
+      "path": "logs/rust-toolchain.log",
+      "sha256": "eb407fb00aaa6c2362c6109acc534c26432350bc77ddebf3eb3280663466babe",
+      "size": 251
+    },
+    {
+      "path": "logs/rustup-download.log",
+      "sha256": "65ab67427918399433c826dc3d69d1a19dc47a96b0439717ad27931fb699e6ce",
+      "size": 111
+    },
+    {
+      "path": "logs/rustup-install.log",
+      "sha256": "2b1de893e77f9176eea810f2065325e56010d224aa58a758482a3b7ca25b0fa3",
+      "size": 1489
+    },
+    {
+      "path": "logs/seed-gate.log",
+      "sha256": "e0ce72d244950e771e96187aeec4599af79e3619caa030d2aa0954d8341bf85c",
+      "size": 27561
+    },
+    {
+      "path": "logs/world-wheel-install.log",
+      "sha256": "eeacb1c3d9398a021181ef7732ba4a0596422ca3912d5fd910cdeddc06411841",
+      "size": 353
+    },
+    {
+      "path": "phase_status.json",
+      "sha256": "e8aad73c992bd4a895c339e9f1fee9d4ab707e6eacb7b191d6e0f29bfc6d94c3",
+      "size": 823
+    },
+    {
+      "path": "seed-gate-receipt.json",
+      "sha256": "d90d798d8582323b321a64fde789d71ac415d3e76285f27185e4d502adec09a1",
+      "size": 34345
+    },
+    {
+      "path": "timing-preflight-receipt.json",
+      "sha256": "ea6393877f9b76d1f39bf2d40ffe8e1ce4ce8b5c5396698633f6c86f9f6dd1ab",
+      "size": 387
+    }
+  ],
+  "config_sha256": "a337d787e1c0ee89554af516a5aa2329d8eeb7c24a029ef9a0cbdee8b4ccc42a",
+  "error": null,
+  "git_sha": "c2b60907c9ce61a5e73ba5a1c0ab9ae7ba72d488",
+  "status": "complete"
+}

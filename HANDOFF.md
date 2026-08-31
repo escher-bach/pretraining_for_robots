@@ -7,14 +7,16 @@ was learned building it, and what to do next.
 
 ## Where the work stopped
 
-**R5–R10b are closed. The preserved first R10 one-T4 pilot exposed a loss/metric
+**R5–R10c are closed. The preserved first R10 one-T4 pilot exposed a loss/metric
 and accounting defect; its one allowed grouped-objective repair completed and
 is the decisive result. R10 is `seed_gate_incomplete`: Card 02 alone is
 frontier-admitted, while Cards 04, 03, 05, and 06 are audited and
 compatibility-characterized but inconclusive. R10a decomposed and deferred
 those four. R10b implemented all four decomposition certificates as new audited
 family versions and gated them under a new profile: every one is
-`support_fit_incomplete`, so every certificate's own falsifier fired. R11
+`support_fit_incomplete`, so every certificate's own falsifier fired. R10c
+replicated that profile unchanged on R10's own learner — one T4 at fp16 — and
+reached the same verdict, so the falsification is not a device artifact. R11
 remains blocked.**
 
 | Row | State | Crate |
@@ -29,7 +31,7 @@ remains blocked.**
 | R10 seed gate | Complete — `seed_gate_incomplete` | `crates/world-py`, `python/pretraining_experiments/seed_gate.py`, `configs/r10` |
 | R10a post-gate compatibility triage | Complete — Card 06 `support_fit_incomplete` | `CARDS.md`, `DEVELOPMENT-PATH.md`, `configs/r10/card06_compatibility_scale_t4.toml` |
 | R10b stage-A decomposition gate | Complete — `decomposition_gate_incomplete` | `crates/card04a-goal-use`, `crates/card03a-body-identification`, `crates/card05a-reveal-use`, `crates/card06a-visible-reassignment`, `configs/r10b` |
-| R10c matched replication of the R10b profile | Launched | `configs/r10b/decomposition_gate_t4.toml`, `kaggle/experiments.toml` |
+| R10c matched replication of the R10b profile | Complete — `decomposition_gate_incomplete` | `configs/r10b/decomposition_gate_t4.toml`, `kaggle/experiments.toml` |
 
 `cargo test --workspace --locked` passes with no failures.
 `cargo fmt --all -- --check` is clean. The Python suite passes too — 67 tests —
@@ -127,6 +129,54 @@ a completed run whose learner deviated, not a failure to be overwritten.
 
 Compact evidence, including per-family receipts and the preflight, is under
 `audit/runs/pretraining-r10b-stage-a-decomposition-gate-local/`.
+
+## What R10c settled
+
+R10c ran the R10b profile unchanged on one T4 at fp16, which is R10's own
+decisive learner. It is audit-verified at source
+`c2b60907c9ce61a5e73ba5a1c0ab9ae7ba72d488` with a clean tree, the remote Rust
+and 67 Python tests passing, a CUDA preflight of four updates in `3.3810 s` and
+a full-corpus evaluation in `0.6577 s`, and exactly 256 presentations per
+family. Run:
+`https://www.kaggle.com/code/aniruddhavarma/pretraining-r10c-stage-a-c2b6090`.
+
+| Family | CPU macro `0 -> 64` | T4 macro `0 -> 64` | T4 case kinds at the rung |
+|---|---|---|---|
+| `card04a` | `0.3750 -> 0.3750` | `0.3750 -> 0.7500` | witness `0.7500`, constant-goal `0.5000`, goal-predictable `1.0000` |
+| `card03a` | `0.5000 -> 0.8333` | `0.5000 -> 0.8333` | witness `0.5000`, both controls `1.0000` |
+| `card05a` | `0.8333 -> 0.8333` | `0.8333 -> 0.8333` | witness `0.5000`, both controls `1.0000` |
+| `card06a` | `0.2500 -> 0.7500` | `0.2500 -> 0.7500` | all three kinds `0.7500` |
+
+**No family reached exact full-support fit, so the predeclared "none" branch
+applies and the falsification stands on the matched learner.** The four
+certificates predicted that the composites' difficulty lay in the factors they
+removed; on the learner the certificates name, removing those factors does not
+move the barrier.
+
+Two details are worth carrying forward. Three of the four families reproduce
+the CPU numbers *exactly* at every recorded rung, which is a stronger
+replication than the row needed and says the measure is not sitting on a
+precision boundary. Card 04's stage A is the one the device moved, from flat at
+`0.3750` to `0.7500` — so the CPU flatness reported in R10b was partly a
+device/precision effect and that sentence in "What R10b closed" should be read
+with this row beside it. It still misses the barrier, and its bracket is not
+restored either: the control a state-only policy should find easiest, the
+constant-goal arm, is its *worst* kind at `0.5000`, below the witness at
+`0.7500`. Whatever this learner is failing to acquire, it is not specific to
+reading a goal channel.
+
+Two wrinkles for the next reader. The gate receipt's `row` field reads `R10b`,
+because it is emitted from the profile rather than from the chart row; the
+profile *is* R10b's, unchanged and deliberately so, and the chart row is R10c.
+And the first collection of this run wrote a null `scientific_report`, because
+`runner.py` files a decomposition-gate receipt under `summary["decomposition_gate"]`
+while `tools/kaggle_run.py` only looked for the seed-gate and Card06 keys. That
+is fixed, the run was re-collected from the same immutable kernel version, and
+the collector now refuses an unrecognized finite-G0 summary key instead of
+silently dropping the report. Nothing about the run itself changed.
+
+Compact evidence is under `audit/runs/pretraining-r10c-stage-a-c2b6090/`, with
+the verified per-family receipts under its `pretraining-results/`.
 
 ## What building the stage-A families found
 

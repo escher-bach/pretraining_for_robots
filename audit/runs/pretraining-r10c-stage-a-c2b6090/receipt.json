@@ -1,0 +1,1364 @@
+{
+  "architecture_gate_passed": null,
+  "architecture_gate_progress": null,
+  "audit_verified": true,
+  "collected_at_unix": 1788183933.1373386,
+  "configuration": {
+    "path": "configs/r10b/decomposition_gate_t4.toml",
+    "sha256": "a337d787e1c0ee89554af516a5aa2329d8eeb7c24a029ef9a0cbdee8b4ccc42a"
+  },
+  "downloaded_files": [
+    {
+      "path": "pretraining-r10c-stage-a-c2b6090.log",
+      "sha256": "8b868fd7f7ec29e9b2290cca803bd40e3fe50162938b6cdb4593a2de9af5935d",
+      "size": 337620
+    },
+    {
+      "path": "pretraining-results/audit-manifest.json",
+      "sha256": "4c2a804b61d759dcc83a09a29d95353e480b6efa084a5d15cb2e5dcd41012b61",
+      "size": 2888
+    },
+    {
+      "path": "pretraining-results/card03a/seed-gate-receipt.json",
+      "sha256": "c0e6b2a51e179b749ca2e876246ded667d0ac2924947e05155bf4e3cceff07ac",
+      "size": 7292
+    },
+    {
+      "path": "pretraining-results/card04a/seed-gate-receipt.json",
+      "sha256": "188b35ed59536f7b73832129f775095b709bd6afc07a6885b7d16dbac58f2e72",
+      "size": 7343
+    },
+    {
+      "path": "pretraining-results/card05a/seed-gate-receipt.json",
+      "sha256": "42aadeec314a99cca934ab65724dedc94a242ff3143f034f6ccc34bb38543dd5",
+      "size": 7378
+    },
+    {
+      "path": "pretraining-results/card06a/seed-gate-receipt.json",
+      "sha256": "eaee22187401db927886c5e564bb978cbc771bf299337dbab6f5392b773b3f1a",
+      "size": 6780
+    },
+    {
+      "path": "pretraining-results/environment.json",
+      "sha256": "06d791fe0b06f04702ea72807c762ee7b5c1056d96870841c7db05deae2794ba",
+      "size": 2973
+    },
+    {
+      "path": "pretraining-results/logs/maturin-build.log",
+      "sha256": "0c3342af182f00580df28416b52db00711b2958caa482ca38c0898b22837b050",
+      "size": 6428
+    },
+    {
+      "path": "pretraining-results/logs/pip-install.log",
+      "sha256": "1db045da7b5d20eaf5b2fb9b1eec0b2a85d8bc6048a94dfead7cd9c533b527e8",
+      "size": 12503
+    },
+    {
+      "path": "pretraining-results/logs/python-tests.log",
+      "sha256": "01984fbd3cf554100ca2a62cac01aca971211e52301ead2a486a7b564aa0eb81",
+      "size": 15202
+    },
+    {
+      "path": "pretraining-results/logs/rust-tests.log",
+      "sha256": "1de249eec42de9abfc6e21e765c514dbaaaa8f28350fa70b52cd967c13fe1a81",
+      "size": 35793
+    },
+    {
+      "path": "pretraining-results/logs/rust-toolchain.log",
+      "sha256": "eb407fb00aaa6c2362c6109acc534c26432350bc77ddebf3eb3280663466babe",
+      "size": 251
+    },
+    {
+      "path": "pretraining-results/logs/rustup-download.log",
+      "sha256": "65ab67427918399433c826dc3d69d1a19dc47a96b0439717ad27931fb699e6ce",
+      "size": 111
+    },
+    {
+      "path": "pretraining-results/logs/rustup-install.log",
+      "sha256": "2b1de893e77f9176eea810f2065325e56010d224aa58a758482a3b7ca25b0fa3",
+      "size": 1489
+    },
+    {
+      "path": "pretraining-results/logs/seed-gate.log",
+      "sha256": "e0ce72d244950e771e96187aeec4599af79e3619caa030d2aa0954d8341bf85c",
+      "size": 27561
+    },
+    {
+      "path": "pretraining-results/logs/world-wheel-install.log",
+      "sha256": "eeacb1c3d9398a021181ef7732ba4a0596422ca3912d5fd910cdeddc06411841",
+      "size": 353
+    },
+    {
+      "path": "pretraining-results/phase_status.json",
+      "sha256": "e8aad73c992bd4a895c339e9f1fee9d4ab707e6eacb7b191d6e0f29bfc6d94c3",
+      "size": 823
+    },
+    {
+      "path": "pretraining-results/seed-gate-receipt.json",
+      "sha256": "d90d798d8582323b321a64fde789d71ac415d3e76285f27185e4d502adec09a1",
+      "size": 34345
+    },
+    {
+      "path": "pretraining-results/summary.json",
+      "sha256": "52769c340cbf4d2d247ebd93891d9ce5aa32671746d888b646107cd931c2b95b",
+      "size": 38065
+    },
+    {
+      "path": "pretraining-results/timing-preflight-receipt.json",
+      "sha256": "ea6393877f9b76d1f39bf2d40ffe8e1ce4ce8b5c5396698633f6c86f9f6dd1ab",
+      "size": 387
+    }
+  ],
+  "experiment": "r10c-stage-a-matched",
+  "kaggle": {
+    "completion_time": "2026-08-31T13:34:22.537000",
+    "owner_slug_version": "aniruddhavarma/pretraining-r10c-stage-a-c2b6090/1",
+    "push_url": "https://www.kaggle.com/code/aniruddhavarma/pretraining-r10c-stage-a-c2b6090",
+    "terminal_status": "aniruddhavarma/pretraining-r10c-stage-a-c2b6090/1 has status \"KernelWorkerStatus.COMPLETE\"",
+    "url": "https://www.kaggle.com/code/aniruddhavarma/pretraining-r10c-stage-a-c2b6090/versions/1"
+  },
+  "kernel": "aniruddhavarma/pretraining-r10c-stage-a-c2b6090",
+  "model_sha256": null,
+  "observed_accelerator_inventory": null,
+  "recovery_artifact": null,
+  "remote_manifest_sha256": "4c2a804b61d759dcc83a09a29d95353e480b6efa084a5d15cb2e5dcd41012b61",
+  "requested_accelerator": "NvidiaTeslaT4",
+  "root_seed": 20260831,
+  "run_id": "aniruddhavarma/pretraining-r10c-stage-a-c2b6090/1",
+  "schema_version": 1,
+  "scientific_report": {
+    "admits_composite": false,
+    "authorizes_r11": false,
+    "classification": "decomposition_gate_incomplete",
+    "decomposes": {
+      "card03a": "card03",
+      "card04a": "card04",
+      "card05a": "card05",
+      "card06a": "card06"
+    },
+    "elapsed_seconds": 95.69013700700003,
+    "pilots": [
+      {
+        "abi_and_bounds_ok": true,
+        "action_query_objective": "grouped_action_query_cross_entropy",
+        "actual_tokens": 25,
+        "admits_composite": false,
+        "authorizes_r11": false,
+        "case_kind_argmax_at_rung": {
+          "negative_constant_goal": 0.5,
+          "negative_goal_predictable_from_state": 1.0,
+          "witness_goal_changes_action": 0.75
+        },
+        "classification": "support_fit_incomplete",
+        "complete": true,
+        "composite_contract_hash": "d975c3a646591ccf",
+        "contract_hash": "06a36ac33c3f952b",
+        "decision_rung": 64,
+        "decomposes": "card04",
+        "device": "cuda",
+        "elapsed_seconds": 21.83075422500002,
+        "episode_presentations": 256,
+        "evaluation_support": "full_distinct_public_corpus",
+        "evaluations": {
+          "0": {
+            "by_case_kind": {
+              "negative_constant_goal": {
+                "argmax": 0.375,
+                "decisions": 8
+              },
+              "negative_goal_predictable_from_state": {
+                "argmax": 0.5,
+                "decisions": 8
+              },
+              "witness_goal_changes_action": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card04a": {
+                "argmax": 0.34375,
+                "decisions": 32
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_constant_goal": {
+                "argmax": 0.375,
+                "decisions": 8
+              },
+              "negative_goal_predictable_from_state": {
+                "argmax": 0.5,
+                "decisions": 8
+              },
+              "witness_goal_changes_action": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "decisions": 32,
+            "macro_argmax": 0.375
+          },
+          "16": {
+            "by_case_kind": {
+              "negative_constant_goal": {
+                "argmax": 0.375,
+                "decisions": 8
+              },
+              "negative_goal_predictable_from_state": {
+                "argmax": 0.5,
+                "decisions": 8
+              },
+              "witness_goal_changes_action": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card04a": {
+                "argmax": 0.34375,
+                "decisions": 32
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_constant_goal": {
+                "argmax": 0.375,
+                "decisions": 8
+              },
+              "negative_goal_predictable_from_state": {
+                "argmax": 0.5,
+                "decisions": 8
+              },
+              "witness_goal_changes_action": {
+                "argmax": 0.25,
+                "decisions": 16
+              }
+            },
+            "decisions": 32,
+            "macro_argmax": 0.375
+          },
+          "32": {
+            "by_case_kind": {
+              "negative_constant_goal": {
+                "argmax": 0.5,
+                "decisions": 8
+              },
+              "negative_goal_predictable_from_state": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "witness_goal_changes_action": {
+                "argmax": 0.75,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card04a": {
+                "argmax": 0.75,
+                "decisions": 32
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_constant_goal": {
+                "argmax": 0.5,
+                "decisions": 8
+              },
+              "negative_goal_predictable_from_state": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "witness_goal_changes_action": {
+                "argmax": 0.75,
+                "decisions": 16
+              }
+            },
+            "decisions": 32,
+            "macro_argmax": 0.75
+          },
+          "48": {
+            "by_case_kind": {
+              "negative_constant_goal": {
+                "argmax": 0.5,
+                "decisions": 8
+              },
+              "negative_goal_predictable_from_state": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "witness_goal_changes_action": {
+                "argmax": 0.75,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card04a": {
+                "argmax": 0.75,
+                "decisions": 32
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_constant_goal": {
+                "argmax": 0.5,
+                "decisions": 8
+              },
+              "negative_goal_predictable_from_state": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "witness_goal_changes_action": {
+                "argmax": 0.75,
+                "decisions": 16
+              }
+            },
+            "decisions": 32,
+            "macro_argmax": 0.75
+          },
+          "64": {
+            "by_case_kind": {
+              "negative_constant_goal": {
+                "argmax": 0.5,
+                "decisions": 8
+              },
+              "negative_goal_predictable_from_state": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "witness_goal_changes_action": {
+                "argmax": 0.75,
+                "decisions": 16
+              }
+            },
+            "by_family": {
+              "card04a": {
+                "argmax": 0.75,
+                "decisions": 32
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_constant_goal": {
+                "argmax": 0.5,
+                "decisions": 8
+              },
+              "negative_goal_predictable_from_state": {
+                "argmax": 1.0,
+                "decisions": 8
+              },
+              "witness_goal_changes_action": {
+                "argmax": 0.75,
+                "decisions": 16
+              }
+            },
+            "decisions": 32,
+            "macro_argmax": 0.75
+          }
+        },
+        "exact_full_support_fit": false,
+        "family": "card04a",
+        "finite": true,
+        "macro_argmax_at_rung": 0.75,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "profile": "r10b-stage-a-decomposition-gate-v1",
+        "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+        "reopens_r10": false,
+        "scored_action_query_targets": 1536,
+        "seeds": {
+          "eval": 2026083301,
+          "init": 2026083101,
+          "train": 2026083201
+        },
+        "sequence_cap": 192,
+        "stage": "A",
+        "timed_out": false,
+        "trainer_log_history": [
+          {
+            "epoch": 0.015625,
+            "grad_norm": 0.24510525166988373,
+            "learning_rate": 0.0,
+            "loss": 1.0995,
+            "num_input_tokens_seen": 200,
+            "step": 1,
+            "train_runtime": 0.5691,
+            "train_tokens_per_second": 351.441
+          },
+          {
+            "epoch": 0.25,
+            "grad_norm": 0.43193045258522034,
+            "learning_rate": 0.0002758005851918136,
+            "loss": 1.0904,
+            "num_input_tokens_seen": 3200,
+            "step": 16,
+            "train_runtime": 5.4409,
+            "train_tokens_per_second": 588.14
+          },
+          {
+            "epoch": 0.5,
+            "grad_norm": 7.133996963500977,
+            "learning_rate": 0.00017346516975603462,
+            "loss": 1.0439,
+            "num_input_tokens_seen": 6400,
+            "step": 32,
+            "train_runtime": 10.5726,
+            "train_tokens_per_second": 605.34
+          },
+          {
+            "epoch": 0.75,
+            "grad_norm": 4.3727521896362305,
+            "learning_rate": 5.56019413425244e-05,
+            "loss": 1.0447,
+            "num_input_tokens_seen": 9600,
+            "step": 48,
+            "train_runtime": 15.8435,
+            "train_tokens_per_second": 605.926
+          },
+          {
+            "epoch": 1.0,
+            "grad_norm": 7.614653587341309,
+            "learning_rate": 2.05569786813925e-07,
+            "loss": 0.8746,
+            "num_input_tokens_seen": 12800,
+            "step": 64,
+            "train_runtime": 21.3327,
+            "train_tokens_per_second": 600.019
+          },
+          {
+            "epoch": 1.0,
+            "num_input_tokens_seen": 12800,
+            "step": 64,
+            "total_flos": 1632221260800.0,
+            "train_loss": 1.0135162472724915,
+            "train_runtime": 21.3328,
+            "train_samples_per_second": 24.001,
+            "train_steps_per_second": 3.0
+          }
+        ],
+        "transfer_claim": false
+      },
+      {
+        "abi_and_bounds_ok": true,
+        "action_query_objective": "grouped_action_query_cross_entropy",
+        "actual_tokens": 38,
+        "admits_composite": false,
+        "authorizes_r11": false,
+        "case_kind_argmax_at_rung": {
+          "negative_announced_restoration": 1.0,
+          "negative_fully_capable": 1.0,
+          "witness_identified_support": 0.5
+        },
+        "classification": "support_fit_incomplete",
+        "complete": true,
+        "composite_contract_hash": "2442b372a18e1d66",
+        "contract_hash": "235c0a6ad2efb10d",
+        "decision_rung": 64,
+        "decomposes": "card03",
+        "device": "cuda",
+        "elapsed_seconds": 22.239318755,
+        "episode_presentations": 256,
+        "evaluation_support": "full_distinct_public_corpus",
+        "evaluations": {
+          "0": {
+            "by_case_kind": {
+              "negative_announced_restoration": {
+                "argmax": 0.0,
+                "decisions": 3
+              },
+              "negative_fully_capable": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "witness_identified_support": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card03a": {
+                "argmax": 0.5,
+                "decisions": 12
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_announced_restoration": {
+                "argmax": 0.0,
+                "decisions": 3
+              },
+              "negative_fully_capable": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "witness_identified_support": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "decisions": 12,
+            "macro_argmax": 0.5
+          },
+          "16": {
+            "by_case_kind": {
+              "negative_announced_restoration": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "negative_fully_capable": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "witness_identified_support": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card03a": {
+                "argmax": 0.75,
+                "decisions": 12
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_announced_restoration": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "negative_fully_capable": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "witness_identified_support": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "decisions": 12,
+            "macro_argmax": 0.8333333333333334
+          },
+          "32": {
+            "by_case_kind": {
+              "negative_announced_restoration": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "negative_fully_capable": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "witness_identified_support": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card03a": {
+                "argmax": 0.75,
+                "decisions": 12
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_announced_restoration": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "negative_fully_capable": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "witness_identified_support": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "decisions": 12,
+            "macro_argmax": 0.8333333333333334
+          },
+          "48": {
+            "by_case_kind": {
+              "negative_announced_restoration": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "negative_fully_capable": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "witness_identified_support": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card03a": {
+                "argmax": 0.75,
+                "decisions": 12
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_announced_restoration": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "negative_fully_capable": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "witness_identified_support": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "decisions": 12,
+            "macro_argmax": 0.8333333333333334
+          },
+          "64": {
+            "by_case_kind": {
+              "negative_announced_restoration": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "negative_fully_capable": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "witness_identified_support": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "by_family": {
+              "card03a": {
+                "argmax": 0.75,
+                "decisions": 12
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_announced_restoration": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "negative_fully_capable": {
+                "argmax": 1.0,
+                "decisions": 3
+              },
+              "witness_identified_support": {
+                "argmax": 0.5,
+                "decisions": 6
+              }
+            },
+            "decisions": 12,
+            "macro_argmax": 0.8333333333333334
+          }
+        },
+        "exact_full_support_fit": false,
+        "family": "card03a",
+        "finite": true,
+        "macro_argmax_at_rung": 0.8333333333333334,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "profile": "r10b-stage-a-decomposition-gate-v1",
+        "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+        "reopens_r10": false,
+        "scored_action_query_targets": 1280,
+        "seeds": {
+          "eval": 2026083302,
+          "init": 2026083102,
+          "train": 2026083202
+        },
+        "sequence_cap": 192,
+        "stage": "A",
+        "timed_out": false,
+        "trainer_log_history": [
+          {
+            "epoch": 0.015625,
+            "grad_norm": 0.487165629863739,
+            "learning_rate": 0.0,
+            "loss": 1.6076,
+            "num_input_tokens_seen": 304,
+            "step": 1,
+            "train_runtime": 0.5498,
+            "train_tokens_per_second": 552.932
+          },
+          {
+            "epoch": 0.25,
+            "grad_norm": 24.595735549926758,
+            "learning_rate": 0.0002758005851918136,
+            "loss": 1.1917,
+            "num_input_tokens_seen": 4864,
+            "step": 16,
+            "train_runtime": 5.6302,
+            "train_tokens_per_second": 863.916
+          },
+          {
+            "epoch": 0.5,
+            "grad_norm": 37.874481201171875,
+            "learning_rate": 0.00017346516975603462,
+            "loss": 1.0614,
+            "num_input_tokens_seen": 9728,
+            "step": 32,
+            "train_runtime": 10.849,
+            "train_tokens_per_second": 896.669
+          },
+          {
+            "epoch": 0.75,
+            "grad_norm": 21.51165771484375,
+            "learning_rate": 5.56019413425244e-05,
+            "loss": 0.8704,
+            "num_input_tokens_seen": 14592,
+            "step": 48,
+            "train_runtime": 16.0715,
+            "train_tokens_per_second": 907.945
+          },
+          {
+            "epoch": 1.0,
+            "grad_norm": 1.7027896642684937,
+            "learning_rate": 2.05569786813925e-07,
+            "loss": 0.6554,
+            "num_input_tokens_seen": 19456,
+            "step": 64,
+            "train_runtime": 21.6879,
+            "train_tokens_per_second": 897.092
+          },
+          {
+            "epoch": 1.0,
+            "num_input_tokens_seen": 19456,
+            "step": 64,
+            "total_flos": 2480976316416.0,
+            "train_loss": 0.951214762404561,
+            "train_runtime": 21.688,
+            "train_samples_per_second": 23.608,
+            "train_steps_per_second": 2.951
+          }
+        ],
+        "transfer_claim": false
+      },
+      {
+        "abi_and_bounds_ok": true,
+        "action_query_objective": "grouped_action_query_cross_entropy",
+        "actual_tokens": 21,
+        "admits_composite": false,
+        "authorizes_r11": false,
+        "case_kind_argmax_at_rung": {
+          "negative_commits_equally_valuable": 1.0,
+          "negative_gate_hidden": 1.0,
+          "witness_reveal_then_commit": 0.5
+        },
+        "classification": "support_fit_incomplete",
+        "complete": true,
+        "composite_contract_hash": "cbe39880124b9d2d",
+        "contract_hash": "4941b2e1e1c8c390",
+        "decision_rung": 64,
+        "decomposes": "card05",
+        "device": "cuda",
+        "elapsed_seconds": 22.06781197700002,
+        "episode_presentations": 256,
+        "evaluation_support": "full_distinct_public_corpus",
+        "evaluations": {
+          "0": {
+            "by_case_kind": {
+              "negative_commits_equally_valuable": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "negative_gate_hidden": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reveal_then_commit": {
+                "argmax": 0.5,
+                "decisions": 2
+              }
+            },
+            "by_family": {
+              "card05a": {
+                "argmax": 0.8333333333333334,
+                "decisions": 6
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_commits_equally_valuable": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "negative_gate_hidden": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reveal_then_commit": {
+                "argmax": 0.5,
+                "decisions": 2
+              }
+            },
+            "decisions": 6,
+            "macro_argmax": 0.8333333333333334
+          },
+          "16": {
+            "by_case_kind": {
+              "negative_commits_equally_valuable": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "negative_gate_hidden": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reveal_then_commit": {
+                "argmax": 0.5,
+                "decisions": 2
+              }
+            },
+            "by_family": {
+              "card05a": {
+                "argmax": 0.8333333333333334,
+                "decisions": 6
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_commits_equally_valuable": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "negative_gate_hidden": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reveal_then_commit": {
+                "argmax": 0.5,
+                "decisions": 2
+              }
+            },
+            "decisions": 6,
+            "macro_argmax": 0.8333333333333334
+          },
+          "32": {
+            "by_case_kind": {
+              "negative_commits_equally_valuable": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "negative_gate_hidden": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reveal_then_commit": {
+                "argmax": 0.5,
+                "decisions": 2
+              }
+            },
+            "by_family": {
+              "card05a": {
+                "argmax": 0.8333333333333334,
+                "decisions": 6
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_commits_equally_valuable": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "negative_gate_hidden": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reveal_then_commit": {
+                "argmax": 0.5,
+                "decisions": 2
+              }
+            },
+            "decisions": 6,
+            "macro_argmax": 0.8333333333333334
+          },
+          "48": {
+            "by_case_kind": {
+              "negative_commits_equally_valuable": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "negative_gate_hidden": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reveal_then_commit": {
+                "argmax": 0.5,
+                "decisions": 2
+              }
+            },
+            "by_family": {
+              "card05a": {
+                "argmax": 0.8333333333333334,
+                "decisions": 6
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_commits_equally_valuable": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "negative_gate_hidden": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reveal_then_commit": {
+                "argmax": 0.5,
+                "decisions": 2
+              }
+            },
+            "decisions": 6,
+            "macro_argmax": 0.8333333333333334
+          },
+          "64": {
+            "by_case_kind": {
+              "negative_commits_equally_valuable": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "negative_gate_hidden": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reveal_then_commit": {
+                "argmax": 0.5,
+                "decisions": 2
+              }
+            },
+            "by_family": {
+              "card05a": {
+                "argmax": 0.8333333333333334,
+                "decisions": 6
+              }
+            },
+            "by_primary_case_kind": {
+              "negative_commits_equally_valuable": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "negative_gate_hidden": {
+                "argmax": 1.0,
+                "decisions": 2
+              },
+              "witness_reveal_then_commit": {
+                "argmax": 0.5,
+                "decisions": 2
+              }
+            },
+            "decisions": 6,
+            "macro_argmax": 0.8333333333333334
+          }
+        },
+        "exact_full_support_fit": false,
+        "family": "card05a",
+        "finite": true,
+        "macro_argmax_at_rung": 0.8333333333333334,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "profile": "r10b-stage-a-decomposition-gate-v1",
+        "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+        "reopens_r10": false,
+        "scored_action_query_targets": 768,
+        "seeds": {
+          "eval": 2026083303,
+          "init": 2026083103,
+          "train": 2026083203
+        },
+        "sequence_cap": 192,
+        "stage": "A",
+        "timed_out": false,
+        "trainer_log_history": [
+          {
+            "epoch": 0.015625,
+            "grad_norm": 1.128104567527771,
+            "learning_rate": 0.0,
+            "loss": 1.0978,
+            "num_input_tokens_seen": 168,
+            "step": 1,
+            "train_runtime": 0.5527,
+            "train_tokens_per_second": 303.978
+          },
+          {
+            "epoch": 0.25,
+            "grad_norm": 1.29254150390625,
+            "learning_rate": 0.0002758005851918136,
+            "loss": 0.9455,
+            "num_input_tokens_seen": 2688,
+            "step": 16,
+            "train_runtime": 5.5402,
+            "train_tokens_per_second": 485.185
+          },
+          {
+            "epoch": 0.5,
+            "grad_norm": 8.219626426696777,
+            "learning_rate": 0.00017346516975603462,
+            "loss": 1.0621,
+            "num_input_tokens_seen": 5376,
+            "step": 32,
+            "train_runtime": 10.9485,
+            "train_tokens_per_second": 491.028
+          },
+          {
+            "epoch": 0.75,
+            "grad_norm": 0.8288858532905579,
+            "learning_rate": 5.56019413425244e-05,
+            "loss": 0.918,
+            "num_input_tokens_seen": 8064,
+            "step": 48,
+            "train_runtime": 16.2679,
+            "train_tokens_per_second": 495.701
+          },
+          {
+            "epoch": 1.0,
+            "grad_norm": 1.077362060546875,
+            "learning_rate": 2.05569786813925e-07,
+            "loss": 0.6894,
+            "num_input_tokens_seen": 10752,
+            "step": 64,
+            "train_runtime": 21.5487,
+            "train_tokens_per_second": 498.963
+          },
+          {
+            "epoch": 1.0,
+            "num_input_tokens_seen": 10752,
+            "step": 64,
+            "total_flos": 1371065859072.0,
+            "train_loss": 0.906119916588068,
+            "train_runtime": 21.5489,
+            "train_samples_per_second": 23.76,
+            "train_steps_per_second": 2.97
+          }
+        ],
+        "transfer_claim": false
+      },
+      {
+        "abi_and_bounds_ok": true,
+        "action_query_objective": "grouped_action_query_cross_entropy",
+        "actual_tokens": 29,
+        "admits_composite": false,
+        "authorizes_r11": false,
+        "case_kind_argmax_at_rung": {
+          "channel_locked": 0.75,
+          "identity_tag": 0.75,
+          "witness": 0.75
+        },
+        "classification": "support_fit_incomplete",
+        "complete": true,
+        "composite_contract_hash": "76a08f38947c8cae",
+        "contract_hash": "b6f762bb89601096",
+        "decision_rung": 64,
+        "decomposes": "card06",
+        "device": "cuda",
+        "elapsed_seconds": 22.252260035000006,
+        "episode_presentations": 256,
+        "evaluation_support": "full_distinct_public_corpus",
+        "evaluations": {
+          "0": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 4
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 8
+              }
+            },
+            "by_family": {
+              "card06a": {
+                "argmax": 0.25,
+                "decisions": 28
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.25,
+                "decisions": 4
+              },
+              "identity_tag": {
+                "argmax": 0.25,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.25,
+                "decisions": 8
+              }
+            },
+            "decisions": 28,
+            "macro_argmax": 0.25
+          },
+          "16": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.75,
+                "decisions": 4
+              },
+              "identity_tag": {
+                "argmax": 0.75,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.75,
+                "decisions": 8
+              }
+            },
+            "by_family": {
+              "card06a": {
+                "argmax": 0.75,
+                "decisions": 28
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.75,
+                "decisions": 4
+              },
+              "identity_tag": {
+                "argmax": 0.75,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.75,
+                "decisions": 8
+              }
+            },
+            "decisions": 28,
+            "macro_argmax": 0.75
+          },
+          "32": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.75,
+                "decisions": 4
+              },
+              "identity_tag": {
+                "argmax": 0.75,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.75,
+                "decisions": 8
+              }
+            },
+            "by_family": {
+              "card06a": {
+                "argmax": 0.75,
+                "decisions": 28
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.75,
+                "decisions": 4
+              },
+              "identity_tag": {
+                "argmax": 0.75,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.75,
+                "decisions": 8
+              }
+            },
+            "decisions": 28,
+            "macro_argmax": 0.75
+          },
+          "48": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.75,
+                "decisions": 4
+              },
+              "identity_tag": {
+                "argmax": 0.75,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.75,
+                "decisions": 8
+              }
+            },
+            "by_family": {
+              "card06a": {
+                "argmax": 0.75,
+                "decisions": 28
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.75,
+                "decisions": 4
+              },
+              "identity_tag": {
+                "argmax": 0.75,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.75,
+                "decisions": 8
+              }
+            },
+            "decisions": 28,
+            "macro_argmax": 0.75
+          },
+          "64": {
+            "by_case_kind": {
+              "channel_locked": {
+                "argmax": 0.75,
+                "decisions": 4
+              },
+              "identity_tag": {
+                "argmax": 0.75,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.75,
+                "decisions": 8
+              }
+            },
+            "by_family": {
+              "card06a": {
+                "argmax": 0.75,
+                "decisions": 28
+              }
+            },
+            "by_primary_case_kind": {
+              "channel_locked": {
+                "argmax": 0.75,
+                "decisions": 4
+              },
+              "identity_tag": {
+                "argmax": 0.75,
+                "decisions": 16
+              },
+              "witness": {
+                "argmax": 0.75,
+                "decisions": 8
+              }
+            },
+            "decisions": 28,
+            "macro_argmax": 0.75
+          }
+        },
+        "exact_full_support_fit": false,
+        "family": "card06a",
+        "finite": true,
+        "macro_argmax_at_rung": 0.75,
+        "padding_strategy": "family_max_profiled_length_under_cap",
+        "profile": "r10b-stage-a-decomposition-gate-v1",
+        "prospective_action": "the certificate falsifier fires: the removed factor was not the barrier; record and do not tune this profile",
+        "reopens_r10": false,
+        "scored_action_query_targets": 2048,
+        "seeds": {
+          "eval": 2026083304,
+          "init": 2026083104,
+          "train": 2026083204
+        },
+        "sequence_cap": 192,
+        "stage": "A",
+        "timed_out": false,
+        "trainer_log_history": [
+          {
+            "epoch": 0.015625,
+            "grad_norm": 0.45905017852783203,
+            "learning_rate": 0.0,
+            "loss": 1.3853,
+            "num_input_tokens_seen": 232,
+            "step": 1,
+            "train_runtime": 0.5601,
+            "train_tokens_per_second": 414.24
+          },
+          {
+            "epoch": 0.25,
+            "grad_norm": 2.519145965576172,
+            "learning_rate": 0.0002758005851918136,
+            "loss": 1.1615,
+            "num_input_tokens_seen": 3712,
+            "step": 16,
+            "train_runtime": 5.6628,
+            "train_tokens_per_second": 655.505
+          },
+          {
+            "epoch": 0.5,
+            "grad_norm": 7.585844993591309,
+            "learning_rate": 0.00017346516975603462,
+            "loss": 0.8352,
+            "num_input_tokens_seen": 7424,
+            "step": 32,
+            "train_runtime": 11.0294,
+            "train_tokens_per_second": 673.113
+          },
+          {
+            "epoch": 0.75,
+            "grad_norm": 32.35132598876953,
+            "learning_rate": 5.56019413425244e-05,
+            "loss": 0.8472,
+            "num_input_tokens_seen": 11136,
+            "step": 48,
+            "train_runtime": 16.3904,
+            "train_tokens_per_second": 679.422
+          },
+          {
+            "epoch": 1.0,
+            "grad_norm": 0.28864994645118713,
+            "learning_rate": 2.05569786813925e-07,
+            "loss": 0.7061,
+            "num_input_tokens_seen": 14848,
+            "step": 64,
+            "train_runtime": 21.7314,
+            "train_tokens_per_second": 683.252
+          },
+          {
+            "epoch": 1.0,
+            "num_input_tokens_seen": 14848,
+            "step": 64,
+            "total_flos": 1893376662528.0,
+            "train_loss": 0.8909949436783791,
+            "train_runtime": 21.7315,
+            "train_samples_per_second": 23.56,
+            "train_steps_per_second": 2.945
+          }
+        ],
+        "transfer_claim": false
+      }
+    ],
+    "preflight": {
+      "actual_tokens": 25,
+      "classification": "preflight_passed",
+      "device": "cuda",
+      "family": "card04a",
+      "full_corpus_eval_limit_seconds": 10,
+      "full_corpus_eval_seconds": 0.6576925890000211,
+      "padding_strategy": "family_max_profiled_length_under_cap",
+      "passed": true,
+      "sequence_cap": 192,
+      "update_limit_seconds": 10,
+      "update_seconds": 3.3810096800000338,
+      "updates": 4
+    },
+    "profile": "r10b-stage-a-decomposition-gate-v1",
+    "reopens_r10": false,
+    "row": "R10b",
+    "transfer_claim": false
+  },
+  "source": {
+    "git_remote": "origin",
+    "git_remote_url": "https://github.com/escher-bach/pretraining_for_robots.git",
+    "git_sha": "c2b60907c9ce61a5e73ba5a1c0ab9ae7ba72d488"
+  },
+  "status": "complete",
+  "upstream_kaggle_versions": [],
+  "verified_manifest_entries": [
+    "card03a/seed-gate-receipt.json",
+    "card04a/seed-gate-receipt.json",
+    "card05a/seed-gate-receipt.json",
+    "card06a/seed-gate-receipt.json",
+    "environment.json",
+    "logs/maturin-build.log",
+    "logs/pip-install.log",
+    "logs/python-tests.log",
+    "logs/rust-tests.log",
+    "logs/rust-toolchain.log",
+    "logs/rustup-download.log",
+    "logs/rustup-install.log",
+    "logs/seed-gate.log",
+    "logs/world-wheel-install.log",
+    "phase_status.json",
+    "seed-gate-receipt.json",
+    "timing-preflight-receipt.json"
+  ],
+  "world_size": null
+}
