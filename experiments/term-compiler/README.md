@@ -19,7 +19,8 @@ The first-class term components are:
 
 - `BodyTerm`: `Morphology`, `Actuation`, `Sensorium`, action roles, and body
   support;
-- `EnvironmentTerm`: start configuration and local blocked edges;
+- `EnvironmentTerm`: start configuration plus either compact ring edges or an
+  explicit finite graph with deterministic self-loop defaults;
 - `NormTerm` and `ScoringTerm`: public/private normative expression plus goal,
   action, fallback, and violation values;
 - `CalibrationTerm`: an unscored action prelude whose cumulative cells can be
@@ -34,8 +35,10 @@ monitor-to-actuator feedback, public support queries, malformed restrictions,
 and ambiguous conflict coupling. Lowered coupling has an explicit inactive
 value, so execution never discards a runtime coupling error.
 
-Family hashes use canonical term serialization and BLAKE3. Generator metadata
-(seed and index) is separate from terms, public traces, and family hashes.
+Family hashes use canonical term serialization and BLAKE3 (schema version 2;
+the version-1 ring encoding remains available for migration checks). Generator
+metadata (seed and index) is separate from terms, public traces, and family
+hashes, and is copied explicitly into validity receipts for replay.
 
 ## Generated embodiment families
 
@@ -48,15 +51,21 @@ unrestricted control
 environment-edge twin
 ```
 
-The environment twin deletes the withheld actuator only at configurations that
-are executable scored command sites. Its calibration prelude leaves that region
-so the body/environment provenance remains publicly observable while all
-scored behavior is preserved.
+The environment twin deletes the withheld actuator at a declared scope. The
+current generator uses the conservative set of cells appearing anywhere in a
+complete scored trajectory, then calibrates beyond that set so the
+body/environment provenance remains publicly observable while all scored
+behavior is preserved.
 
 Each family carries an `EmbodimentValidityReceipt`. It is an exact finite
 semantic filter, with these predicates:
 
 - `sequences_checked`: number of complete action sequences enumerated;
+- `topology_total`, state/row counts, degree sequence, and cycle diagnostic:
+  executable finite-topology evidence;
+- `twin_scope`: exact command sites or conservative trajectory cells;
+- `family_hash`, `generator_seed`, and `generator_index`: semantic identity and
+  separate replay coordinates;
 - `goal_differs_from_start`: the requested goal is nondegenerate;
 - `body_limitation_changes_ceiling`: the limited body and unrestricted control
   have different exact ceilings;
@@ -84,14 +93,18 @@ cargo test --workspace --locked
 
 The focused compiler suite covers typed-boundary rejection, fallback scoring,
 calibration and restoration clocks, total coupling lowering, deterministic
-receipt-filtered generation, public/privileged separation, and semantic hashes.
-The Card 03 differential harness compares all 12 existing contracts over all
-25 scored action sequences, including fallback and timed restoration. It is
-evidence for this isolated compiler boundary only.
+receipt-filtered ring and branching-graph generation, explicit non-cycle
+diagnostics, graph self-loop defaults, public/privileged separation, and
+semantic hash migration. The Card 03 differential harness compares all 12
+existing contracts over all 25 scored action sequences, including fallback and
+timed restoration. A separate topology harness exhausts the five-state
+non-ring witness's 16 horizon-two sequences.
+These results are evidence for this isolated compiler boundary only.
 
 ## Remaining limits
 
-- The executor is finite ring G0 only; it is not a general process scheduler.
+- The executor supports finite deterministic rings and explicit graphs; it is
+  not a stochastic geometry engine or general process scheduler.
 - No compiler term renders through the learner event boundary, and no card has
   migrated from its handwritten evaluator.
 - The Card 03 harness has not established full portfolio ambiguity/orbit or

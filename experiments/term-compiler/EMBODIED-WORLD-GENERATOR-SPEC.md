@@ -28,9 +28,12 @@ evidence, not evidence of usefulness or learnability.
 
 ## 2. Mathematical/executable model
 
-The configuration space is the ring `C = {0, ..., n-1}`, where `2 <= n <= 32`.
-An actuator has an identifier in `[0,32)`, an integer displacement `d(a)`, and
-one role:
+The configuration space is either a compact ring `C = {0, ..., n-1}` or a
+finite deterministic graph with `2 <= |C| <= 32`. A graph is an explicit table
+of `(state, actuator) -> destination` rows plus `MissingEdgeBehavior::SelfLoop`;
+unknown states, duplicate keys, and out-of-set destinations are invalid. An
+actuator has an identifier in `[0,32)`, an integer displacement `d(a)`, and one
+role:
 
 - `Movement` MAY be withheld by body support;
 - `Hold` MUST remain body-supported; and
@@ -40,6 +43,11 @@ one role:
 There MUST be at most one fallback. A directly authored term has positive
 scored horizon `H <= 8`.
 
+Displacement is a ring-only effect. Graph actuators MUST set `d(a)=0`; their
+meaning comes from the typed intervention key and explicit transition rows.
+The graph backend MUST reject a nonzero displacement rather than silently
+ignoring ring arithmetic.
+
 At scored index `e`, support and edge presence are separate predicates:
 
 ```text
@@ -48,7 +56,7 @@ supported(a,e) = a in S
 edge_present(c,a) = (c,a) not in E
 ```
 
-For a non-fallback action whose source cell is admitted by every viability
+For a non-fallback ring action whose source cell is admitted by every viability
 restriction, that is supported, passes every action restriction, and has an
 environment edge, execution is:
 
@@ -56,9 +64,10 @@ environment edge, execution is:
 c' = (c + d(a) + coupling_delta(e,a,c)) mod n.
 ```
 
-An unsupported command or missing edge leaves the cell unchanged. Fallback is
-absorbing in outcomes and the public trace, rather than by adding a terminal
-cell outside the ring.
+For a graph action under the same predicates, execution looks up the explicit
+row; an absent row applies the declared self-loop default. An unsupported
+command still leaves the state unchanged. Fallback is absorbing in outcomes
+and the public trace, rather than by adding a terminal state.
 
 ## 3. Syntax and data model
 
@@ -74,10 +83,11 @@ WorldTerm {
 ```
 
 `name` is diagnostic instance text, not family identity. `BodyTerm` contains
-`Morphology { cells }`, `Actuation { command_port, actuators, supported }`,
-and `Sensorium { cell_port, publishes_cell }`. `EnvironmentTerm` contains
-`start` and `blocked_edges: (cell, actuator_id)`; a blocked edge MUST NOT be
-rewritten as body support.
+body-local `Morphology { segments }`, `Actuation { command_port, actuators,
+supported }`, and `Sensorium { cell_port, publishes_cell }`. `EnvironmentTerm`
+contains `start` and either a ring with `blocked_edges: (cell, actuator_id)` or
+a graph with explicit transition rows and a self-loop default. A blocked or
+missing edge MUST NOT be rewritten as body support.
 
 ### Norms and scoring
 
@@ -215,29 +225,30 @@ publication side effect in this spike.
 
 ## 5. Validation and error model
 
-Validation MUST precede lowering. It rejects an empty name; invalid ring,
+Validation MUST precede lowering. It rejects an empty name; invalid ring/graph,
 horizon, or start; duplicate/missing/malformed ports; bad public sensor;
 duplicate/out-of-range/no actuators; unsupported hold/fallback; multiple
-fallbacks; unknown support, edge, pulse, restriction, or restoration targets;
-negative action cost; malformed wires; monitor sources; visibility leaks;
-public support ports; malformed process/reveal outputs; duplicate process
-names; unknown interrupted process; zero resource budget; and malformed
-couplings.
+fallbacks; unknown support, edge, graph row, pulse, restriction, or restoration
+targets; duplicate graph keys; nonzero graph displacement; negative action cost;
+malformed wires; monitor sources; visibility leaks; public support ports;
+malformed process/reveal outputs; duplicate process names; unknown interrupted
+process; zero resource budget; and malformed couplings.
 
 A restoration MUST target one initially unsupported movement action and use a
 public signal output. `Override` and `Conflict` MUST have a writer.
 `Conflict` MUST have at most one declared writer; this conservative rule avoids
 requiring a proof that guards never coincide.
 
-The validator does not enforce role/displacement consistency for custom
-actuators. The generator template gives `Hold` displacement zero, but a custom
-`Hold` may carry another displacement. `Fallback` is special in the lowered
-transition and never moves regardless of its stored displacement.
+For ring terms, the validator preserves the legacy permissive role/displacement
+metadata (the lowered ring transition uses movement displacement and fallback
+never moves). For graph terms, every actuator displacement MUST be zero; a
+nonzero value is a typed validation error because graph meaning comes from the
+explicit transition table.
 
-Errors are `Invalid(message)`, `UnknownPort(name)`, `IllTypedWire {from,to}`,
-`VisibilityLeak {from,to}`, or `MonitorAsSource(name)`. Generation also uses
-`Invalid` when bounds cannot produce its required contrast or a candidate fails
-its receipt.
+Errors are `Invalid(message)`, `Unsupported(message)`, `UnknownPort(name)`,
+`IllTypedWire {from,to}`, `VisibilityLeak {from,to}`, or
+`MonitorAsSource(name)`. Generation also uses `Invalid` when bounds cannot
+produce its required contrast or a candidate fails its receipt.
 
 ## 6. Compilation and lowering
 
@@ -246,18 +257,23 @@ WorldTerm -> validate -> finite lowered program -> CompiledWorld
 ```
 
 The result contains `CompiledFragment`, `CompiledContract`, derived
-kernel-use metadata, optional generator metadata, and a family hash.
+kernel-use metadata, optional generator metadata, and a family hash. The
+compiled transition table is total over state, scored index, and declared
+actuator. Ring rows use modular displacement; graph rows use explicit lookup
+and the self-loop default.
 `CompiledFragment` implements finite actions, horizon, start, transition,
 value, and public trace. The compiled horizon is the authored horizon capped by
 the smallest resource budget, when present.
 
-Couplings are lowered to total functions: `Sum` returns the active sum or
+Couplings are lowered to total functions on ring backends: `Sum` returns the active sum or
 `inactive_value`; `Override` returns the last active writer or inactive value;
 and validated `Conflict` returns its sole active writer or inactive value. Each
 coupling contributes a displacement and all lowered coupling displacements are
 summed. Guards receive the transition context (including the current action and
 cell); the declared variable identifier is not a runtime storage lookup. A
-runtime coupling error MUST NOT be discarded.
+runtime coupling error MUST NOT be discarded. A graph term containing a
+displacement coupling is rejected as unsupported; it is not approximated by
+integer state arithmetic.
 
 Interrupt lowering is intentionally partial. A `Frozen` interrupt suppresses
 public signals from the named process while its guard is active. `Continues`
@@ -289,9 +305,10 @@ are unscored. Generic trajectories MAY still enumerate a full action sequence,
 but final outcome cell uses the prefix before its first fallback.
 
 `PublicView` contains only this trace. `PrivilegedView` explicitly contains a
-trajectory, blocked edges, and body support. Audit metadata contains the family
-hash, kernel-use flags, and public port names. Seed/index metadata is neither
-public nor part of a family hash.
+trajectory, the environment state space, and body support. Audit metadata
+contains the family hash, its schema version, kernel-use flags, public port
+names, and topology diagnostics. Seed/index metadata is neither public nor
+part of a family hash.
 
 For example, if a term has a calibration prelude but sets
 `publishes_cells=false` while its sensorium publishes cells, the public trace
@@ -303,10 +320,11 @@ does emit the start cell before the norm code.
 
 ## 8. Canonical hashing, replay, and conformance levels
 
-To hash a family, the implementation clears `name`, sorts ports by name,
-wiring by endpoints, actuators by identifier, and blocked edges
-lexicographically. It preserves behavior-sensitive orders: norm tree,
-restrictions, process signals, restoration announcements, and override writers.
+The current canonical term encoding is schema version 2. It clears `name`,
+sorts ports by name, wiring by endpoints, actuators by identifier, and ring
+blocked edges or graph transition rows lexicographically. It preserves
+behavior-sensitive orders: norm tree, restrictions, process signals,
+restoration announcements, and override writers.
 The reference implementation serializes this canonical Rust value using its
 derived `serde` representation through `serde_json`, then hashes those bytes
 with BLAKE3. The resulting 256-bit digest is a collision-resistant family
@@ -331,7 +349,9 @@ than a language-neutral wire standard defined by this document. The exact
 `norm_code` algorithm above is separately fixed for public-trace
 compatibility.
 
-Seed/index changes MUST NOT alter the hash. Semantic changes, including action
+Seed/index changes MUST NOT alter the hash. Version-1 ring fixtures can be
+replayed through the explicit legacy ring encoding for migration; their
+version-1 digest is not equal to the version-2 digest. Semantic changes, including action
 meaning, support, edge, calibration, restoration, norm, or scoring changes,
 MUST be treated as a distinct semantic term; they change the reference
 canonical term bytes and SHOULD alter the digest absent a cryptographic
@@ -344,8 +364,11 @@ separate from the term.
 `GenerationSpec` is:
 
 ```text
-seed, count, min_cells, max_cells, min_horizon, max_horizon
+seed, count, template, min_cells, max_cells, min_horizon, max_horizon
 ```
+
+`template` is `Ring` by default for compatibility or the explicit
+`BranchingGraph` non-ring template. The ring template samples:
 
 It requires `1 <= count <= 64`, `2 <= min_cells <= max_cells <= 8`, and
 `1 <= min_horizon <= max_horizon <= 6`. Family generation further requires a
@@ -358,6 +381,13 @@ H ~ Uniform[max(min_horizon,2), min(max_horizon,n-2)]
 start = 0; goal = n-1
 ```
 
+The branching-graph template requires a possible `n >= 5` and `H >= 2`, then
+samples `H <= n-3`. It emits explicit graph rows, a self-loop default, and
+zero-displacement action descriptors; graph action meaning comes only from the
+rows. Its advance chain reaches `H+2` only in calibration, while retreat from
+state `1` is the short unrestricted route to the goal and other retreat rows
+remain genuine graph interventions.
+
 An empty range is an error, not a relaxed contrast. `H <= n-2` prevents forward
 motion from wrapping to the backward goal in-budget.
 
@@ -365,13 +395,14 @@ Each generated family uses this alphabet:
 
 | ID | Name | Displacement | Role |
 |---:|---|---:|---|
-| 0 | advance | +1 | Movement |
-| 1 | retreat | -1 | Movement |
+| 0 | advance | +1 ring / 0 graph | Movement |
+| 1 | retreat | -1 ring / 0 graph | Movement |
 | 2 | hold | 0 | Hold |
 | 3 | fallback | 0 | Fallback |
 
 It uses public `Settle(goal)`, scoring `(100,1,50,-100)`, and public
-calibration of `H+1` advances followed by retreat. It returns exactly these
+calibration of `H+1` ring advances (or `H+2` graph advances) followed by
+retreat. It returns exactly these
 three terms:
 
 1. **Body-limited witness:** support `{advance,hold,fallback}`, no blocked
@@ -399,6 +430,14 @@ Every candidate is compiled and verified before emission. Its
 | Field | Exact predicate |
 |---|---|
 | `sequences_checked` | Complete action sequences enumerated over the common alphabet/horizon. |
+| `topology_total` | Lowered table has one deterministic result for every state, scored index, and declared action. |
+| `topology_state_count` | Number of environment states in the selected ring or graph configuration space. |
+| `topology_transition_rows` | Explicit blocked-edge/graph-row count retained by the environment term. |
+| `topology_degree_sequence` | Executable undirected graph degree vector, with self-loops ignored. |
+| `topology_is_simple_cycle` | Executable topology diagnostic; graph witnesses must be false. |
+| `twin_scope` | `ExactCommandSites` or explicit `ConservativeTrajectoryCells`; the current generator uses the latter. |
+| `family_hash` | Semantic hash of the body-limited term; seed/index remain separate receipt metadata. |
+| `generator_seed`, `generator_index` | Replay coordinates copied from enclosing `GeneratedWorld` metadata; neither enters the family hash. |
 | `goal_differs_from_start` | The `Settle`/`Visit` target differs from start. |
 | `body_limitation_changes_ceiling` | Witness and unrestricted exact ceilings differ. |
 | `twin_trajectories_equal` | Every witness/twin complete trajectory agrees. |
@@ -408,8 +447,10 @@ Every candidate is compiled and verified before emission. Its
 | `calibration_identifies_body` | A uniform two-contract ambiguity set has public diameter 2 without calibration and 1 with it. |
 | `valid` | Conjunction of all required predicates above, excluding the count. |
 
-A candidate with `valid = false` MUST NOT be emitted. The receipt is exact
-finite semantic evidence, not a performance result.
+A candidate with `valid = false` MUST NOT be emitted. Generation replay is a
+separate acceptance test that reruns `GenerationSpec` plus index and compares
+terms, receipts, and hashes; `verify()` itself only recomputes the finite
+semantic receipt. Neither is performance evidence.
 
 ## 11. Worked example
 
@@ -439,7 +480,10 @@ A conforming implementation MUST:
 5. use deterministic seeded generation and emit only receipt-valid families;
 6. enumerate complete finite action support for every receipt claim;
 7. keep public, privileged, and generator views structurally distinct; and
-8. use canonical serialization plus BLAKE3 for semantic family identity.
+8. expose executable topology diagnostics and receipt state/row/scope facts;
+9. reject graph displacement couplings and nonzero graph actuator displacement;
+10. use canonical serialization plus BLAKE3 for semantic family identity,
+    reporting schema version 2 and the tested legacy ring migration mapping.
 
 A conforming implementation SHOULD expose a `verify()` operation that
 recomputes a receipt from returned terms. It MAY expose diagnostics, but those
@@ -457,8 +501,8 @@ conformance tests.
 
 ## 14. Known limits
 
-- Configuration is a finite ring only; there is no continuous geometry or
-  general graph executor.
+- Configuration is a finite deterministic ring or explicit graph only; there
+  is no continuous geometry, stochastic kernel, or general process scheduler.
 - Public traces are integer sequences, not a renderer or learner event format.
 - The generator emits one fixed embodiment-contrast template, not a broad
   distribution over world designs.

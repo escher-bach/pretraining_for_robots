@@ -62,7 +62,7 @@ fn term_for(name: &str, contract: &Contract) -> WorldTerm {
             to: "body_command".into(),
         }],
         body: BodyTerm {
-            morphology: Morphology { cells: CELLS },
+            morphology: Morphology { segments: 2 },
             actuation: Actuation {
                 command_port: "body_command".into(),
                 actuators: ACTIONS.into_iter().map(actuator).collect(),
@@ -73,14 +73,15 @@ fn term_for(name: &str, contract: &Contract) -> WorldTerm {
                 publishes_cell: true,
             },
         },
-        environment: EnvironmentTerm {
-            start: contract.start,
-            blocked_edges: contract
+        environment: EnvironmentTerm::ring(
+            contract.start,
+            CELLS,
+            contract
                 .blocked_edges
                 .iter()
                 .map(|(cell, action)| (*cell, *action as u16))
                 .collect(),
-        },
+        ),
         norm: NormTerm {
             expression: Norm::Settle {
                 cell: contract.goal,

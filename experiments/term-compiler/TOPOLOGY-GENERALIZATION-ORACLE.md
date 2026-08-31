@@ -130,7 +130,8 @@ scored behavior.
 
 The topology backend MUST reuse the generic finite audit/query machinery. It
 MUST NOT invent topology-specific learner or card APIs for these predicates.
-For the non-ring fixture, an exact receipt MUST include at least:
+For the non-ring fixture, the exact receipt plus its generator-level acceptance
+suite MUST include at least:
 
 | Predicate | Required evidence |
 |---|---|
@@ -144,7 +145,7 @@ For the non-ring fixture, an exact receipt MUST include at least:
 | Public distinction | Empty-action public traces differ through the calibration prelude. |
 | Identification | `AmbiguitySet` diameter is 2 without the prelude and 1 after the public prelude. |
 | Boundary | Public trace contains no support, edge table, topology metadata, seed, or case label. |
-| Replay | Same specification and index reproduce terms, receipt, and hash exactly. |
+| Replay (generator-level) | A separate test reruns the complete specification/index and compares terms, receipts, and hashes; `verify()` alone does not claim replay. |
 
 For this fixture the minimum executable run is concrete: five states, three
 explicit movement/hold rows per state (15 keyed rows), four declared actions,
@@ -154,12 +155,14 @@ first-action sets, and run the empty-action public trace once before and once
 after the four-step calibration prelude. These counts are receipt facts, not
 sampling recommendations.
 
-The receipt MUST report whether the twin used exact command sites or a
+The receipt MUST report an explicit totality fact, the indexed degree sequence,
+whether the twin used exact command sites or a
 conservative scope, the topology state count, transition-row count, sequence
-count, family hash, and generator seed/index separately. `valid` is the
-conjunction of the declared predicates; a rejected candidate MUST NOT be
-emitted. The receipt remains finite semantic evidence, not learner or transfer
-evidence.
+count, family hash, and generator seed/index separately. Replay is a separate
+generator acceptance check, not a `verify()` predicate. `valid` is the
+conjunction of the executable receipt predicates; a rejected candidate MUST
+NOT be emitted. The receipt remains finite semantic evidence, not learner or
+transfer evidence.
 
 ## 6. Ring compatibility gate
 

@@ -2,8 +2,10 @@
 //!
 //! This crate is a spike, not a replacement for a card evaluator.  It gives
 //! the shared kernel a deliberately small executable interpretation over a
-//! ring world: body support and sensorium are first-class, ports carry both a
-//! value type and a visibility, and every public event has an explicit source.
+//! finite transition system: body support and sensorium are first-class, ports
+//! carry both a value type and a visibility, and every public event has an
+//! explicit source. A ring remains a compact state-space constructor; it is
+//! not the executor's only topology.
 //! Its output implements the existing finite audit interfaces, so the existing
 //! query algebra can audit generated terms without being changed.
 
@@ -20,6 +22,11 @@ use pretraining_g0_contract::{
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
+
+/// Version of the canonical term encoding used by [`WorldTerm::family_hash`].
+/// Version 1 was the ring-only shape; version 2 separates body morphology from
+/// environment state space and therefore intentionally changes ring digests.
+pub const FAMILY_HASH_SCHEMA_VERSION: u16 = 2;
 
 /// Where a declared port may be observed.  Ports are private by default in a
 /// handwritten term because [`Port::new`] uses `Privileged`.
@@ -89,8 +96,9 @@ pub struct Wiring {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Morphology {
-    /// The finite configuration cells occupied by the body/environment pair.
-    pub cells: usize,
+    /// A body-local structural count. It is deliberately independent from the
+    /// number of environment states.
+    pub segments: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -136,9 +144,161 @@ pub struct BodyTerm {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EnvironmentTerm {
     pub start: usize,
-    /// A local environmental deletion, deliberately not an actuator-support
-    /// change.  Entries are `(cell, actuator_id)`.
-    pub blocked_edges: Vec<(usize, u16)>,
+    pub state_space: StateSpaceTerm,
+}
+
+/// Diagnostics computed from the executable environment topology. These are
+/// privileged audit facts and never learner-visible data.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TopologyDiagnostics {
+    pub state_count: usize,
+    pub transition_rows: usize,
+    pub degree_sequence: Vec<usize>,
+    pub is_simple_cycle: bool,
+}
+
+/// The environment owns the finite state space and its topology.  A graph
+/// table names body-owned actions but never owns their availability.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum StateSpaceTerm {
+    /// Compact cyclic constructor retained for existing ring contracts.
+    Ring {
+        states: usize,
+        /// Environmental edge deletions. Missing ring edges self-loop.
+        blocked_edges: Vec<(usize, u16)>,
+    },
+    /// Explicit deterministic transition graph. Entries absent from the table
+    /// follow the declared missing-edge behavior.
+    Graph {
+        states: usize,
+        transitions: Vec<GraphTransition>,
+        missing_edge: MissingEdgeBehavior,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GraphTransition {
+    pub source: usize,
+    pub actuator: u16,
+    pub destination: usize,
+}
+
+/// Missing graph edges are explicit semantics, never an accidental map miss.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum MissingEdgeBehavior {
+    SelfLoop,
+}
+
+impl EnvironmentTerm {
+    pub fn ring(start: usize, states: usize, blocked_edges: Vec<(usize, u16)>) -> Self {
+        Self {
+            start,
+            state_space: StateSpaceTerm::Ring {
+                states,
+                blocked_edges,
+            },
+        }
+    }
+
+    pub fn graph(
+        start: usize,
+        states: usize,
+        transitions: Vec<GraphTransition>,
+        missing_edge: MissingEdgeBehavior,
+    ) -> Self {
+        Self {
+            start,
+            state_space: StateSpaceTerm::Graph {
+                states,
+                transitions,
+                missing_edge,
+            },
+        }
+    }
+
+    pub fn state_count(&self) -> usize {
+        match &self.state_space {
+            StateSpaceTerm::Ring { states, .. } | StateSpaceTerm::Graph { states, .. } => *states,
+        }
+    }
+
+    fn is_ring(&self) -> bool {
+        matches!(self.state_space, StateSpaceTerm::Ring { .. })
+    }
+
+    pub fn topology_diagnostics(&self) -> TopologyDiagnostics {
+        let states = self.state_count();
+        let (transition_rows, edges, is_simple_cycle) = match &self.state_space {
+            StateSpaceTerm::Ring { blocked_edges, .. } => (
+                blocked_edges.len(),
+                (0..states)
+                    .map(|state| {
+                        let next = (state + 1) % states;
+                        if state < next {
+                            (state, next)
+                        } else {
+                            (next, state)
+                        }
+                    })
+                    .collect::<BTreeSet<_>>(),
+                states >= 3,
+            ),
+            StateSpaceTerm::Graph { transitions, .. } => {
+                let mut edges = BTreeSet::new();
+                for transition in transitions {
+                    if transition.source < states
+                        && transition.destination < states
+                        && transition.source != transition.destination
+                    {
+                        edges.insert((
+                            transition.source.min(transition.destination),
+                            transition.source.max(transition.destination),
+                        ));
+                    }
+                }
+                let mut degree = vec![0usize; states];
+                for (from, to) in &edges {
+                    degree[*from] += 1;
+                    degree[*to] += 1;
+                }
+                let connected = if states == 0 {
+                    false
+                } else {
+                    let mut seen = BTreeSet::new();
+                    let mut frontier = vec![0usize];
+                    while let Some(state) = frontier.pop() {
+                        if !seen.insert(state) {
+                            continue;
+                        }
+                        for (from, to) in &edges {
+                            if *from == state && !seen.contains(to) {
+                                frontier.push(*to);
+                            } else if *to == state && !seen.contains(from) {
+                                frontier.push(*from);
+                            }
+                        }
+                    }
+                    seen.len() == states
+                };
+                let simple = connected
+                    && states >= 3
+                    && edges.len() == states
+                    && degree.iter().all(|degree| *degree == 2);
+                (transitions.len(), edges, simple)
+            }
+        };
+        let mut degree = vec![0usize; states];
+        for (from, to) in &edges {
+            degree[*from] += 1;
+            degree[*to] += 1;
+        }
+        TopologyDiagnostics {
+            state_count: states,
+            transition_rows,
+            degree_sequence: degree,
+            is_simple_cycle,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -256,6 +416,7 @@ pub struct WorldTerm {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CompileError {
     Invalid(String),
+    Unsupported(String),
     UnknownPort(String),
     IllTypedWire { from: String, to: String },
     VisibilityLeak { from: String, to: String },
@@ -266,6 +427,7 @@ impl fmt::Display for CompileError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Invalid(message) => write!(f, "invalid world term: {message}"),
+            Self::Unsupported(message) => write!(f, "unsupported world operation: {message}"),
             Self::UnknownPort(port) => write!(f, "unknown port `{port}`"),
             Self::IllTypedWire { from, to } => write!(f, "ill-typed wire `{from}` -> `{to}`"),
             Self::VisibilityLeak { from, to } => {
@@ -355,9 +517,9 @@ impl WorldTerm {
         if self.name.trim().is_empty() {
             return Err(CompileError::Invalid("world has no name".into()));
         }
-        if !(2..=IndexSet::CAPACITY).contains(&self.body.morphology.cells) {
+        if !(1..=IndexSet::CAPACITY).contains(&self.body.morphology.segments) {
             return Err(CompileError::Invalid(
-                "morphology cells must be in 2..=32".into(),
+                "morphology segments must be in 1..=32".into(),
             ));
         }
         if self.horizon == 0 || self.horizon > 8 {
@@ -365,9 +527,15 @@ impl WorldTerm {
                 "horizon must be in 1..=8 for exact enumeration".into(),
             ));
         }
-        if self.environment.start >= self.body.morphology.cells {
+        let states = self.environment.state_count();
+        if !(2..=IndexSet::CAPACITY).contains(&states) {
             return Err(CompileError::Invalid(
-                "environment start is outside morphology".into(),
+                "environment state count must be in 2..=32".into(),
+            ));
+        }
+        if self.environment.start >= states {
+            return Err(CompileError::Invalid(
+                "environment start is outside its state space".into(),
             ));
         }
         let mut ports = BTreeMap::new();
@@ -451,11 +619,46 @@ impl WorldTerm {
                 "body support refers to an undeclared actuator".into(),
             ));
         }
-        for (cell, action) in &self.environment.blocked_edges {
-            if *cell >= self.body.morphology.cells || !actuator_ids.contains(action) {
-                return Err(CompileError::Invalid(
-                    "blocked edge refers to an unknown cell or actuator".into(),
-                ));
+        match &self.environment.state_space {
+            StateSpaceTerm::Ring { blocked_edges, .. } => {
+                if blocked_edges
+                    .iter()
+                    .any(|(state, action)| *state >= states || !actuator_ids.contains(action))
+                {
+                    return Err(CompileError::Invalid(
+                        "blocked ring edge refers to an unknown state or actuator".into(),
+                    ));
+                }
+            }
+            StateSpaceTerm::Graph { transitions, .. } => {
+                if self
+                    .body
+                    .actuation
+                    .actuators
+                    .iter()
+                    .any(|actuator| actuator.displacement != 0)
+                {
+                    return Err(CompileError::Unsupported(
+                        "graph actuators must use explicit transition rows; nonzero displacement is ring-only"
+                            .into(),
+                    ));
+                }
+                let mut entries = BTreeSet::new();
+                for transition in transitions {
+                    if transition.source >= states
+                        || transition.destination >= states
+                        || !actuator_ids.contains(&transition.actuator)
+                    {
+                        return Err(CompileError::Invalid(
+                            "graph transition refers to an unknown state or actuator".into(),
+                        ));
+                    }
+                    if !entries.insert((transition.source, transition.actuator)) {
+                        return Err(CompileError::Invalid(
+                            "graph transition table must be deterministic".into(),
+                        ));
+                    }
+                }
             }
         }
         if self.scoring.action_cost < 0 {
@@ -607,9 +810,7 @@ impl WorldTerm {
                     ));
                 }
                 Restriction::Viability { inadmissible, .. }
-                    if inadmissible
-                        .iter()
-                        .any(|cell| cell >= self.body.morphology.cells) =>
+                    if inadmissible.iter().any(|cell| cell >= states) =>
                 {
                     return Err(CompileError::Invalid(
                         "viability restriction refers to an unknown cell".into(),
@@ -634,6 +835,12 @@ impl WorldTerm {
                     "conflict coupling may declare at most one writer".into(),
                 ));
             }
+        }
+        if !self.environment.is_ring() && !self.couplings.is_empty() {
+            return Err(CompileError::Unsupported(
+                "displacement couplings are ring-only; graph transitions must not approximate them"
+                    .into(),
+            ));
         }
         Ok(())
     }
@@ -668,6 +875,7 @@ impl WorldTerm {
             })
             .min();
         let horizon = resource_budget.map_or(self.horizon, |budget| self.horizon.min(budget));
+        let transition_table = self.lower_transition_table(horizon);
         Ok(CompiledWorld {
             fragment: CompiledFragment {
                 actions: self
@@ -681,12 +889,13 @@ impl WorldTerm {
             },
             contract: CompiledContract {
                 program: CompiledProgram {
-                    cells: self.body.morphology.cells,
+                    states: self.environment.state_count(),
                     start: self.environment.start,
                     actuators: self.body.actuation.actuators.clone(),
                     supported: self.body.actuation.supported,
                     publishes_cell: self.body.sensorium.publishes_cell,
-                    blocked_edges: self.environment.blocked_edges.iter().copied().collect(),
+                    transition_table,
+                    state_space: self.environment.state_space.clone(),
                     horizon,
                     norm: self.norm.expression.clone(),
                     norm_public: self.norm.visibility == Visibility::Public,
@@ -694,11 +903,6 @@ impl WorldTerm {
                     calibration: self.calibration.clone(),
                     restorations: self.restorations.clone(),
                     restrictions: self.restrictions.clone(),
-                    couplings: self
-                        .couplings
-                        .iter()
-                        .map(LoweredCoupling::from_term)
-                        .collect(),
                     disturbance: self.disturbance.clone(),
                     scaffold: self.scaffold.clone(),
                     interrupts: self.interrupts.clone(),
@@ -714,6 +918,98 @@ impl WorldTerm {
             generator_metadata,
             family_hash: self.family_hash(),
         })
+    }
+
+    /// Lower all finite transition semantics before execution. Ring movement,
+    /// delayed support, restrictions, and ring-only coupling are compiled into
+    /// the same `(state, executed, actuator) -> state` table used for an
+    /// explicit graph. Runtime stepping is therefore a table lookup, never a
+    /// topology-specific evaluator.
+    fn lower_transition_table(&self, horizon: usize) -> BTreeMap<(usize, usize, u16), usize> {
+        let states = self.environment.state_count();
+        let graph_edges: BTreeMap<(usize, u16), usize> = match &self.environment.state_space {
+            StateSpaceTerm::Graph { transitions, .. } => transitions
+                .iter()
+                .map(|edge| ((edge.source, edge.actuator), edge.destination))
+                .collect(),
+            StateSpaceTerm::Ring { .. } => BTreeMap::new(),
+        };
+        let ring_blocks: BTreeSet<(usize, u16)> = match &self.environment.state_space {
+            StateSpaceTerm::Ring { blocked_edges, .. } => blocked_edges.iter().copied().collect(),
+            StateSpaceTerm::Graph { .. } => BTreeSet::new(),
+        };
+        let lowered_couplings: Vec<LoweredCoupling> = self
+            .couplings
+            .iter()
+            .map(LoweredCoupling::from_term)
+            .collect();
+        let mut table = BTreeMap::new();
+        for executed in 0..=horizon {
+            for state in 0..states {
+                for actuator in &self.body.actuation.actuators {
+                    let next = if self
+                        .restrictions
+                        .iter()
+                        .any(|restriction| !restriction.admits_cell(state))
+                        || actuator.role == ActionRole::Fallback
+                        || !(self
+                            .body
+                            .actuation
+                            .supported
+                            .contains(usize::from(actuator.id))
+                            || self.restorations.iter().any(|restoration| {
+                                restoration.actuator == actuator.id
+                                    && executed > restoration.after_step
+                            }))
+                        || !self
+                            .restrictions
+                            .iter()
+                            .all(|restriction| restriction.permits_action(actuator.id))
+                    {
+                        state
+                    } else {
+                        let moved = match &self.environment.state_space {
+                            StateSpaceTerm::Ring { .. }
+                                if ring_blocks.contains(&(state, actuator.id)) =>
+                            {
+                                state
+                            }
+                            StateSpaceTerm::Ring { .. } => {
+                                let context = guard_context(executed + 1, Some(actuator.id), state);
+                                let coupling_delta: i32 = lowered_couplings
+                                    .iter()
+                                    .map(|coupling| coupling.resolve(context))
+                                    .sum();
+                                (state as i32 + actuator.displacement + coupling_delta)
+                                    .rem_euclid(states as i32)
+                                    as usize
+                            }
+                            StateSpaceTerm::Graph { missing_edge, .. } => graph_edges
+                                .get(&(state, actuator.id))
+                                .copied()
+                                .unwrap_or(match missing_edge {
+                                    MissingEdgeBehavior::SelfLoop => state,
+                                }),
+                        };
+                        self.restrictions
+                            .iter()
+                            .fold(moved, |candidate, restriction| {
+                                if restriction.admits_cell(candidate) {
+                                    candidate
+                                } else {
+                                    match restriction.boundary_effect() {
+                                        Some(BoundaryEffect::Reset) => self.environment.start,
+                                        Some(BoundaryEffect::Absorbing) => candidate,
+                                        None => candidate,
+                                    }
+                                }
+                            })
+                    };
+                    table.insert((state, executed, actuator.id), next);
+                }
+            }
+        }
+        table
     }
 
     /// Stable, provenance-aware family identifier.  It excludes the world
@@ -734,8 +1030,15 @@ impl WorldTerm {
             .actuation
             .actuators
             .sort_by_key(|actuator| actuator.id);
-        canonical.environment.blocked_edges.sort_unstable();
-        canonical.environment.blocked_edges.dedup();
+        match &mut canonical.environment.state_space {
+            StateSpaceTerm::Ring { blocked_edges, .. } => {
+                blocked_edges.sort_unstable();
+                blocked_edges.dedup();
+            }
+            StateSpaceTerm::Graph { transitions, .. } => {
+                transitions.sort_by_key(|edge| (edge.source, edge.actuator, edge.destination))
+            }
+        }
         // Preserve orders that affect execution: process signals, norm trees,
         // restriction precedence, restoration announcements, and Override
         // writer order.  `serde_json` provides a maintained canonical byte
@@ -744,16 +1047,114 @@ impl WorldTerm {
         let bytes = serde_json::to_vec(&canonical).expect("world terms serialize");
         blake3::hash(&bytes).to_hex().to_string()
     }
+
+    /// Compute the version-1 digest for a ring term using the former
+    /// `morphology.cells`/`environment.blocked_edges` serialization shape.
+    /// This is a migration aid for stored ring fixtures; new receipts use the
+    /// version-2 [`family_hash`](Self::family_hash) and its explicit schema
+    /// version.
+    pub fn legacy_ring_family_hash(&self) -> Option<String> {
+        if !self.environment.is_ring() {
+            return None;
+        }
+
+        #[derive(Serialize)]
+        struct LegacyMorphology {
+            cells: usize,
+        }
+        #[derive(Serialize)]
+        struct LegacyBody<'a> {
+            morphology: LegacyMorphology,
+            actuation: &'a Actuation,
+            sensorium: &'a Sensorium,
+        }
+        #[derive(Serialize)]
+        struct LegacyEnvironment {
+            start: usize,
+            blocked_edges: Vec<(usize, u16)>,
+        }
+        #[derive(Serialize)]
+        struct LegacyWorld<'a> {
+            name: &'a str,
+            horizon: usize,
+            ports: &'a [Port],
+            wiring: &'a [Wiring],
+            body: LegacyBody<'a>,
+            environment: LegacyEnvironment,
+            norm: &'a NormTerm,
+            scoring: &'a ScoringTerm,
+            calibration: &'a Option<CalibrationTerm>,
+            restorations: &'a [SupportRestoration],
+            disturbance: &'a Option<ProcessTerm>,
+            scaffold: &'a Option<ProcessTerm>,
+            couplings: &'a [CouplingTerm],
+            interrupts: &'a [InterruptTerm],
+            restrictions: &'a [Restriction],
+            reveals: &'a [RevealTerm],
+        }
+
+        let mut canonical = self.clone();
+        canonical.name.clear();
+        canonical
+            .ports
+            .sort_by(|left, right| left.name.cmp(&right.name));
+        canonical
+            .wiring
+            .sort_by(|left, right| (&left.from, &left.to).cmp(&(&right.from, &right.to)));
+        canonical
+            .body
+            .actuation
+            .actuators
+            .sort_by_key(|actuator| actuator.id);
+        let (start, mut blocked_edges) = match &canonical.environment.state_space {
+            StateSpaceTerm::Ring { blocked_edges, .. } => {
+                (canonical.environment.start, blocked_edges.clone())
+            }
+            StateSpaceTerm::Graph { .. } => return None,
+        };
+        blocked_edges.sort_unstable();
+        blocked_edges.dedup();
+        let legacy = LegacyWorld {
+            name: &canonical.name,
+            horizon: canonical.horizon,
+            ports: &canonical.ports,
+            wiring: &canonical.wiring,
+            body: LegacyBody {
+                morphology: LegacyMorphology {
+                    cells: canonical.environment.state_count(),
+                },
+                actuation: &canonical.body.actuation,
+                sensorium: &canonical.body.sensorium,
+            },
+            environment: LegacyEnvironment {
+                start,
+                blocked_edges,
+            },
+            norm: &canonical.norm,
+            scoring: &canonical.scoring,
+            calibration: &canonical.calibration,
+            restorations: &canonical.restorations,
+            disturbance: &canonical.disturbance,
+            scaffold: &canonical.scaffold,
+            couplings: &canonical.couplings,
+            interrupts: &canonical.interrupts,
+            restrictions: &canonical.restrictions,
+            reveals: &canonical.reveals,
+        };
+        let bytes = serde_json::to_vec(&legacy).expect("legacy world terms serialize");
+        Some(blake3::hash(&bytes).to_hex().to_string())
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct CompiledProgram {
-    cells: usize,
+    states: usize,
     start: usize,
     actuators: Vec<Actuator>,
     supported: IndexSet,
     publishes_cell: bool,
-    blocked_edges: BTreeSet<(usize, u16)>,
+    transition_table: BTreeMap<(usize, usize, u16), usize>,
+    state_space: StateSpaceTerm,
     horizon: usize,
     norm: Norm,
     norm_public: bool,
@@ -761,7 +1162,6 @@ struct CompiledProgram {
     calibration: Option<CalibrationTerm>,
     restorations: Vec<SupportRestoration>,
     restrictions: Vec<Restriction>,
-    couplings: Vec<LoweredCoupling>,
     disturbance: Option<ProcessTerm>,
     scaffold: Option<ProcessTerm>,
     interrupts: Vec<InterruptTerm>,
@@ -838,21 +1238,6 @@ impl CompiledProgram {
             .find(|candidate| candidate.id == action)
     }
 
-    fn action_supported(&self, action: u16, executed: usize) -> bool {
-        self.supported.contains(usize::from(action))
-            || self.restorations.iter().any(|restoration| {
-                restoration.actuator == action && executed > restoration.after_step
-            })
-    }
-
-    fn action_permitted(&self, action: u16, executed: usize) -> bool {
-        self.action_supported(action, executed)
-            && self
-                .restrictions
-                .iter()
-                .all(|restriction| restriction.permits_action(action))
-    }
-
     fn interrupted(&self, process: &str, context: GuardContext) -> bool {
         self.interrupts.iter().any(|interrupt| {
             interrupt.interrupted_process == process
@@ -886,43 +1271,11 @@ impl CompiledProgram {
         events
     }
 
-    fn coupling_displacement(&self, context: GuardContext) -> i32 {
-        self.couplings
-            .iter()
-            .map(|term| term.resolve(context))
-            .sum()
-    }
-
     fn transition(&self, cell: usize, executed: usize, action: u16) -> usize {
-        if self
-            .restrictions
-            .iter()
-            .any(|restriction| !restriction.admits_cell(cell))
-        {
-            return cell;
-        }
-        let Some(actuator) = self.actuator(action) else {
-            return cell;
-        };
-        if actuator.role == ActionRole::Fallback
-            || !self.action_permitted(action, executed)
-            || self.blocked_edges.contains(&(cell, action))
-        {
-            return cell;
-        }
-        let context = guard_context(executed + 1, Some(action), cell);
-        let displacement = actuator.displacement + self.coupling_displacement(context);
-        let moved = (cell as i32 + displacement).rem_euclid(self.cells as i32) as usize;
-        for restriction in &self.restrictions {
-            if !restriction.admits_cell(moved) {
-                return match restriction.boundary_effect() {
-                    Some(BoundaryEffect::Reset) => self.start,
-                    Some(BoundaryEffect::Absorbing) => moved,
-                    None => moved,
-                };
-            }
-        }
-        moved
+        self.transition_table
+            .get(&(cell, executed.min(self.horizon), action))
+            .copied()
+            .unwrap_or(cell)
     }
 
     fn calibration_trace(&self) -> Option<Vec<usize>> {
@@ -1102,13 +1455,7 @@ impl CompiledWorld {
                 &self.contract,
                 actions,
             ),
-            blocked_edges: self
-                .contract
-                .program
-                .blocked_edges
-                .iter()
-                .copied()
-                .collect(),
+            state_space: self.contract.program.state_space.clone(),
             supported: self.contract.program.supported,
         }
     }
@@ -1116,6 +1463,7 @@ impl CompiledWorld {
     pub fn audit_metadata(&self) -> AuditMetadata {
         AuditMetadata {
             family_hash: self.family_hash.clone(),
+            family_hash_schema_version: FAMILY_HASH_SCHEMA_VERSION,
             kernel_use: self.kernel_use.clone(),
             public_ports: self
                 .contract
@@ -1125,6 +1473,11 @@ impl CompiledWorld {
                 .filter(|port| port.visibility == Visibility::Public)
                 .map(|port| port.name.clone())
                 .collect(),
+            topology: EnvironmentTerm {
+                start: self.contract.program.start,
+                state_space: self.contract.program.state_space.clone(),
+            }
+            .topology_diagnostics(),
         }
     }
 }
@@ -1146,15 +1499,17 @@ pub struct ExecutionOutcome {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PrivilegedView {
     pub trajectory: Vec<usize>,
-    pub blocked_edges: Vec<(usize, u16)>,
+    pub state_space: StateSpaceTerm,
     pub supported: IndexSet,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AuditMetadata {
     pub family_hash: String,
+    pub family_hash_schema_version: u16,
     pub kernel_use: KernelUse,
     pub public_ports: Vec<String>,
+    pub topology: TopologyDiagnostics,
 }
 
 /// Bounded construction metadata.  It is never copied into [`WorldTerm`] or a
@@ -1163,10 +1518,20 @@ pub struct AuditMetadata {
 pub struct GenerationSpec {
     pub seed: u64,
     pub count: usize,
+    /// Ring remains the default for compatibility; graph generation is an
+    /// explicit non-ring template, never an accidental change of the old
+    /// constructor.
+    pub template: GenerationTemplate,
     pub min_cells: usize,
     pub max_cells: usize,
     pub min_horizon: usize,
     pub max_horizon: usize,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum GenerationTemplate {
+    Ring,
+    BranchingGraph,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1202,6 +1567,15 @@ pub struct GeneratedEmbodimentFamily {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EmbodimentValidityReceipt {
     pub sequences_checked: usize,
+    pub topology_total: bool,
+    pub topology_state_count: usize,
+    pub topology_transition_rows: usize,
+    pub topology_degree_sequence: Vec<usize>,
+    pub topology_is_simple_cycle: bool,
+    pub twin_scope: TwinScope,
+    pub family_hash: String,
+    pub generator_seed: u64,
+    pub generator_index: usize,
     pub goal_differs_from_start: bool,
     pub body_limitation_changes_ceiling: bool,
     pub twin_trajectories_equal: bool,
@@ -1216,6 +1590,15 @@ pub struct EmbodimentValidityReceipt {
     pub valid: bool,
 }
 
+/// Scope used when constructing environment-side withheld transitions.
+/// `ConservativeTrajectoryCells` is intentionally explicit in receipts: it is
+/// not exact command-site provenance.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TwinScope {
+    ExactCommandSites,
+    ConservativeTrajectoryCells,
+}
+
 impl GeneratedEmbodimentFamily {
     /// Re-run the exact finite filter that admits one generated family.  The
     /// receipt is evidence about executable terms, not learner evidence.
@@ -1223,6 +1606,9 @@ impl GeneratedEmbodimentFamily {
         let body = self.body_limited.compile()?;
         let unrestricted = self.unrestricted_control.compile()?;
         let twin = self.environment_twin.compile()?;
+        let topology = self.body_limited.term.environment.topology_diagnostics();
+        let topology_total = body.contract.program.transition_table.len()
+            == topology.state_count * (body.horizon() + 1) * body.actions().len();
         if body.actions() != unrestricted.actions()
             || body.actions() != twin.actions()
             || body.horizon() != unrestricted.horizon()
@@ -1262,6 +1648,15 @@ impl GeneratedEmbodimentFamily {
         )?;
         let receipt = EmbodimentValidityReceipt {
             sequences_checked: sequences.len(),
+            topology_total,
+            topology_state_count: topology.state_count,
+            topology_transition_rows: topology.transition_rows,
+            topology_degree_sequence: topology.degree_sequence.clone(),
+            topology_is_simple_cycle: topology.is_simple_cycle,
+            twin_scope: TwinScope::ConservativeTrajectoryCells,
+            family_hash: body.family_hash.clone(),
+            generator_seed: self.body_limited.generator_metadata.seed,
+            generator_index: self.body_limited.generator_metadata.index,
             goal_differs_from_start,
             body_limitation_changes_ceiling: body_ceiling != unrestricted_ceiling,
             twin_trajectories_equal: trajectories_equal,
@@ -1271,7 +1666,9 @@ impl GeneratedEmbodimentFamily {
             twin_publicly_distinct,
             calibration_identifies_body,
             valid: goal_differs_from_start
+                && topology_total
                 && body_ceiling != unrestricted_ceiling
+                && (self.body_limited.term.environment.is_ring() || !topology.is_simple_cycle)
                 && trajectories_equal
                 && values_equal
                 && body_ceiling == twin_ceiling
@@ -1333,6 +1730,7 @@ impl Default for GenerationSpec {
         Self {
             seed: 0,
             count: 4,
+            template: GenerationTemplate::Ring,
             min_cells: 5,
             max_cells: 6,
             min_horizon: 2,
@@ -1367,7 +1765,10 @@ impl GenerationSpec {
     /// The only general generator entry point emits receipt-filtered paired
     /// families.  It deliberately does not emit independent random worlds.
     pub fn generate(&self) -> Result<Vec<GeneratedEmbodimentFamily>, CompileError> {
-        self.generate_embodiment_families()
+        match self.template {
+            GenerationTemplate::Ring => self.generate_embodiment_families(),
+            GenerationTemplate::BranchingGraph => self.generate_branching_graph_families(),
+        }
     }
 
     /// Deterministically construct receipt-filtered embodiment contrasts.  A
@@ -1455,6 +1856,15 @@ impl GenerationSpec {
                 },
                 receipt: EmbodimentValidityReceipt {
                     sequences_checked: 0,
+                    topology_total: false,
+                    topology_state_count: 0,
+                    topology_transition_rows: 0,
+                    topology_degree_sequence: Vec::new(),
+                    topology_is_simple_cycle: false,
+                    twin_scope: TwinScope::ConservativeTrajectoryCells,
+                    family_hash: String::new(),
+                    generator_seed: 0,
+                    generator_index: 0,
                     goal_differs_from_start: false,
                     body_limitation_changes_ceiling: false,
                     twin_trajectories_equal: false,
@@ -1469,6 +1879,120 @@ impl GenerationSpec {
             if !family.receipt.valid {
                 return Err(CompileError::Invalid(
                     "generated embodiment candidate failed its exact validity filter".into(),
+                ));
+            }
+            families.push(family);
+        }
+        Ok(families)
+    }
+
+    /// Deterministically construct non-cyclic branching graph contrasts. The
+    /// witness withholds `retreat`; its environment twin represents the same
+    /// scored self-loops as missing graph entries, while retaining a calibration
+    ///-only retreat edge outside the scored-reachable state set.
+    pub fn generate_branching_graph_families(
+        &self,
+    ) -> Result<Vec<GeneratedEmbodimentFamily>, CompileError> {
+        self.validate()?;
+        if self.max_cells < 5 || self.max_horizon < 2 {
+            return Err(CompileError::Invalid(
+                "branching graph families need at least five states and two scored steps".into(),
+            ));
+        }
+        let mut rng = ChaCha8Rng::seed_from_u64(self.seed);
+        let mut families = Vec::with_capacity(self.count);
+        for index in 0..self.count {
+            let lower_states = self.min_cells.max(5);
+            if lower_states > self.max_cells {
+                return Err(CompileError::Invalid(
+                    "branching graph family state range is empty".into(),
+                ));
+            }
+            let states = rng.gen_range(lower_states..=self.max_cells);
+            let max_horizon = self.max_horizon.min(states - 3);
+            let min_horizon = self.min_horizon.max(2);
+            if min_horizon > max_horizon {
+                return Err(CompileError::Invalid(
+                    "no graph horizon leaves a calibration-only branch state".into(),
+                ));
+            }
+            let horizon = rng.gen_range(min_horizon..=max_horizon);
+            let goal = states - 1;
+            let full_support = IndexSet::from_indices([0, 1, 2, 3]);
+            let limited_support = IndexSet::from_indices([0, 2, 3]);
+            let body_term = branching_graph_term(
+                format!("graph-{index}-body"),
+                states,
+                horizon,
+                goal,
+                limited_support,
+                BTreeSet::new(),
+            );
+            if body_term.environment.topology_diagnostics().is_simple_cycle {
+                return Err(CompileError::Invalid(
+                    "branching graph template produced a simple cycle".into(),
+                ));
+            }
+            let unrestricted_term = branching_graph_term(
+                format!("graph-{index}-unrestricted"),
+                states,
+                horizon,
+                goal,
+                full_support,
+                BTreeSet::new(),
+            );
+            let scored_states: BTreeSet<usize> =
+                scored_reachable_cells(&body_term)?.into_iter().collect();
+            let twin_term = branching_graph_term(
+                format!("graph-{index}-environment"),
+                states,
+                horizon,
+                goal,
+                full_support,
+                scored_states,
+            );
+            let metadata = GeneratorMetadata {
+                seed: self.seed,
+                index,
+            };
+            let mut family = GeneratedEmbodimentFamily {
+                body_limited: GeneratedWorld {
+                    term: body_term,
+                    generator_metadata: metadata.clone(),
+                },
+                unrestricted_control: GeneratedWorld {
+                    term: unrestricted_term,
+                    generator_metadata: metadata.clone(),
+                },
+                environment_twin: GeneratedWorld {
+                    term: twin_term,
+                    generator_metadata: metadata,
+                },
+                receipt: EmbodimentValidityReceipt {
+                    sequences_checked: 0,
+                    topology_total: false,
+                    topology_state_count: 0,
+                    topology_transition_rows: 0,
+                    topology_degree_sequence: Vec::new(),
+                    topology_is_simple_cycle: false,
+                    twin_scope: TwinScope::ConservativeTrajectoryCells,
+                    family_hash: String::new(),
+                    generator_seed: 0,
+                    generator_index: 0,
+                    goal_differs_from_start: false,
+                    body_limitation_changes_ceiling: false,
+                    twin_trajectories_equal: false,
+                    twin_values_equal: false,
+                    twin_optimal_sequences_equal: false,
+                    twin_publicly_distinct: false,
+                    calibration_identifies_body: false,
+                    valid: false,
+                },
+            };
+            family.receipt = family.verify()?;
+            if !family.receipt.valid {
+                return Err(CompileError::Invalid(
+                    "generated branching graph candidate failed its exact validity filter".into(),
                 ));
             }
             families.push(family);
@@ -1499,7 +2023,7 @@ fn embodiment_term(
             to: "body_command".into(),
         }],
         body: BodyTerm {
-            morphology: Morphology { cells },
+            morphology: Morphology { segments: 2 },
             actuation: Actuation {
                 command_port: "body_command".into(),
                 actuators: vec![
@@ -1535,10 +2059,7 @@ fn embodiment_term(
                 publishes_cell: true,
             },
         },
-        environment: EnvironmentTerm {
-            start: 0,
-            blocked_edges,
-        },
+        environment: EnvironmentTerm::ring(0, cells, blocked_edges),
         norm: NormTerm {
             expression: Norm::Settle { cell: goal },
             visibility: Visibility::Public,
@@ -1556,6 +2077,125 @@ fn embodiment_term(
             // publicly non-vacuous through the prelude.
             pulses: std::iter::repeat(0)
                 .take(horizon + 1)
+                .chain(std::iter::once(1))
+                .collect(),
+            publishes_cells: true,
+        }),
+        restorations: Vec::new(),
+        disturbance: None,
+        scaffold: None,
+        couplings: Vec::new(),
+        interrupts: Vec::new(),
+        restrictions: Vec::new(),
+        reveals: Vec::new(),
+    }
+}
+
+/// A non-ring environment with an advance chain and a second outgoing
+/// intervention (`retreat`) to the goal. `missing_retreat_from` provides the
+/// environment-side counterpart of body support: absent graph entries have the
+/// explicitly declared self-loop meaning.
+fn branching_graph_term(
+    name: impl Into<String>,
+    states: usize,
+    horizon: usize,
+    goal: usize,
+    supported: IndexSet,
+    missing_retreat_from: BTreeSet<usize>,
+) -> WorldTerm {
+    let mut transitions = Vec::new();
+    // The chain reaches state `horizon + 2` only during the unscored
+    // calibration prelude. It is therefore not in the conservative twin's
+    // scored trajectory-cell deletion set, making provenance visible without
+    // changing scored behavior.
+    for state in 0..=horizon + 1 {
+        transitions.push(GraphTransition {
+            source: state,
+            actuator: 0,
+            destination: state + 1,
+        });
+    }
+    for state in 0..states {
+        if !missing_retreat_from.contains(&state) {
+            transitions.push(GraphTransition {
+                source: state,
+                actuator: 1,
+                // The first retreat is the short route to the goal; later
+                // rows remain observable as genuine graph interventions.
+                destination: if state == 1 {
+                    goal
+                } else {
+                    state.saturating_sub(1)
+                },
+            });
+        }
+    }
+    WorldTerm {
+        name: name.into(),
+        horizon,
+        ports: vec![
+            Port::new("learner_action", PortDirection::Output, PortValue::Command).public(),
+            Port::new("body_command", PortDirection::Input, PortValue::Command).public(),
+            Port::new("cell", PortDirection::Output, PortValue::Cell).public(),
+            Port::new("reveal", PortDirection::Output, PortValue::Signal).public(),
+        ],
+        wiring: vec![Wiring {
+            from: "learner_action".into(),
+            to: "body_command".into(),
+        }],
+        body: BodyTerm {
+            morphology: Morphology { segments: 2 },
+            actuation: Actuation {
+                command_port: "body_command".into(),
+                actuators: vec![
+                    Actuator {
+                        id: 0,
+                        name: "advance".into(),
+                        // Graph action meaning is supplied only by explicit
+                        // transition rows; ring displacement is inapplicable.
+                        displacement: 0,
+                        role: ActionRole::Movement,
+                    },
+                    Actuator {
+                        id: 1,
+                        name: "retreat".into(),
+                        displacement: 0,
+                        role: ActionRole::Movement,
+                    },
+                    Actuator {
+                        id: 2,
+                        name: "hold".into(),
+                        displacement: 0,
+                        role: ActionRole::Hold,
+                    },
+                    Actuator {
+                        id: 3,
+                        name: "fallback".into(),
+                        displacement: 0,
+                        role: ActionRole::Fallback,
+                    },
+                ],
+                supported,
+            },
+            sensorium: Sensorium {
+                cell_port: "cell".into(),
+                publishes_cell: true,
+            },
+        },
+        environment: EnvironmentTerm::graph(0, states, transitions, MissingEdgeBehavior::SelfLoop),
+        norm: NormTerm {
+            expression: Norm::Settle { cell: goal },
+            visibility: Visibility::Public,
+        },
+        scoring: ScoringTerm {
+            goal_reward: 100,
+            action_cost: 1,
+            fallback_reward: 50,
+            violation_penalty: -100,
+        },
+        calibration: Some(CalibrationTerm {
+            pulses: std::iter::repeat(0)
+                .take(horizon + 2)
                 .chain(std::iter::once(1))
                 .collect(),
             publishes_cells: true,
@@ -1592,7 +2232,7 @@ pub fn base_term(
             to: "body_command".into(),
         }],
         body: BodyTerm {
-            morphology: Morphology { cells },
+            morphology: Morphology { segments: 2 },
             actuation: Actuation {
                 command_port: "body_command".into(),
                 actuators: vec![
@@ -1616,10 +2256,7 @@ pub fn base_term(
                 publishes_cell: true,
             },
         },
-        environment: EnvironmentTerm {
-            start: 0,
-            blocked_edges: Vec::new(),
-        },
+        environment: EnvironmentTerm::ring(0, cells, Vec::new()),
         norm: NormTerm {
             expression: Norm::Settle { cell: goal },
             visibility: Visibility::Public,
@@ -1655,10 +2292,7 @@ mod tests {
                 },
                 ..body_limited.body.clone()
             },
-            environment: EnvironmentTerm {
-                start: 0,
-                blocked_edges: vec![(0, 1)],
-            },
+            environment: EnvironmentTerm::ring(0, 5, vec![(0, 1)]),
             ..body_limited.clone()
         };
         let body = body_limited.compile().expect("valid body term");
@@ -1949,13 +2583,19 @@ mod tests {
             right.family_hash(),
             "labels are generator metadata"
         );
-        right.environment.blocked_edges.push((0, 0));
+        match &mut right.environment.state_space {
+            StateSpaceTerm::Ring { blocked_edges, .. } => blocked_edges.push((0, 0)),
+            StateSpaceTerm::Graph { .. } => panic!("base term uses the ring constructor"),
+        }
         assert_ne!(
             left.family_hash(),
             right.family_hash(),
             "edge provenance is semantic"
         );
-        right.environment.blocked_edges.clear();
+        match &mut right.environment.state_space {
+            StateSpaceTerm::Ring { blocked_edges, .. } => blocked_edges.clear(),
+            StateSpaceTerm::Graph { .. } => panic!("base term uses the ring constructor"),
+        }
         right.calibration = Some(CalibrationTerm {
             pulses: vec![0],
             publishes_cells: true,
