@@ -32,6 +32,18 @@ class KaggleContractTests(unittest.TestCase):
             (3, f"https://www.kaggle.com/code/{kernel}"),
         )
 
+    def test_kernel_slug_length_validation_rejects_platform_overflow(self) -> None:
+        control = load_control_plane()
+        with self.assertRaisesRegex(SystemExit, "50.*Shorten the experiment slug_prefix"):
+            control.validate_kernel_slug("a" * (control.KAGGLE_KERNEL_SLUG_MAX_LENGTH + 1))
+
+    def test_r10a_generated_kernel_slug_fits_platform_limit(self) -> None:
+        control = load_control_plane()
+        _, experiment = control.experiment("r10a-card06-compatibility-scale")
+        slug = f"{experiment['slug_prefix']}-3cf6b67"
+        control.validate_kernel_slug(slug)
+        self.assertLessEqual(len(slug), control.KAGGLE_KERNEL_SLUG_MAX_LENGTH)
+
     def test_downloaded_artifacts_are_checked_against_remote_manifest(self) -> None:
         control = load_control_plane()
         with tempfile.TemporaryDirectory() as temporary:

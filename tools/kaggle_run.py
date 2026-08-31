@@ -17,6 +17,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "kaggle" / "experiments.toml"
+KAGGLE_KERNEL_SLUG_MAX_LENGTH = 50
 
 
 def command_output(command: list[str], *, cwd: Path = ROOT) -> str:
@@ -133,6 +134,16 @@ def exact_head() -> str:
     return sha
 
 
+def validate_kernel_slug(slug: str) -> None:
+    """Reject generated slugs that Kaggle will refuse at kernel creation."""
+    if len(slug) > KAGGLE_KERNEL_SLUG_MAX_LENGTH:
+        raise SystemExit(
+            f"generated Kaggle kernel slug is too long: {slug!r} has {len(slug)} "
+            f"characters; Kaggle allows at most {KAGGLE_KERNEL_SLUG_MAX_LENGTH}. "
+            "Shorten the experiment slug_prefix."
+        )
+
+
 def verify_remote_sha(remote: str, sha: str) -> str:
     remote_url = command_output(["git", "remote", "get-url", remote])
     refs = command_output(["git", "ls-remote", remote_url])
@@ -232,14 +243,15 @@ if completed.returncode != 0:
 def launch(name: str) -> str:
     data, selected = experiment(name)
     sha = exact_head()
+    slug = f"{selected['slug_prefix']}-{sha[:7]}"
+    validate_kernel_slug(slug)
+    kernel_ref = f"{data['owner']}/{slug}"
     config = str(selected["config"])
     command_run(["git", "cat-file", "-e", f"{sha}:{config}"])
     repo_url = verify_remote_sha(str(data["git_remote"]), sha)
     config_bytes = subprocess.check_output(["git", "show", f"{sha}:{config}"], cwd=ROOT)
     config_data = tomllib.loads(config_bytes.decode("utf-8"))
     config_sha256 = hashlib.sha256(config_bytes).hexdigest()
-    slug = f"{selected['slug_prefix']}-{sha[:7]}"
-    kernel_ref = f"{data['owner']}/{slug}"
     dirty = command_output(["git", "status", "--porcelain"])
     if dirty:
         print("Working tree has uncommitted files; the run still uses only the verified HEAD commit:")
