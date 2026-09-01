@@ -25,6 +25,18 @@ compatibility-characterized but inconclusive. R11 remains blocked.**
 | R10 seed gate | Complete — `seed_gate_incomplete` | `crates/world-py`, `python/pretraining_experiments/seed_gate.py`, `configs/r10` |
 | R10a post-gate compatibility triage | Complete — Card 06 `support_fit_incomplete` | `CARDS.md`, `DEVELOPMENT-PATH.md`, `configs/r10/card06_compatibility_scale_t4.toml` |
 
+The isolated `codex/term-compiler-spike` branch also carries experimental R3c
+and R13 apparatus. It freezes the compiler's version-2 public trace, keeps
+structured goal diagnostics out of that trace, and implements a separate
+`prompted-interface/0.2` denotation/publication/carrier contract. The Python
+learner accepts an optional event-aligned continuous-content sidecar without
+changing the legacy batch or parameterization when absent. The factored RDDL
+witness now crosses this public boundary and fresh-revalidates its labels,
+grounding, and 11-node/12-edge reachable-horizon graph from exhaustive
+pyRDDLGym replay. These are isolated interface and source-grounding results;
+they do not reopen R10, authorize R11, establish a general finite-domain RDDL
+profile, integrate a modality encoder, or make a transfer claim.
+
 `cargo test --workspace --locked` passes with no failures.
 `cargo fmt --all -- --check` is clean. The Python suite passes too — 60 tests —
 but **only after rebuilding the PyO3 wheel**, because the `0.3.1` envelope bump

@@ -35,8 +35,9 @@ The project separates source expressivity from execution. The layers are:
 |---|---|---|
 | Ring | Implemented | Compact cyclic topology with primitive displacement actions. |
 | General finite graph | Implemented | Arbitrary finite deterministic transition rows with explicit self-loop defaults. This is the common execution IR. |
-| Factored finite source | Gate-0 experiment only | Finite objects, properties, relations, preconditions, effects, and public projections; accepted models must ground into the graph IR. |
-| Learner goal/prompt adapter | Specified, not integrated | Presents symbolic, language, goal-observation, or demonstration carriers without exposing privileged source semantics. |
+| Factored finite source | Executable Gate-0 source adapter | Objects, properties, relations, preconditions, effects, and public projections are exercised through maintained RDDL tooling. General finite-source admission and Rust Graph-IR lowering are not implemented. |
+| Learner goal/prompt adapter | Executable isolated protocol | Presents symbolic, language, goal-observation, or demonstration carriers without exposing privileged source semantics. It is not yet a production event profile. |
+| Continuous modality seam | Executable optional model input | Adds externally encoded content only at explicitly aligned canonical event positions; no language or vision encoder is selected here. |
 
 The graph IR is extensionally sufficient for any fixed deterministic finite
 world: enumerate each legal fluent valuation as a state and each grounded
@@ -47,20 +48,38 @@ object, or that a relation persists across a channel reassignment. More trees
 or other graph shapes therefore improve executor coverage but do not add this
 relational meaning.
 
-The candidate factored layer is a deterministic finite subset of RDDL. It
-admits finite object domains, finite-valued fluents, finite grounded actions,
-deterministic preconditions/effects, finite reward/termination, and an explicit
-public projection. It excludes random distributions, continuous variables,
+The proposed factored layer is a deterministic finite subset of RDDL. An
+eventually admitted source profile would require finite object domains,
+finite-valued fluents, finite grounded actions, deterministic
+preconditions/effects, finite reward/termination, and an explicit public
+projection. It would exclude random distributions, continuous variables,
 external functions, and concurrent joint actions. Accepted source provenance
-must remain available to privileged audits and canonical identity, while the
-same graph executor remains the only runtime backend.
+would remain available to privileged audits and canonical identity, while the
+same graph executor would remain the only runtime backend.
 
-The existing Gate-0 witness uses maintained `pyRDDLGym` grounding to exhaust a
-two-source visible-reassignment model and its preserving and
-meaning-changing variants. It checks public/private separation and relational
-permutations, but it is not a Rust lowering, generated family, card migration,
-learner renderer, or training result. Factored lowering remains paused until
-the learner-facing prompt/goal contract is versioned and executable.
+The Gate-0 witness uses maintained `pyRDDLGym` grounding and simulation to
+exhaust a two-source visible-reassignment model and its preserving,
+meaning-changing, and hidden-only variants. The intervention, rather than a
+noop or elapsed time, fires the reassignment boundary. Exhaustive Boolean
+assignment checking establishes that the complete action surface is noop plus
+the two singleton pulses and that the joint pulse is illegal.
+
+For the fixed two-step horizon, the adapter emits four query episodes, a
+canonical reachable graph with 11 depth-indexed privileged nodes and 12 legal
+edges, and replay evidence covering all 18 transitions in the nine complete
+traces. Replay compares legality, reward, termination/truncation, public
+observation, and privileged destination state. The emitted artifact is
+revalidated against a fresh simulator run, so changing an outcome table and
+its dependent hashes or labels consistently still fails.
+
+This is a `finite-rddl-graph/0.1` reachable-horizon receipt, not a Rust Graph-IR
+lowering or a total unbounded RDDL state graph. In particular, the witness's
+`source-value` is an RDDL integer. Its reachable values are checked to lie in
+`{0,1,2}` under the fixed horizon, but the source syntax is not a general
+finite-valued-fluent profile. General factored admission therefore remains
+open even though this bounded witness now crosses the learner-facing boundary.
+It is not a generated family, card migration, learner acquisition result, or
+training result.
 
 A factored source may define a relational goal denotation, such as “change the
 source identified before reassignment,” but it does not determine how that goal
@@ -273,6 +292,68 @@ explicit public-event or public-trace profile. That profile MUST:
 Until those conditions hold, a structured symbolic value MAY exist as a typed
 compiler-side diagnostic, but MUST NOT replace the version-2 public trace or be
 described as the production learner carrier.
+
+### Isolated prompted-interface profile
+
+`experiments/prompted-interface` implements an experimental
+`prompted-interface/0.2` profile. It does not reinterpret the compiler's frozen
+version-2 trace and is not a production canonical-event profile. A conforming
+bundle has three structurally separate values:
+
+1. `public_episode` contains only learner-visible events and adapter metadata;
+2. `supervision` contains loss-only target records and is not an input event;
+3. `private_receipt` contains the goal denotation, exact evaluator evidence,
+   goal-grounding evidence, and generator provenance.
+
+Every public event is addressed by `(event_id, phase, actor, embodiment_id,
+modality, namespace, local_id)`. Every observation or action port is scoped by
+actor and embodiment. Demonstrator actions belong to prompt history; a target
+query may name only action identifiers declared executable by the target
+embodiment. The public action adapter declares identifiers, not privileged
+transition effects.
+
+A `GoalPublication` explicitly selects one public `GoalCarrier`. Language,
+goal-observation, and demonstration carriers use typed event/span references
+and hashes so grounding evidence cannot silently refer to missing, trailing,
+or different content. A private `goal_grounding` receipt binds the publication
+and exact carrier hash to the evaluator's denotation and grounded outcome.
+Supervision MUST be recomputed from query-scoped private action outcomes and
+that denotation; caller-supplied labels are invalid.
+
+The current fixture's exact evaluator and carrier marker are deliberately
+small-domain witnesses. A source adapter such as RDDL MUST replace that marker
+with evidence computed from its maintained simulator or an independently
+checked finite lowering. Merely copying a goal string into both public and
+private JSON is not grounding evidence.
+
+The RDDL Gate-0 adapter is the first such source-specific witness. Its public
+episode follows `prompted-interface/0.2`, including an explicit
+`public_contract.goal_publication`, one addressed symbolic carrier, scoped
+target actions, and no public rewards or privileged state. Its private
+`factored-rddl-exhaustive-evaluator/0.2` receipt defines the denotation as
+maximizing cumulative simulator return from the query through the fixed
+horizon. It derives every correct-action set from all simulator continuations
+and binds the carrier, publication, denotation, graph, outcome table, and
+labels by hashes plus fresh replay. The private evaluator is source-specific;
+the common prompted fixture's bay/dock marker is not reused.
+
+### Continuous modality adapter seam
+
+The Python learner accepts an optional pair
+`canonical_content_embeds: [B,T,H]` and `canonical_content_mask: [B,T]` in
+addition to the frozen raw model fields. The mask aligns external content to
+canonical event positions and may select only live attention positions. Both
+members of the pair are required together; selected vectors must be finite;
+unselected vectors are mathematically inert, including their gradients. When
+the pair is absent, the existing R10/R10c input contract, architecture, and
+parameter count are unchanged.
+
+This seam makes a maintained vision encoder, language encoder, or
+demonstration encoder attachable without allowing it to choose event order,
+actor identity, action namespace, or supervision. It does not itself specify
+an encoder, tokenizer, resampler, projector, caching format, or training
+policy. Those components MUST be versioned adapters that produce this aligned
+sidecar from public carrier content only.
 
 `ScoringTerm` is `(goal_reward, action_cost, fallback_reward,
 violation_penalty)`, all signed integers except that `action_cost` MUST be
@@ -665,7 +746,12 @@ change the separately recorded learner/public-trace profile identity.
   scheduler-level displaced process.
 - Version-2 public norm publication is an opaque, non-injective deterministic
   integer retained for replay compatibility; it is not a semantic goal
-  carrier. No version-3 structured carrier is implemented.
+  carrier. No production version-3 compiler carrier is implemented. The
+  isolated `prompted-interface/0.2` profile and RDDL source adapter are
+  executable experiments, not replacements for the frozen version-2 trace.
+- The RDDL witness proves only a reachable graph through horizon two. Its
+  integer fluent syntax does not yet satisfy a general finite-domain RDDL
+  source profile, and the graph is not lowered into the Rust Graph IR.
 - The receipt does not establish robustness outside finite support, rendering
   correctness, learner acquisition, or transfer.
 
