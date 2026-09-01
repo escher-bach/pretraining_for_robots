@@ -21,6 +21,17 @@ MODEL_FIELDS = (
     "future_target_mask",
 )
 
+# These values are produced by an external modality adapter after the canonical
+# event sequence has been rendered.  They remain outside the stable raw-world
+# batch contract: an ordinary Rust batch has exactly ``MODEL_FIELDS``.  When
+# present, the pair is nevertheless a model input rather than metadata.
+OPTIONAL_MODEL_FIELDS = (
+    "canonical_content_embeds",
+    "canonical_content_mask",
+)
+
+_MODEL_INPUT_FIELDS = MODEL_FIELDS + OPTIONAL_MODEL_FIELDS
+
 
 def assert_world_model_compatibility(
     model_config: Any, *, profiled: bool | None = None
@@ -64,6 +75,11 @@ def tensorize(raw: dict[str, Any], device: torch.device | str | None = None) -> 
     for field in MODEL_FIELDS:
         dtype = torch.long if field in integer_fields else torch.float32
         tensors[field] = torch.tensor(raw[field], dtype=dtype, device=device)
+    for field in OPTIONAL_MODEL_FIELDS:
+        if field not in raw:
+            continue
+        dtype = torch.bool if field == "canonical_content_mask" else torch.float32
+        tensors[field] = torch.tensor(raw[field], dtype=dtype, device=device)
     return tensors
 
 
@@ -83,7 +99,7 @@ def generate_torch_batch(
         max_tokens=max_tokens,
         **world_kwargs(world),
     )
-    metadata = {key: value for key, value in raw.items() if key not in MODEL_FIELDS}
+    metadata = {key: value for key, value in raw.items() if key not in _MODEL_INPUT_FIELDS}
     return tensorize(raw, device), metadata
 
 
@@ -137,7 +153,7 @@ def generate_g0_mixed_torch_batch(
     missing = sorted(set(MODEL_FIELDS).difference(raw))
     if missing:
         raise RuntimeError(f"G0 batch is missing model fields: {missing}")
-    metadata = {key: value for key, value in raw.items() if key not in MODEL_FIELDS}
+    metadata = {key: value for key, value in raw.items() if key not in _MODEL_INPUT_FIELDS}
     return tensorize(raw, device), metadata
 
 

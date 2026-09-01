@@ -183,19 +183,58 @@ class PretrainingForTrajectoryPrediction(PreTrainedModel):
         payloads: torch.Tensor,
         attention_mask: torch.Tensor,
         canonical_content_embeds: torch.Tensor | None = None,
+        canonical_content_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         embeddings = (
             self.role_embedding(role_ids)
             + self.payload_projector(payloads)
             + self.key_identity_embedding(key_ids).to(dtype=payloads.dtype)
         )
+        if (canonical_content_embeds is None) != (canonical_content_mask is None):
+            raise ValueError(
+                "canonical_content_embeds and canonical_content_mask must be supplied together"
+            )
         if canonical_content_embeds is not None:
             if canonical_content_embeds.shape != embeddings.shape:
                 raise ValueError(
                     "canonical_content_embeds must have shape "
                     "[batch, tokens, hidden_size] matching the event sequence"
                 )
-            embeddings = embeddings + canonical_content_embeds.to(dtype=embeddings.dtype)
+            if canonical_content_mask.shape != embeddings.shape[:2]:
+                raise ValueError(
+                    "canonical_content_mask must have shape [batch, tokens] matching the event sequence"
+                )
+            if canonical_content_mask.dtype.is_floating_point:
+                if not torch.isfinite(canonical_content_mask).all() or not torch.all(
+                    (canonical_content_mask == 0) | (canonical_content_mask == 1)
+                ):
+                    raise ValueError("canonical_content_mask must be binary")
+            elif not torch.all(
+                (canonical_content_mask == 0) | (canonical_content_mask == 1)
+            ):
+                raise ValueError("canonical_content_mask must be binary")
+            content_mask = canonical_content_mask.to(
+                device=embeddings.device, dtype=torch.bool
+            )
+            sequence_mask = attention_mask.to(device=embeddings.device, dtype=torch.bool)
+            if torch.any(content_mask & ~sequence_mask):
+                raise ValueError(
+                    "canonical_content_mask may only align adapter content to unmasked event positions"
+                )
+            adapter_content = canonical_content_embeds.to(
+                device=embeddings.device, dtype=embeddings.dtype
+            )
+            if not torch.isfinite(adapter_content[content_mask]).all():
+                raise ValueError("aligned canonical_content_embeds must be finite")
+            # The adapter owns how an external modality becomes this canonical
+            # content.  The core only accepts an explicit event alignment and
+            # makes masked content mathematically inert, including its gradient.
+            # Multiplying by zero would still propagate NaN/Inf, so select the
+            # zero branch explicitly for every unaligned event.
+            content = torch.where(
+                content_mask.unsqueeze(-1), adapter_content, torch.zeros_like(adapter_content)
+            )
+            embeddings = embeddings + content
         return embeddings * attention_mask.unsqueeze(-1).to(dtype=embeddings.dtype)
 
     @staticmethod
@@ -268,6 +307,7 @@ class PretrainingForTrajectoryPrediction(PreTrainedModel):
         future_targets: torch.Tensor | None = None,
         future_target_mask: torch.Tensor | None = None,
         canonical_content_embeds: torch.Tensor | None = None,
+        canonical_content_mask: torch.Tensor | None = None,
         **_: Any,
     ) -> PretrainingOutput:
         inputs_embeds = self.embed_events(
@@ -276,6 +316,7 @@ class PretrainingForTrajectoryPrediction(PreTrainedModel):
             payloads,
             attention_mask,
             canonical_content_embeds,
+            canonical_content_mask,
         )
         hidden = self.backbone(
             inputs_embeds=inputs_embeds,

@@ -9,7 +9,7 @@ import torch
 from accelerate import Accelerator
 from transformers import set_seed
 
-from pretraining_experiments.data import generate_torch_batch
+from pretraining_experiments.data import generate_torch_batch, tensorize
 from pretraining_experiments.model import (
     PretrainingConfig,
     PretrainingForTrajectoryPrediction,
@@ -53,6 +53,25 @@ def tiny_config() -> PretrainingConfig:
         action_horizon=16,
         token_abi_version="physical-event-abi-0.2.0",
     )
+
+
+def adapter_batch() -> dict[str, torch.Tensor]:
+    """Small public batch for CPU-only modality-boundary invariants."""
+    batch = 1
+    tokens = 8
+    horizon = 16
+    attention = torch.tensor([[1, 1, 1, 1, 1, 1, 0, 0]], dtype=torch.long)
+    return {
+        "role_ids": torch.ones(batch, tokens, dtype=torch.long),
+        "key_ids": torch.arange(tokens, dtype=torch.long).unsqueeze(0),
+        "position_ids": torch.arange(tokens, dtype=torch.long).unsqueeze(0),
+        "payloads": torch.zeros(batch, tokens, 8),
+        "attention_mask": attention,
+        "action_targets": torch.zeros(batch, tokens, horizon),
+        "action_target_mask": torch.zeros(batch, tokens, horizon),
+        "future_targets": torch.zeros(batch, tokens),
+        "future_target_mask": torch.zeros(batch, tokens),
+    }
 
 
 class ModelIntegrationTests(unittest.TestCase):
@@ -174,22 +193,103 @@ class ModelIntegrationTests(unittest.TestCase):
                 after = restored(**batch).action_predictions
         self.assertTrue(torch.equal(before, after))
 
-    def test_external_adapter_can_supply_canonical_content_only(self) -> None:
+    def test_external_adapter_tensorization_is_optional_and_not_metadata(self) -> None:
+        raw = {
+            "role_ids": [[1, 2]],
+            "key_ids": [[0, 1]],
+            "position_ids": [[0, 1]],
+            "payloads": [[[0.0] * 8, [0.0] * 8]],
+            "attention_mask": [[1, 1]],
+            "action_targets": [[[0.0] * 16, [0.0] * 16]],
+            "action_target_mask": [[[0.0] * 16, [0.0] * 16]],
+            "future_targets": [[0.0, 0.0]],
+            "future_target_mask": [[0.0, 0.0]],
+            "canonical_content_embeds": [[[0.0] * 64, [1.0] * 64]],
+            "canonical_content_mask": [[0, 1]],
+            "generator_only": "must not become a learner input",
+        }
+        tensors = tensorize(raw)
+        self.assertEqual(tuple(tensors["canonical_content_embeds"].shape), (1, 2, 64))
+        self.assertEqual(tensors["canonical_content_mask"].dtype, torch.bool)
+        self.assertNotIn("generator_only", tensors)
+
+    def test_external_adapter_requires_aligned_content_and_mask(self) -> None:
         torch.manual_seed(4)
         model = PretrainingForTrajectoryPrediction(tiny_config())
-        batch, _ = generate_torch_batch(
-            seed=404,
-            start_index=0,
-            batch_size=1,
-            max_tokens=192,
-            world=WORLD,
-        )
-        canonical = torch.zeros(1, 192, 64, requires_grad=True)
-        output = model(**batch, canonical_content_embeds=canonical)
-        output.loss.backward()
-        self.assertIsNotNone(canonical.grad)
-        self.assertTrue(torch.isfinite(canonical.grad).all())
+        batch = adapter_batch()
+        canonical = torch.zeros(1, 8, 64)
+        aligned = batch["attention_mask"].to(dtype=torch.bool)
+        with self.assertRaisesRegex(ValueError, "supplied together"):
+            model(**batch, canonical_content_embeds=canonical)
+        with self.assertRaisesRegex(ValueError, "supplied together"):
+            model(**batch, canonical_content_mask=aligned)
+        with self.assertRaisesRegex(ValueError, "canonical_content_embeds must have shape"):
+            model(**batch, canonical_content_embeds=canonical[..., :-1], canonical_content_mask=aligned)
+        with self.assertRaisesRegex(ValueError, "canonical_content_mask must have shape"):
+            model(**batch, canonical_content_embeds=canonical, canonical_content_mask=aligned[:, :-1])
+        bad_alignment = aligned.clone()
+        bad_alignment[0, batch["attention_mask"][0].sum()] = True
+        with self.assertRaisesRegex(ValueError, "unmasked event positions"):
+            model(**batch, canonical_content_embeds=canonical, canonical_content_mask=bad_alignment)
+        nonfinite = canonical.clone()
+        nonfinite[0, 0, 0] = float("nan")
+        with self.assertRaisesRegex(ValueError, "aligned canonical_content_embeds must be finite"):
+            model(**batch, canonical_content_embeds=nonfinite, canonical_content_mask=aligned)
         self.assertFalse(any(name.startswith("visual_") for name, _ in model.named_parameters()))
+
+    def test_masked_adapter_garbage_is_inert_and_gradients_are_aligned(self) -> None:
+        torch.manual_seed(41)
+        model = PretrainingForTrajectoryPrediction(tiny_config()).eval()
+        batch = adapter_batch()
+        content_mask = torch.zeros_like(batch["attention_mask"], dtype=torch.bool)
+        content_mask[0, :3] = True
+        canonical = torch.randn(1, 8, 64, requires_grad=True)
+        garbage = canonical.detach().clone()
+        garbage[:, ~content_mask[0]] = torch.randn_like(garbage[:, ~content_mask[0]]) * 1.0e6
+        garbage[0, 4, 0] = float("nan")
+        garbage[0, 5, 1] = float("inf")
+        with torch.no_grad():
+            clean_output = model(
+                **batch,
+                canonical_content_embeds=canonical.detach(),
+                canonical_content_mask=content_mask,
+            )
+            garbage_output = model(
+                **batch,
+                canonical_content_embeds=garbage,
+                canonical_content_mask=content_mask,
+            )
+        self.assertTrue(torch.equal(clean_output.action_logits, garbage_output.action_logits))
+
+        model(
+            **batch,
+            canonical_content_embeds=canonical,
+            canonical_content_mask=content_mask,
+        ).action_logits.sum().backward()
+        self.assertTrue(torch.equal(canonical.grad[:, ~content_mask[0]], torch.zeros_like(canonical.grad[:, ~content_mask[0]])))
+        self.assertGreater(float(canonical.grad[:, content_mask[0]].abs().sum()), 0.0)
+
+    def test_adapter_content_preserves_causal_suffix_invariance(self) -> None:
+        torch.manual_seed(42)
+        model = PretrainingForTrajectoryPrediction(tiny_config()).eval()
+        batch = adapter_batch()
+        query = 2
+        content_mask = batch["attention_mask"].to(dtype=torch.bool)
+        first = torch.randn(1, 8, 64)
+        second = first.clone()
+        second[:, query + 1 :] = torch.randn_like(second[:, query + 1 :])
+        with torch.no_grad():
+            left = model(
+                **batch,
+                canonical_content_embeds=first,
+                canonical_content_mask=content_mask,
+            )
+            right = model(
+                **batch,
+                canonical_content_embeds=second,
+                canonical_content_mask=content_mask,
+            )
+        self.assertTrue(torch.equal(left.action_logits[:, query], right.action_logits[:, query]))
 
     def test_key_encoding_has_initialization_scale(self) -> None:
         model = PretrainingForTrajectoryPrediction(tiny_config())
