@@ -25,7 +25,7 @@ def main() -> int:
     validate(bundle)
     artifact = {
         "public_episode": public_projection(bundle),
-        "loss_only_supervision": target_supervision_projection(bundle),
+        "supervision": target_supervision_projection(bundle),
         "private_receipt": bundle["private_receipt"],
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
