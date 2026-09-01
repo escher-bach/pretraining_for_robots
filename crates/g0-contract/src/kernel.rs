@@ -459,6 +459,42 @@ impl Norm {
         }
     }
 
+    /// Every configuration cell named by this denotation, including a cell
+    /// named by an `OnCellEntry` guard.  This is semantic validation data, not
+    /// a rendering of a public goal carrier.
+    pub fn referenced_cells(&self) -> Vec<usize> {
+        let mut cells = Vec::new();
+        self.collect_referenced_cells(&mut cells);
+        cells
+    }
+
+    fn collect_referenced_cells(&self, cells: &mut Vec<usize>) {
+        match self {
+            Self::Settle { cell } | Self::Visit { cell } | Self::Avoid { cell } => {
+                cells.push(*cell)
+            }
+            Self::Both(left, right)
+            | Self::Priority {
+                high: left,
+                low: right,
+            } => {
+                left.collect_referenced_cells(cells);
+                right.collect_referenced_cells(cells);
+            }
+            Self::Supersede {
+                before,
+                after,
+                guard,
+            } => {
+                if let Guard::OnCellEntry(cell) = guard {
+                    cells.push(*cell);
+                }
+                before.collect_referenced_cells(cells);
+                after.collect_referenced_cells(cells);
+            }
+        }
+    }
+
     /// Evaluate the norm against a complete trajectory.
     ///
     /// `trajectory[0]` is the starting cell, so a trajectory of `n` actions has

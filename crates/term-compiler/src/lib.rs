@@ -462,6 +462,8 @@ fn guard_context(executed: usize, action: Option<u16>, cell: usize) -> GuardCont
     }
 }
 
+/// Frozen version-2 public norm token.  It remains the only norm rendering in
+/// `PublicView` until a separately versioned learner-event profile exists.
 fn norm_code(norm: &Norm) -> i64 {
     fn walk(norm: &Norm, state: &mut u64) {
         let mix = |state: &mut u64, value: u64| {
@@ -508,6 +510,251 @@ fn guard_code(guard: Guard) -> u64 {
     }
 }
 
+/// What one symbolic-goal atom requires of the configuration.
+///
+/// These are the norm's leaves rather than new vocabulary.  The compiler
+/// cannot publish a requirement the world does not evaluate.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum GoalPredicate {
+    Settle,
+    Visit,
+    Avoid,
+}
+
+impl GoalPredicate {
+    const fn code(self) -> i64 {
+        match self {
+            Self::Settle => 1,
+            Self::Visit => 2,
+            Self::Avoid => 3,
+        }
+    }
+
+    fn from_code(code: i64) -> Option<Self> {
+        match code {
+            1 => Some(Self::Settle),
+            2 => Some(Self::Visit),
+            3 => Some(Self::Avoid),
+            _ => None,
+        }
+    }
+}
+
+/// One symbolic requirement on configuration-channel content.
+///
+/// `cell` is a possible value of the sensorium's cell observation channel, not
+/// the channel/key itself.  A future learner adapter must add the observation
+/// port explicitly rather than conflating it with this content.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GoalAtom {
+    pub predicate: GoalPredicate,
+    pub cell: usize,
+}
+
+/// A structured symbolic diagnostic for a goal, distinct from its denotation.
+///
+/// [`Norm`] is the denotation: the world evaluates it, and a privileged norm is
+/// evaluated without being published at all.  This diagnostic is derived from
+/// the norm by one total function ([`SymbolicGoalDiagnostic::from_norm`]) so a future
+/// symbolic adapter can be checked against evaluator semantics.
+///
+/// It does not replace the version-2 `norm_code` public token.  That token is
+/// opaque and non-injective, but it is frozen for trace replay.  A structured
+/// learner carrier needs a separately versioned, framed event profile and a
+/// lowering onto the canonical learner boundary.
+///
+/// # Declared limit
+///
+/// [`NormTerm`] carries one visibility for its whole expression. The
+/// visibility-gated API below therefore exposes this diagnostic only for a
+/// public norm; it does not establish that all its subterms are safe to publish
+/// in a future carrier. Subterm visibility remains a separate change.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SymbolicGoalDiagnostic {
+    Atom(GoalAtom),
+    /// Both requirements apply.
+    All {
+        left: Box<SymbolicGoalDiagnostic>,
+        right: Box<SymbolicGoalDiagnostic>,
+    },
+    /// `after` supersedes `before` once the announced guard fires.
+    Then {
+        before: Box<SymbolicGoalDiagnostic>,
+        after: Box<SymbolicGoalDiagnostic>,
+        guard: Guard,
+    },
+    /// `high` wins wherever the two conflict.
+    Preferred {
+        high: Box<SymbolicGoalDiagnostic>,
+        low: Box<SymbolicGoalDiagnostic>,
+    },
+}
+
+const CARRIER_ATOM: i64 = 1;
+const CARRIER_ALL: i64 = 2;
+const CARRIER_THEN: i64 = 3;
+const CARRIER_PREFERRED: i64 = 4;
+
+impl SymbolicGoalDiagnostic {
+    /// Derive a symbolic diagnostic from a norm.
+    ///
+    /// Total by construction for diagnostics. It is not a public-rendering
+    /// function: `CompiledWorld` gates diagnostic access on norm visibility,
+    /// and the v2 renderer continues to use `norm_code`.
+    pub fn from_norm(norm: &Norm) -> Self {
+        match norm {
+            Norm::Settle { cell } => Self::atom(GoalPredicate::Settle, *cell),
+            Norm::Visit { cell } => Self::atom(GoalPredicate::Visit, *cell),
+            Norm::Avoid { cell } => Self::atom(GoalPredicate::Avoid, *cell),
+            Norm::Both(left, right) => Self::All {
+                left: Box::new(Self::from_norm(left)),
+                right: Box::new(Self::from_norm(right)),
+            },
+            Norm::Supersede {
+                before,
+                after,
+                guard,
+            } => Self::Then {
+                before: Box::new(Self::from_norm(before)),
+                after: Box::new(Self::from_norm(after)),
+                guard: *guard,
+            },
+            Norm::Priority { high, low } => Self::Preferred {
+                high: Box::new(Self::from_norm(high)),
+                low: Box::new(Self::from_norm(low)),
+            },
+        }
+    }
+
+    fn atom(predicate: GoalPredicate, cell: usize) -> Self {
+        Self::Atom(GoalAtom { predicate, cell })
+    }
+
+    /// Encode the diagnostic in self-delimiting prefix order.
+    ///
+    /// Prefix order, so the encoding is self-delimiting and a decoder needs no
+    /// separate length field.  The flat vector is a *rendering*; this type is
+    /// what carries meaning, the same way the canonical public record stands
+    /// behind the learner ABI's float rows rather than the other way round.
+    pub fn encode_diagnostic(&self) -> Vec<i64> {
+        let mut rendered = Vec::new();
+        self.render_into(&mut rendered);
+        rendered
+    }
+
+    fn render_into(&self, out: &mut Vec<i64>) {
+        match self {
+            Self::Atom(atom) => {
+                out.push(CARRIER_ATOM);
+                out.push(atom.predicate.code());
+                out.push(atom.cell as i64);
+            }
+            Self::All { left, right } => {
+                out.push(CARRIER_ALL);
+                left.render_into(out);
+                right.render_into(out);
+            }
+            Self::Then {
+                before,
+                after,
+                guard,
+            } => {
+                out.push(CARRIER_THEN);
+                out.extend(render_guard(*guard));
+                before.render_into(out);
+                after.render_into(out);
+            }
+            Self::Preferred { high, low } => {
+                out.push(CARRIER_PREFERRED);
+                high.render_into(out);
+                low.render_into(out);
+            }
+        }
+    }
+
+    /// Decode one diagnostic from the head of an encoded slice, returning it and
+    /// the number of slots it consumed.
+    ///
+    /// Invertibility is checked rather than asserted. This is not a v2 public
+    /// trace decoder.
+    pub fn decode_diagnostic(rendered: &[i64]) -> Result<(Self, usize), CompileError> {
+        let malformed =
+            || CompileError::Invalid("goal diagnostic encoding is malformed".to_string());
+        let tag = rendered.first().copied().ok_or_else(malformed)?;
+        match tag {
+            CARRIER_ATOM => {
+                let predicate =
+                    GoalPredicate::from_code(rendered.get(1).copied().ok_or_else(malformed)?)
+                        .ok_or_else(malformed)?;
+                let cell = usize::try_from(rendered.get(2).copied().ok_or_else(malformed)?)
+                    .map_err(|_| malformed())?;
+                Ok((Self::atom(predicate, cell), 3))
+            }
+            CARRIER_ALL | CARRIER_PREFERRED => {
+                let (first, first_used) = Self::decode_diagnostic(&rendered[1..])?;
+                let (second, second_used) = Self::decode_diagnostic(&rendered[1 + first_used..])?;
+                let carrier = if tag == CARRIER_ALL {
+                    Self::All {
+                        left: Box::new(first),
+                        right: Box::new(second),
+                    }
+                } else {
+                    Self::Preferred {
+                        high: Box::new(first),
+                        low: Box::new(second),
+                    }
+                };
+                Ok((carrier, 1 + first_used + second_used))
+            }
+            CARRIER_THEN => {
+                let guard = decode_guard(
+                    rendered.get(1).copied().ok_or_else(malformed)?,
+                    rendered.get(2).copied().ok_or_else(malformed)?,
+                )
+                .ok_or_else(malformed)?;
+                let tail = rendered.get(3..).ok_or_else(malformed)?;
+                let (before, before_used) = Self::decode_diagnostic(tail)?;
+                let (after, after_used) = Self::decode_diagnostic(&tail[before_used..])?;
+                Ok((
+                    Self::Then {
+                        before: Box::new(before),
+                        after: Box::new(after),
+                        guard,
+                    },
+                    3 + before_used + after_used,
+                ))
+            }
+            _ => Err(malformed()),
+        }
+    }
+}
+
+/// An announced guard as two diagnostic slots: a tag and its argument.
+///
+/// Two slots rather than one mixed integer.  The replaced encoding folded the
+/// argument into the tag with `XOR`, which is not injective over the variants
+/// it had to separate.
+fn render_guard(guard: Guard) -> [i64; 2] {
+    match guard {
+        Guard::AtStart => [1, 0],
+        Guard::AfterStep(step) => [2, step as i64],
+        Guard::OnAction(action) => [3, i64::from(action)],
+        Guard::OnCellEntry(cell) => [4, cell as i64],
+        Guard::Never => [5, 0],
+    }
+}
+
+fn decode_guard(tag: i64, argument: i64) -> Option<Guard> {
+    match tag {
+        1 if argument == 0 => Some(Guard::AtStart),
+        2 => usize::try_from(argument).ok().map(Guard::AfterStep),
+        3 => u16::try_from(argument).ok().map(Guard::OnAction),
+        4 => usize::try_from(argument).ok().map(Guard::OnCellEntry),
+        5 if argument == 0 => Some(Guard::Never),
+        _ => None,
+    }
+}
+
 impl WorldTerm {
     /// Validate every structural invariant before any executable object is
     /// made.  Validation is intentionally conservative around conflict
@@ -536,6 +783,17 @@ impl WorldTerm {
         if self.environment.start >= states {
             return Err(CompileError::Invalid(
                 "environment start is outside its state space".into(),
+            ));
+        }
+        if self
+            .norm
+            .expression
+            .referenced_cells()
+            .into_iter()
+            .any(|cell| cell >= states)
+        {
+            return Err(CompileError::Invalid(
+                "a norm names a cell outside the environment state space".into(),
             ));
         }
         let mut ports = BTreeMap::new();
@@ -1401,8 +1659,9 @@ impl CompiledWorld {
     }
 
     /// Execute a scored sequence once, exposing only generic scoring facts.
-    /// A caller that needs a named goal can inspect the term's norm separately;
-    /// no card-specific outcome type is embedded in the compiler.
+    /// The v2 public trace exposes only its frozen norm token; callers that
+    /// need to inspect the semantic objective use an audit view or the
+    /// visibility-gated symbolic diagnostic below.
     pub fn outcome(&self, actions: &[u16]) -> ExecutionOutcome {
         let fallback_step = self.contract.program.fallback_step(actions);
         // A fallback is absorbing in scoring/public execution, not in the
@@ -1443,6 +1702,18 @@ impl CompiledWorld {
         PublicView {
             trace: self.fragment.public_trace(&self.contract, actions),
         }
+    }
+
+    /// A structured diagnostic corresponding to a public norm, if one exists.
+    ///
+    /// This value is deliberately not rendered by [`Self::public_view`]. The
+    /// version-2 trace remains a one-slot opaque norm token; a future adapter
+    /// must lower this diagnostic through its own framed event profile.
+    pub fn public_goal_diagnostic(&self) -> Option<SymbolicGoalDiagnostic> {
+        self.contract
+            .program
+            .norm_public
+            .then(|| SymbolicGoalDiagnostic::from_norm(&self.contract.program.norm))
     }
 
     /// Explicit audit view.  The caller receives semantic state, never a
@@ -1618,6 +1889,10 @@ impl GeneratedEmbodimentFamily {
                 "an embodiment family must share action alphabet and scored horizon".into(),
             ));
         }
+        // Composite norms need an exact, declared nondegeneracy witness rather
+        // than a leaf heuristic. The existing generator has only bare
+        // `Settle` goals, so retain its original admission rule until that
+        // witness and its receipt vocabulary are specified.
         let goal_differs_from_start = match &self.body_limited.term.norm.expression {
             Norm::Settle { cell } | Norm::Visit { cell } => *cell != body.contract.program.start,
             _ => false,
@@ -2620,5 +2895,131 @@ mod tests {
         .unwrap();
         assert_eq!(first.family_hash, second.family_hash);
         assert_ne!(first.generator_metadata, second.generator_metadata);
+    }
+    fn superseding_term(guard: Guard) -> WorldTerm {
+        let mut term = base_term("supersede", 5, 3, 2, IndexSet::from_indices([0, 1]));
+        term.norm.expression = Norm::Supersede {
+            before: Box::new(Norm::Settle { cell: 2 }),
+            after: Box::new(Norm::Settle { cell: 3 }),
+            guard,
+        };
+        term
+    }
+
+    #[test]
+    fn a_public_goal_has_a_structured_diagnostic_without_changing_its_v2_trace() {
+        let norms = [
+            Norm::Settle { cell: 3 },
+            Norm::Avoid { cell: 1 },
+            Norm::both(Norm::Visit { cell: 1 }, Norm::Settle { cell: 2 }),
+            Norm::Supersede {
+                before: Box::new(Norm::Settle { cell: 1 }),
+                after: Box::new(Norm::Settle { cell: 3 }),
+                guard: Guard::AfterStep(1),
+            },
+            Norm::Priority {
+                high: Box::new(Norm::Avoid { cell: 4 }),
+                low: Box::new(Norm::Settle { cell: 3 }),
+            },
+        ];
+        let mut published = BTreeSet::new();
+        for norm in &norms {
+            let carrier = SymbolicGoalDiagnostic::from_norm(norm);
+            let encoded = carrier.encode_diagnostic();
+            let (decoded, used) =
+                SymbolicGoalDiagnostic::decode_diagnostic(&encoded).expect("a diagnostic decodes");
+            assert_eq!(decoded, carrier);
+            assert_eq!(used, encoded.len());
+            assert!(published.insert(encoded));
+
+            let mut term = base_term("carrier", 5, 3, 3, IndexSet::from_indices([0, 1]));
+            term.norm.expression = norm.clone();
+            let compiled = term.compile().expect("valid term");
+            assert_eq!(compiled.public_goal_diagnostic(), Some(carrier));
+            let states = term.environment.state_count();
+            assert!(norm.referenced_cells().iter().all(|cell| *cell < states));
+            assert_eq!(compiled.public_view(&[]).trace, vec![0, norm_code(norm)]);
+        }
+    }
+
+    #[test]
+    fn v2_public_norm_token_has_frozen_golden_values() {
+        let settled = base_term("v2-settle", 5, 3, 3, IndexSet::from_indices([0, 1]))
+            .compile()
+            .expect("valid term");
+        assert_eq!(
+            settled.public_view(&[]).trace,
+            vec![0, -5_808_588_758_991_127_739]
+        );
+
+        let superseded = superseding_term(Guard::Never)
+            .compile()
+            .expect("valid term");
+        assert_eq!(
+            superseded.public_view(&[]).trace,
+            vec![0, 3_454_054_311_722_615_336]
+        );
+    }
+
+    #[test]
+    fn v2_keeps_the_known_supersession_collision_while_diagnostics_separate_it() {
+        // The v2 encoding folded the guard into the supersession tag with XOR,
+        // and `12 ^ 3` is the code `Never` used. Replay compatibility requires
+        // that collision to remain in the one-slot public trace.
+        let announced = superseding_term(Guard::AfterStep(3))
+            .compile()
+            .expect("valid term");
+        let never = superseding_term(Guard::Never)
+            .compile()
+            .expect("valid term");
+        assert_ne!(
+            announced.public_goal_diagnostic(),
+            never.public_goal_diagnostic()
+        );
+        assert_eq!(
+            announced.public_view(&[]).trace,
+            never.public_view(&[]).trace
+        );
+        assert_eq!(announced.public_view(&[]).trace.len(), 2);
+    }
+
+    #[test]
+    fn a_privileged_goal_has_no_public_diagnostic() {
+        let mut hidden = base_term("hidden-goal", 5, 2, 2, IndexSet::from_indices([0, 1]));
+        hidden.norm.visibility = Visibility::Privileged;
+        let mut moved = hidden.clone();
+        moved.norm.expression = Norm::Settle { cell: 3 };
+
+        let hidden = hidden.compile().expect("valid term");
+        let moved = moved.compile().expect("valid term");
+        assert_eq!(hidden.public_goal_diagnostic(), None);
+        assert_eq!(hidden.public_view(&[]).trace, moved.public_view(&[]).trace);
+        // The denotation still differs; only its diagnostic is withheld.
+        assert!(hidden.outcome(&[0, 0]).norm_met);
+        assert!(!moved.outcome(&[0, 0]).norm_met);
+    }
+
+    #[test]
+    fn a_goal_outside_the_state_space_is_rejected_before_execution() {
+        let mut absent = base_term("absent-goal", 5, 2, 2, IndexSet::from_indices([0, 1]));
+        absent.norm.expression = Norm::Settle { cell: 9 };
+        assert!(absent.compile().is_err());
+
+        let mut private_absent = absent.clone();
+        private_absent.norm.visibility = Visibility::Privileged;
+        assert!(private_absent.compile().is_err());
+
+        // A guard naming a missing cell is the same defect one level in: an
+        // announcement whose timing can never be read.
+        let mut guarded = base_term("absent-guard", 5, 2, 2, IndexSet::from_indices([0, 1]));
+        guarded.norm.expression = Norm::Supersede {
+            before: Box::new(Norm::Settle { cell: 1 }),
+            after: Box::new(Norm::Settle { cell: 3 }),
+            guard: Guard::OnCellEntry(7),
+        };
+        assert!(guarded.compile().is_err());
+
+        guarded.norm.visibility = Visibility::Privileged;
+        assert!(guarded.compile().is_err());
     }
 }

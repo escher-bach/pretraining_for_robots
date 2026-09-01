@@ -261,6 +261,8 @@ fn calibration_is_unscored_public_and_restoration_is_announced_before_scoring() 
         let trace = compiled.public_view(&[]).trace;
         let calibration_len = case.contract.calibration_trace().len();
         let restoration = case.contract.restore.unwrap();
+        // Version 2 has exactly one opaque public-norm slot between the
+        // calibration cells and the restoration announcement.
         assert_eq!(
             trace[calibration_len + 1],
             (restoration.actuator * 100 + restoration.after_step + 1) as i64

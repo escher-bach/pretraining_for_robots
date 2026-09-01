@@ -27,8 +27,8 @@ The first-class term components are:
   support;
 - `EnvironmentTerm`: start configuration plus either compact ring edges or an
   explicit finite graph with deterministic self-loop defaults;
-- `NormTerm` and `ScoringTerm`: public/private normative expression plus goal,
-  action, fallback, and violation values;
+- `NormTerm` and `ScoringTerm`: public/privileged normative expression plus
+  goal, action, fallback, and violation values;
 - `CalibrationTerm`: an unscored action prelude whose cumulative cells can be
   public;
 - `SupportRestoration`: a public announcement whose actuator support begins at
@@ -45,6 +45,31 @@ Family hashes use canonical term serialization and BLAKE3 (schema version 2;
 the version-1 ring encoding remains available for migration checks). Generator
 metadata (seed and index) is separate from terms, public traces, and family
 hashes, and is copied explicitly into validity receipts for replay.
+
+## Symbolic goal diagnostic
+
+A `Norm` is the goal *denotation*: the world evaluates it, and a privileged
+norm is evaluated without being published. `SymbolicGoalDiagnostic` is a structured
+symbolic **diagnostic**, derived from the norm by one total function so a later
+adapter can be checked against evaluator semantics. It is available only for a
+public norm through `CompiledWorld::public_goal_diagnostic()`:
+
+```text
+Norm            -> SymbolicGoalDiagnostic
+Settle { 3 }       Atom(Settle, cell-content 3)
+Supersede{..}      Then { .., guard }
+```
+
+An atom's cell is **content in** the sensorium's cell-observation channel; it
+is not the observation key. A future lowering must declare the observation port
+as well as this content. The diagnostic has a tested self-delimiting encoding,
+but that encoding is not a learner trace or an interchange format.
+
+Version 2 continues to publish exactly one frozen opaque `norm_code` slot. Its
+FNV-style mixing is non-injective: a switch announced for step three and one
+that never fires collide, and replay compatibility requires that collision to
+remain. A structured learner carrier requires a new framed public-event profile
+and canonical-event lowering; it cannot silently replace the v2 slot.
 
 ## Generated embodiment families
 
@@ -72,7 +97,9 @@ semantic filter, with these predicates:
 - `twin_scope`: exact command sites or conservative trajectory cells;
 - `family_hash`, `generator_seed`, and `generator_index`: semantic identity and
   separate replay coordinates;
-- `goal_differs_from_start`: the requested goal is nondegenerate;
+- `goal_differs_from_start`: the current generated bare `Settle`/`Visit` goal
+  is nondegenerate. Composite-goal admission is deferred until it has an exact
+  denotation-level witness rather than a leaf heuristic;
 - `body_limitation_changes_ceiling`: the limited body and unrestricted control
   have different exact ceilings;
 - `twin_trajectories_equal`: every body/twin transition trajectory agrees;
@@ -112,10 +139,12 @@ cargo test --workspace --locked
 ```
 
 The focused compiler suite covers typed-boundary rejection, fallback scoring,
-calibration and restoration clocks, total coupling lowering, deterministic
-receipt-filtered ring and branching-graph generation, explicit non-cycle
-diagnostics, graph self-loop defaults, public/privileged separation, and
-semantic hash migration. The Card 03 differential harness compares all 12
+symbolic-goal diagnostic round-trip, frozen v2 collision replay, diagnostic
+visibility separation under a privileged norm, denotation-owned rejection of a
+goal outside the state space, calibration and restoration clocks, total coupling
+lowering, deterministic receipt-filtered ring and branching-graph generation,
+explicit non-cycle diagnostics, graph self-loop defaults, public/privileged
+separation, and semantic hash migration. The Card 03 differential harness compares all 12
 existing contracts over all 25 scored action sequences, including fallback and
 timed restoration. A separate topology harness exhausts the five-state
 non-ring witness's 16 horizon-two sequences.
@@ -123,6 +152,9 @@ These results are evidence for this isolated compiler boundary only.
 
 ## Remaining limits
 
+- `NormTerm` carries one visibility for its whole expression. The structured
+  diagnostic is therefore all-or-nothing; a future public carrier needs
+  subterm visibility for an unannounced supersession.
 - The executor supports finite deterministic rings and explicit graphs; it is
   not a stochastic geometry engine or general process scheduler.
 - No compiler term renders through the learner event boundary, and no card has
