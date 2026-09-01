@@ -3,8 +3,9 @@
 ## Status and terminology
 
 This document specifies the finite embodied-world generator implemented in
-`pretraining-term-compiler`. It describes current executable behavior, not a
-proposal for a general world language.
+`pretraining-term-compiler`. Version 2 describes the committed executable
+behavior. The goal-carrier requirements below also reserve the boundary for a
+possible version 3, but do not claim that version 3 is implemented.
 
 The key words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY**
 are normative. A *term* is a serializable world description. A *compiled
@@ -133,7 +134,60 @@ Consequently `Supersede` with `AtStart` always selects `after`, even for a
 nonempty trajectory. A fallback outcome uses fallback scoring before norm
 evaluation, as specified below.
 
-### Reference public-norm encoding
+### Goal denotation, publication, and learner carrier
+
+Three objects MUST remain distinct:
+
+1. **Goal denotation** is the `Norm` evaluated by the world. It belongs to the
+   privileged evaluator whether or not anything describing it is public.
+2. **Publication policy** determines which description of that denotation may
+   enter the public episode. Whole-norm `Visibility` is sufficient only for the
+   current all-public or all-privileged cases. A public initial objective with
+   an unannounced replacement requires subterm visibility or an equivalent
+   explicit projection; publishing the complete norm tree would leak the
+   replacement.
+3. **Goal carrier** is what the learner actually receives. A carrier MAY be a
+   symbolic description, language span, goal-observation span, or
+   demonstration span. These are alternate public presentations of an outcome,
+   not alternate evaluator semantics.
+
+The finite compiler owns the denotation. A learner-interface adapter owns the
+carrier and its placement in prompt/target events. The compiler MUST NOT assume
+that every denotation is published as its complete symbolic syntax, and a
+language, observation, or demonstration carrier MUST NOT be reconstructed by
+reading privileged norm data at training time.
+
+For a future structured symbolic carrier, one atom names both an observation
+channel and content in that channel:
+
+```text
+SymbolicGoalAtom {
+  predicate = Settle | Visit | Avoid,
+  observation = Sensorium.cell_port,
+  content = configuration cell
+}
+
+SymbolicGoalDescription =
+    Atom(SymbolicGoalAtom)
+  | All(left, right)
+  | Then(before, after, announced_guard)
+  | Preferred(high, low)
+```
+
+The configuration cell is channel **content**, not a sensor or canonical-event
+key. Calling a cell a key would conflate the observation port with one of its
+possible values. `Then` may contain only a guard authorized by the publication
+policy. An unannounced guard or replacement MUST remain absent even though the
+privileged denotation evaluates it.
+
+Deriving this symbolic description from the public projection of a norm is
+useful: it prevents evaluator and description from drifting apart. It is not a
+total public function over arbitrary norms, because some subterms may be
+privileged and some episodes deliberately use a nonsymbolic carrier. The
+language, goal-observation, and demonstration variants require separate
+grounding checks against the same denotation.
+
+### Version-2 reference public-norm encoding
 
 The reference executor emits a public norm as a signed 64-bit `norm_code`.
 This encoding is not a general interchange format, but byte/trace-compatible
@@ -147,6 +201,36 @@ and `Priority` as `mix(6)` followed by high then low. Guard codes are
 `AtStart=11`, `AfterStep(k)=12 XOR k`, `OnAction(a)=13 XOR a`,
 `OnCellEntry(c)=14 XOR c`, and `Never=15`. The final unsigned state is
 reinterpreted as Rust `u64 as i64` and appended to the public trace.
+
+`norm_code` is a frozen version-2 replay token, not a meaningful symbolic goal
+carrier. It is opaque, and its mixing is not injective. In particular,
+`Supersede(..., AfterStep(3))` and `Supersede(..., Never)` use the same mixed
+constructor value because `12 XOR 3 = 15`. Version-2 implementations MUST
+preserve this behavior when claiming byte/trace compatibility; silently
+replacing the slot with a variable-length tree would reinterpret existing
+receipts.
+
+### Requirements for a version-3 structured carrier
+
+A structured carrier MAY replace the version-2 token only under a new,
+explicit public-event or public-trace profile. That profile MUST:
+
+1. carry its own version in contract identity and audit receipts;
+2. use typed events, or an explicitly framed tag/length envelope, rather than
+   splice an unlocated variable-length vector into `PublicView.trace`;
+3. define lossless representations for predicate, composition, announced
+   guard timing, observation channel, and channel content;
+4. specify subterm publication so an unannounced supersession is not exposed;
+5. define lowering into the canonical learner event boundary, including where
+   prompt and target phases place the carrier;
+6. retain a version-2 decoder/replay path and test old traces unchanged; and
+7. test that symbolic, language, goal-observation, and demonstration carriers
+   agree with the same privileged denotation without making generator metadata
+   public.
+
+Until those conditions hold, a structured symbolic value MAY exist as a typed
+compiler-side diagnostic, but MUST NOT replace the version-2 public trace or be
+described as the production learner carrier.
 
 `ScoringTerm` is `(goal_reward, action_cost, fallback_reward,
 violation_penalty)`, all signed integers except that `action_cost` MUST be
@@ -234,6 +318,11 @@ malformed wires; monitor sources; visibility leaks; public support ports;
 malformed process/reveal outputs; duplicate process names; unknown interrupted
 process; zero resource budget; and malformed couplings.
 
+Every configuration cell named by a norm leaf or an `OnCellEntry` guard MUST
+belong to the environment state space. Rejection occurs before execution. This
+is a denotation-validity check and does not authorize publication of the norm
+or guard.
+
 A restoration MUST target one initially unsupported movement action and use a
 public signal output. `Override` and `Conflict` MUST have a writer.
 `Conflict` MUST have at most one declared writer; this conservative rule avoids
@@ -294,7 +383,8 @@ this order:
    the sensorium publishes cells. If calibration exists with
    `publishes_cells=false`, no calibration cell (including no synthesized start
    cell) is emitted;
-2. a deterministic compact code for a public norm, if any;
+2. under the version-2 trace profile, the frozen deterministic compact code for
+   a public norm, if any;
 3. restoration announcement values;
 4. public guarded process signals and reveals at start;
 5. for every scored action until fallback, a public resulting cell (when
@@ -346,8 +436,11 @@ by the reference's derived `Serialize`, the `serde_json` bytes it produces,
 the sorting/normalization above, and BLAKE3 over those exact bytes. Thus its
 canonical bytes and hash are reproducible by rebuilding the reference, rather
 than a language-neutral wire standard defined by this document. The exact
-`norm_code` algorithm above is separately fixed for public-trace
-compatibility.
+version-2 `norm_code` algorithm above is separately fixed for public-trace
+compatibility. A family hash identifies the semantic term; it does not by
+itself identify a renderer or public-trace profile. Any new carrier profile
+therefore needs its own recorded version even when the underlying term and
+family hash are unchanged.
 
 Seed/index changes MUST NOT alter the hash. Version-1 ring fixtures can be
 replayed through the explicit legacy ring encoding for migration; their
@@ -452,6 +545,14 @@ separate acceptance test that reruns `GenerationSpec` plus index and compares
 terms, receipts, and hashes; `verify()` itself only recomputes the finite
 semantic receipt. Neither is performance evidence.
 
+The current generated family uses one bare `Settle` goal, so
+`goal_differs_from_start` has the narrow definition in the table. Before
+composite norms are generated, nondegeneracy MUST be defined through norm
+semantics at the initial configuration. It MUST NOT be approximated by
+requiring every `Settle` or `Visit` atom to differ from start: for example,
+`Both(Visit(start), Settle(other))` can be nondegenerate even though one atom
+names the start.
+
 ## 11. Worked example
 
 Let `n=5` and `H=2`. Then `start=0`, `goal=4`, and calibration is
@@ -483,7 +584,9 @@ A conforming implementation MUST:
 8. expose executable topology diagnostics and receipt state/row/scope facts;
 9. reject graph displacement couplings and nonzero graph actuator displacement;
 10. use canonical serialization plus BLAKE3 for semantic family identity,
-    reporting schema version 2 and the tested legacy ring migration mapping.
+    reporting schema version 2 and the tested legacy ring migration mapping;
+11. preserve the version-2 `norm_code` public trace unless a separately
+    versioned carrier profile satisfying Section 3 is selected.
 
 A conforming implementation SHOULD expose a `verify()` operation that
 recomputes a receipt from returned terms. It MAY expose diagnostics, but those
@@ -499,6 +602,13 @@ semantic identity, and validity receipts rechecked from executable semantics.
 Any extension that changes meaning MUST change the family hash and define new
 conformance tests.
 
+Goal-carrier extensions SHOULD be implemented as typed adapters over the
+compiler's denotation/publication boundary. A symbolic description is one
+carrier among several; it MUST NOT become the superclass through which
+language, observations, or demonstrations are forced. Carrier/profile changes
+that preserve world semantics MAY keep the semantic family hash, but MUST
+change the separately recorded learner/public-trace profile identity.
+
 ## 14. Known limits
 
 - Configuration is a finite deterministic ring or explicit graph only; there
@@ -511,8 +621,9 @@ conformance tests.
 - Interrupt execution freezes named public process signals when declared
   frozen; it does not model general process state, continuation, restart, or a
   scheduler-level displaced process.
-- Public norm publication is a compact deterministic integer code, not a
-  separately specified wire format.
+- Version-2 public norm publication is an opaque, non-injective deterministic
+  integer retained for replay compatibility; it is not a semantic goal
+  carrier. No version-3 structured carrier is implemented.
 - The receipt does not establish robustness outside finite support, rendering
   correctness, learner acquisition, or transfer.
 
