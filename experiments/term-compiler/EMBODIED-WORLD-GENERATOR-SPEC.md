@@ -27,6 +27,48 @@ simulator, continuous controller, stochastic process language, learner API,
 renderer, or universal process scheduler. A valid receipt is finite semantic
 evidence, not evidence of usefulness or learnability.
 
+### Architecture ladder and implementation status
+
+The project separates source expressivity from execution. The layers are:
+
+| Layer | Status | Responsibility |
+|---|---|---|
+| Ring | Implemented | Compact cyclic topology with primitive displacement actions. |
+| General finite graph | Implemented | Arbitrary finite deterministic transition rows with explicit self-loop defaults. This is the common execution IR. |
+| Factored finite source | Gate-0 experiment only | Finite objects, properties, relations, preconditions, effects, and public projections; accepted models must ground into the graph IR. |
+| Learner goal/prompt adapter | Specified, not integrated | Presents symbolic, language, goal-observation, or demonstration carriers without exposing privileged source semantics. |
+
+The graph IR is extensionally sufficient for any fixed deterministic finite
+world: enumerate each legal fluent valuation as a state and each grounded
+action result as a transition. It is not intentionally factored. Once grounded
+to opaque state identifiers, the graph no longer states that two configurations
+differ only by an object permutation, that an action updates the selected
+object, or that a relation persists across a channel reassignment. More trees
+or other graph shapes therefore improve executor coverage but do not add this
+relational meaning.
+
+The candidate factored layer is a deterministic finite subset of RDDL. It
+admits finite object domains, finite-valued fluents, finite grounded actions,
+deterministic preconditions/effects, finite reward/termination, and an explicit
+public projection. It excludes random distributions, continuous variables,
+external functions, and concurrent joint actions. Accepted source provenance
+must remain available to privileged audits and canonical identity, while the
+same graph executor remains the only runtime backend.
+
+The existing Gate-0 witness uses maintained `pyRDDLGym` grounding to exhaust a
+two-source visible-reassignment model and its preserving and
+meaning-changing variants. It checks public/private separation and relational
+permutations, but it is not a Rust lowering, generated family, card migration,
+learner renderer, or training result. Factored lowering remains paused until
+the learner-facing prompt/goal contract is versioned and executable.
+
+A factored source may define a relational goal denotation, such as “change the
+source identified before reassignment,” but it does not determine how that goal
+is presented. Symbolic syntax, language, observations, and demonstrations
+remain alternate carriers owned by the learner-interface adapter. Grounding a
+factored denotation into the graph MUST NOT automatically publish object IDs,
+hidden relations, target assignments, or other privileged source structure.
+
 ## 2. Mathematical/executable model
 
 The configuration space is either a compact ring `C = {0, ..., n-1}` or a
