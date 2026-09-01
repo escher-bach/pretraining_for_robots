@@ -31,7 +31,8 @@ domain visible-reassignment {
     };
 
     cpfs {
-        assigned'(?s, ?c) = if (~boundary-fired) then target-map(?s, ?c) else assigned(?s, ?c);
+        assigned'(?s, ?c) = if (~boundary-fired ^ exists_{?c2 : channel} [pulse(?c2)])
+            then target-map(?s, ?c) else assigned(?s, ?c);
         // The intervention itself creates the only distinguishing public
         // evidence. Sources begin exchangeable; pulsing a channel increments
         // whichever hidden source is assigned there before reassignment.
@@ -40,7 +41,10 @@ domain visible-reassignment {
         bound'(?s) = if (~boundary-fired) then
             exists_{?c : channel} [pulse(?c) ^ assigned(?s, ?c)]
             else bound(?s);
-        boundary-fired' = true;
+        // Reassignment is caused by an intervention, not by elapsed time or
+        // a noop.  This leaves the original source/channel relation intact
+        // until the first pulse actually binds a source.
+        boundary-fired' = boundary-fired | exists_{?c : channel} [pulse(?c)];
         channel-value(?c) = sum_{?s : source}
             if (assigned'(?s, ?c)) then source-value'(?s) else 0;
         boundary = boundary-fired';
