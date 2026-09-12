@@ -1,5 +1,17 @@
 # Repository Working Agreement
 
+## Current user authorization — 2026-09-12
+
+The user explicitly directs end-to-end implementation of a stronger compiler-backed
+procedural training system and meaningful larger GPU training. This supersedes
+the older smallest-step, CPU-first, fixed-20-update and per-stage user-review
+restrictions below. Build and integrate the required compiler, composed trajectory
+worlds, shared learner/data path, and GPU execution without additional approval
+gates. Use CPU for build/semantic checks, GPU for training. Preserve scientific
+honesty and public/private boundaries; repair defects instead of bypassing them.
+Use Luna implementation agents and Astra integrated review. Stop safely if the
+five-hour account usage reaches 95% used, preserving exact continuation state.
+
 Read `GOAL.md`, `LEARNER-INPUT-ARCHITECTURE.md`, `META-PROCESS.md`,
 `EMBODIED-PROCESS.md`, `DEVELOPMENT-PATH.md`, and `CARDS.md` before selecting
 work. Use `APPARATUS.md` for code and run commands, and `HANDOFF.md` for where

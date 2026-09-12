@@ -180,7 +180,14 @@ def verify_remote_sha(remote: str, sha: str) -> str:
     return remote_url
 
 
-def notebook(repo_url: str, sha: str, config: str, output_root: str) -> dict[str, Any]:
+def notebook(
+    repo_url: str,
+    sha: str,
+    config: str,
+    output_root: str,
+    *,
+    notebook_timeout_seconds: int = 6000,
+) -> dict[str, Any]:
     code1 = f'''from pathlib import Path
 import os
 import subprocess
@@ -222,7 +229,7 @@ cmd = [
 # Outermost guard. The runner arms its own wall-clock watchdog; this one
 # covers the case where the runner process itself wedges and cannot enforce
 # it. Kaggle would otherwise hold the session until the platform limit.
-NOTEBOOK_TIMEOUT_SECONDS = 6000
+NOTEBOOK_TIMEOUT_SECONDS = __NOTEBOOK_TIMEOUT_SECONDS__
 try:
     completed = subprocess.run(cmd, cwd=str(SOURCE), env=env, check=False, timeout=NOTEBOOK_TIMEOUT_SECONDS)
 except subprocess.TimeoutExpired:
@@ -230,6 +237,8 @@ except subprocess.TimeoutExpired:
 if completed.returncode != 0:
     raise RuntimeError(f"pretraining runner failed with exit code {{completed.returncode}}; evidence is retained under {{OUTPUT}}")
 '''
+    code3 = code3.replace("__NOTEBOOK_TIMEOUT_SECONDS__", str(notebook_timeout_seconds))
+
     def cell(source: str) -> dict[str, Any]:
         return {
             "cell_type": "code",
@@ -271,6 +280,8 @@ def launch(name: str) -> str:
     config_bytes = subprocess.check_output(["git", "show", f"{sha}:{config}"], cwd=ROOT)
     config_data = tomllib.loads(config_bytes.decode("utf-8"))
     config_sha256 = hashlib.sha256(config_bytes).hexdigest()
+    run_budget = int(config_data["run"].get("max_wall_clock_seconds", 4800))
+    notebook_timeout = run_budget + 1200
     dirty = command_output(["git", "status", "--porcelain"])
     if dirty:
         print("Working tree has uncommitted files; the run still uses only the verified HEAD commit:")
@@ -280,7 +291,13 @@ def launch(name: str) -> str:
         notebook_name = "pretraining_t4x2_launcher.ipynb"
         (staging / notebook_name).write_text(
             json.dumps(
-                notebook(repo_url, sha, config, str(data["output_root"])),
+                notebook(
+                    repo_url,
+                    sha,
+                    config,
+                    str(data["output_root"]),
+                    notebook_timeout_seconds=notebook_timeout,
+                ),
                 indent=1,
             ),
             encoding="utf-8",
@@ -368,10 +385,11 @@ def collect(kernel: str) -> Path:
     pattern = (
         r"(^|/)(summary|training-result|architecture-gate-progress|cpu-benchmark|world-validation|"
         r"trivial-policy-baselines|seed-gate-receipt|timing-preflight-receipt|phase_status|environment|audit-manifest)\.json$"
+        r"|(^|/)(compiled-processes|compiled-processes-provenance)\.json$"
         r"|(^|/)first-training/scientific_receipt\.json$"
         r"|(^|/)logs/(pip-install|rustup-download|rustup-install|rust-toolchain|maturin-build|"
         r"world-wheel-install|rust-tests|python-tests|world-validation|cpu-benchmark|"
-        r"trivial-policy-baselines|gpu-training|seed-gate|first-training)\.log$"
+        r"trivial-policy-baselines|gpu-training|seed-gate|process-export|first-training)\.log$"
     )
     command_run(
         [
@@ -446,6 +464,7 @@ def collect(kernel: str) -> Path:
             "world_size", summary.get("scientific_execution", {}).get("world_size")
         ),
         "scientific_execution": summary.get("scientific_execution"),
+        "compiled_processes": summary.get("compiled_processes"),
         "upstream_kaggle_versions": [],
         "model_sha256": summary.get("model_sha256"),
         "recovery_artifact": summary.get("recovery_artifact"),

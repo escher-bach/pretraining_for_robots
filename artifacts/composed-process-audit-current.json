@@ -1,0 +1,547 @@
+{
+  "export_count": 8,
+  "programs": [
+    {
+      "calibration_times": [
+        0.0,
+        0.1,
+        0.2,
+        0.30000000000000004
+      ],
+      "contract_hash": "5c84a09e7a2a90ef267ae8d8701623be731ba0e70d268bdaec4d7b2848cabb4e",
+      "event_count": 48,
+      "goal_count": 1,
+      "name": "reaching-0000",
+      "process": {
+        "action_dim": 2,
+        "actuator_lag": 1.0,
+        "components": [
+          "reach"
+        ],
+        "disturbance_scale": 0.0,
+        "disturbance_start_step": null,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": null,
+        "horizon": 12,
+        "name": "reaching-0000",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "zero_disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "public_forbidden_fields": {
+        "body_map": false,
+        "disturbance_start_step": false,
+        "initial_state": false,
+        "process_ir": false,
+        "seed": false,
+        "sensor_matrix": false
+      },
+      "supervision_count": 12,
+      "teacher_metrics": {
+        "action_dim": 2,
+        "goal_switch_count": 0,
+        "schema_version": "composed-process-physical-metrics-v1",
+        "scored_steps": 12,
+        "sensor_dim": 8,
+        "state_error_l2": 5.167645981891308e-11,
+        "success": true
+      }
+    },
+    {
+      "calibration_times": [
+        0.0,
+        0.1,
+        0.2,
+        0.30000000000000004
+      ],
+      "contract_hash": "1a3c95637727b918689da22892c1b58af0fecf307f76c56a723a5f4b0bc425c2",
+      "event_count": 75,
+      "goal_count": 1,
+      "name": "actuator-lag-0001",
+      "process": {
+        "action_dim": 2,
+        "actuator_lag": 0.25,
+        "components": [
+          "reach",
+          "actuator_lag"
+        ],
+        "disturbance_scale": 0.0,
+        "disturbance_start_step": null,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": null,
+        "horizon": 21,
+        "name": "actuator-lag-0001",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "actuator_lag.command"
+          ],
+          [
+            "actuator_lag.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "zero_disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "public_forbidden_fields": {
+        "body_map": false,
+        "disturbance_start_step": false,
+        "initial_state": false,
+        "process_ir": false,
+        "seed": false,
+        "sensor_matrix": false
+      },
+      "supervision_count": 21,
+      "teacher_metrics": {
+        "action_dim": 2,
+        "goal_switch_count": 0,
+        "schema_version": "composed-process-physical-metrics-v1",
+        "scored_steps": 21,
+        "sensor_dim": 8,
+        "state_error_l2": 9.987322844880677e-06,
+        "success": true
+      }
+    },
+    {
+      "calibration_times": [
+        0.0,
+        0.1,
+        0.2,
+        0.30000000000000004
+      ],
+      "contract_hash": "4c9747530a9a25da16721768e014401e7bdae68c0c630cb5a1b6f10c5d81c5da",
+      "event_count": 82,
+      "goal_count": 2,
+      "name": "goal-switch-0002",
+      "process": {
+        "action_dim": 2,
+        "actuator_lag": 1.0,
+        "components": [
+          "reach",
+          "goal_switch"
+        ],
+        "disturbance_scale": 0.0,
+        "disturbance_start_step": null,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": 11,
+        "horizon": 23,
+        "name": "goal-switch-0002",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "goal.out",
+            "goal_switch.goal"
+          ],
+          [
+            "goal_switch.out",
+            "goal_observation.goal"
+          ],
+          [
+            "zero_disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "public_forbidden_fields": {
+        "body_map": false,
+        "disturbance_start_step": false,
+        "initial_state": false,
+        "process_ir": false,
+        "seed": false,
+        "sensor_matrix": false
+      },
+      "supervision_count": 23,
+      "teacher_metrics": {
+        "action_dim": 2,
+        "goal_switch_count": 1,
+        "schema_version": "composed-process-physical-metrics-v1",
+        "scored_steps": 23,
+        "sensor_dim": 8,
+        "state_error_l2": 1.8561737037335378e-14,
+        "success": true
+      }
+    },
+    {
+      "calibration_times": [
+        0.0,
+        0.1,
+        0.2,
+        0.30000000000000004
+      ],
+      "contract_hash": "f760c1a76612e3faa20042a5effc10562e51f47a144262cb7a96a52a541c24da",
+      "event_count": 57,
+      "goal_count": 1,
+      "name": "disturbance-0003",
+      "process": {
+        "action_dim": 2,
+        "actuator_lag": 1.0,
+        "components": [
+          "reach",
+          "disturbance"
+        ],
+        "disturbance_scale": 0.035,
+        "disturbance_start_step": 5,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": null,
+        "horizon": 15,
+        "name": "disturbance-0003",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "public_forbidden_fields": {
+        "body_map": false,
+        "disturbance_start_step": false,
+        "initial_state": false,
+        "process_ir": false,
+        "seed": false,
+        "sensor_matrix": false
+      },
+      "supervision_count": 15,
+      "teacher_metrics": {
+        "action_dim": 2,
+        "goal_switch_count": 0,
+        "schema_version": "composed-process-physical-metrics-v1",
+        "scored_steps": 15,
+        "sensor_dim": 8,
+        "state_error_l2": 0.0021098477997795674,
+        "success": true
+      }
+    },
+    {
+      "calibration_times": [
+        0.0,
+        0.1,
+        0.2,
+        0.30000000000000004
+      ],
+      "contract_hash": "03855744d8e46d824f63900b2c10f419df2968ff57a10d40497e611da88d992c",
+      "event_count": 52,
+      "goal_count": 2,
+      "name": "actuator-lag-goal-switch-0004",
+      "process": {
+        "action_dim": 2,
+        "actuator_lag": 0.25,
+        "components": [
+          "reach",
+          "actuator_lag",
+          "goal_switch"
+        ],
+        "disturbance_scale": 0.0,
+        "disturbance_start_step": null,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": 6,
+        "horizon": 13,
+        "name": "actuator-lag-goal-switch-0004",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "actuator_lag.command"
+          ],
+          [
+            "actuator_lag.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "goal.out",
+            "goal_switch.goal"
+          ],
+          [
+            "goal_switch.out",
+            "goal_observation.goal"
+          ],
+          [
+            "zero_disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "public_forbidden_fields": {
+        "body_map": false,
+        "disturbance_start_step": false,
+        "initial_state": false,
+        "process_ir": false,
+        "seed": false,
+        "sensor_matrix": false
+      },
+      "supervision_count": 13,
+      "teacher_metrics": {
+        "action_dim": 2,
+        "goal_switch_count": 1,
+        "schema_version": "composed-process-physical-metrics-v1",
+        "scored_steps": 13,
+        "sensor_dim": 8,
+        "state_error_l2": 0.0004697664637650172,
+        "success": true
+      }
+    },
+    {
+      "calibration_times": [
+        0.0,
+        0.1,
+        0.2,
+        0.30000000000000004
+      ],
+      "contract_hash": "4db1ce543c874b14afc8502aa9b9cbe3e1cacaa2adab7eebac9d5004dd238067",
+      "event_count": 57,
+      "goal_count": 1,
+      "name": "actuator-lag-disturbance-0005",
+      "process": {
+        "action_dim": 2,
+        "actuator_lag": 0.25,
+        "components": [
+          "reach",
+          "actuator_lag",
+          "disturbance"
+        ],
+        "disturbance_scale": 0.035,
+        "disturbance_start_step": 5,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": null,
+        "horizon": 15,
+        "name": "actuator-lag-disturbance-0005",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "actuator_lag.command"
+          ],
+          [
+            "actuator_lag.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "public_forbidden_fields": {
+        "body_map": false,
+        "disturbance_start_step": false,
+        "initial_state": false,
+        "process_ir": false,
+        "seed": false,
+        "sensor_matrix": false
+      },
+      "supervision_count": 15,
+      "teacher_metrics": {
+        "action_dim": 2,
+        "goal_switch_count": 0,
+        "schema_version": "composed-process-physical-metrics-v1",
+        "scored_steps": 15,
+        "sensor_dim": 8,
+        "state_error_l2": 0.002313431994842731,
+        "success": true
+      }
+    },
+    {
+      "calibration_times": [
+        0.0,
+        0.1,
+        0.2,
+        0.30000000000000004
+      ],
+      "contract_hash": "69454523e34ef99e365ff65168941e4220522715f2402ae069bb20f04aaf7323",
+      "event_count": 52,
+      "goal_count": 2,
+      "name": "goal-switch-disturbance-0006",
+      "process": {
+        "action_dim": 2,
+        "actuator_lag": 1.0,
+        "components": [
+          "reach",
+          "goal_switch",
+          "disturbance"
+        ],
+        "disturbance_scale": 0.035,
+        "disturbance_start_step": 4,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": 6,
+        "horizon": 13,
+        "name": "goal-switch-disturbance-0006",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "goal.out",
+            "goal_switch.goal"
+          ],
+          [
+            "goal_switch.out",
+            "goal_observation.goal"
+          ],
+          [
+            "disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "public_forbidden_fields": {
+        "body_map": false,
+        "disturbance_start_step": false,
+        "initial_state": false,
+        "process_ir": false,
+        "seed": false,
+        "sensor_matrix": false
+      },
+      "supervision_count": 13,
+      "teacher_metrics": {
+        "action_dim": 2,
+        "goal_switch_count": 1,
+        "schema_version": "composed-process-physical-metrics-v1",
+        "scored_steps": 13,
+        "sensor_dim": 8,
+        "state_error_l2": 0.0028032118888032093,
+        "success": true
+      }
+    },
+    {
+      "calibration_times": [
+        0.0,
+        0.1,
+        0.2,
+        0.30000000000000004
+      ],
+      "contract_hash": "db934ed7cf12161241b338dfab8c96c1e55aab532de1e05c825c5f5138431d11",
+      "event_count": 55,
+      "goal_count": 2,
+      "name": "actuator-lag-goal-switch-disturbance-0007",
+      "process": {
+        "action_dim": 2,
+        "actuator_lag": 0.25,
+        "components": [
+          "reach",
+          "actuator_lag",
+          "goal_switch",
+          "disturbance"
+        ],
+        "disturbance_scale": 0.035,
+        "disturbance_start_step": 4,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": 7,
+        "horizon": 14,
+        "name": "actuator-lag-goal-switch-disturbance-0007",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "actuator_lag.command"
+          ],
+          [
+            "actuator_lag.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "goal.out",
+            "goal_switch.goal"
+          ],
+          [
+            "goal_switch.out",
+            "goal_observation.goal"
+          ],
+          [
+            "disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "public_forbidden_fields": {
+        "body_map": false,
+        "disturbance_start_step": false,
+        "initial_state": false,
+        "process_ir": false,
+        "seed": false,
+        "sensor_matrix": false
+      },
+      "supervision_count": 14,
+      "teacher_metrics": {
+        "action_dim": 2,
+        "goal_switch_count": 1,
+        "schema_version": "composed-process-physical-metrics-v1",
+        "scored_steps": 14,
+        "sensor_dim": 8,
+        "state_error_l2": 0.001986628114993871,
+        "success": true
+      }
+    }
+  ],
+  "schema_version": "composed-process-audit-v2",
+  "source": "rust-process-export"
+}

@@ -24,6 +24,13 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 
+pub mod process;
+pub use process::{
+    compile_process, generate_processes, CompiledProcess, GeneratedProcess, ProcessCompileError,
+    ProcessFamily, ProcessNode, ProcessNodeKind, ProcessPort, ProcessPortKind, ProcessVisibility,
+    ProcessWiring, PublicSchema, RuntimePrivate, PROCESS_SCHEMA_VERSION,
+};
+
 /// Version of the canonical term encoding used by [`WorldTerm::family_hash`].
 /// Version 1 was the ring-only shape; version 2 separates body morphology from
 /// environment state space and therefore intentionally changes ring digests.

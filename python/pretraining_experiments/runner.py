@@ -40,6 +40,16 @@ def entrypoint_for_config(config: dict[str, Any]) -> str:
     return entrypoint
 
 
+def config_seed(config: dict[str, Any]) -> int:
+    """Resolve the reproducibility seed from either profile layout."""
+    value = config.get("run", {}).get("seed")
+    if value is None:
+        value = config.get("system", {}).get("seed")
+    if value is None:
+        raise ValueError("first-system config does not declare a seed")
+    return int(value)
+
+
 def repository_root(config_path: Path) -> Path:
     """Find the checkout root for configs at either supported depth."""
     for candidate in config_path.parent, *config_path.parent.parents:
@@ -61,6 +71,28 @@ def atomic_json(path: Path, value: Any) -> None:
     temporary = path.with_suffix(path.suffix + ".partial")
     temporary.write_text(json.dumps(value, indent=2, sort_keys=True), encoding="utf-8")
     temporary.replace(path)
+
+
+def manifest_artifacts(output_root: Path) -> list[dict[str, Any]]:
+    """List compact evidence while leaving checkpoint trees on Kaggle."""
+    excluded = {"audit-manifest.json", "summary.json", "receipt.json"}
+    artifacts: list[dict[str, Any]] = []
+    for path in sorted(output_root.rglob("*")):
+        if not path.is_file() or any(
+            part == "checkpoints" or part.startswith("checkpoint-") for part in path.parts
+        ):
+            continue
+        relative = path.relative_to(output_root).as_posix()
+        if relative in excluded:
+            continue
+        artifacts.append(
+            {
+                "path": relative,
+                "size": path.stat().st_size,
+                "sha256": sha256_file(path),
+            }
+        )
+    return artifacts
 
 
 def kill_process_tree(process: subprocess.Popen) -> None:
@@ -126,7 +158,13 @@ def start_wall_clock_watchdog(budget: int, output_root: Path, context: dict[str,
             )
             atomic_json(
                 output_root / "audit-manifest.json",
-                {"status": "failed", "error": message, "artifacts": []},
+                {
+                    "status": "failed",
+                    "error": message,
+                    "git_sha": context.get("git_sha"),
+                    "config_sha256": context.get("config_sha256"),
+                    "artifacts": manifest_artifacts(output_root),
+                },
             )
         except Exception:  # the exit must happen even if evidence cannot be written
             pass
@@ -283,6 +321,13 @@ def main() -> None:
             + env.get("PYTHONPATH", ""),
         }
     )
+    source_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        text=True,
+        stdout=subprocess.PIPE,
+        check=False,
+    ).stdout.strip()
 
     start_wall_clock_watchdog(
         int(config["run"].get("max_wall_clock_seconds", 4800)),
@@ -291,6 +336,7 @@ def main() -> None:
             "purpose": config["run"]["purpose"],
             "checkpoint_label": config["run"].get("checkpoint_label", entrypoint_for_config(config)),
             "config_sha256": sha256_text(config_text),
+            "git_sha": source_sha,
         },
     )
 
@@ -462,6 +508,51 @@ def main() -> None:
             return
 
         if entrypoint == "first_training":
+            # Compile the process programs once from the exact Rust checkout.
+            # Python trajectory generation consumes this immutable export; it
+            # never reconstructs a family graph from a string preset.
+            phase_update(phase_path, phases, "process_export", "running")
+            compiled_processes = output_root / "compiled-processes.json"
+            compiled_log = logs / "process-export.log"
+            compiled_log.parent.mkdir(parents=True, exist_ok=True)
+            with compiled_processes.open("w", encoding="utf-8") as handle, compiled_log.open("w", encoding="utf-8") as log:
+                command = [
+                    "cargo", "run", "--quiet", "--locked", "-p",
+                    "pretraining-term-compiler", "--bin", "process-export", "--",
+                    "--seed", str(config_seed(config)), "--count", "32",
+                ]
+                log.write("$ " + " ".join(command) + "\n")
+                completed = subprocess.run(
+                    command,
+                    cwd=repo,
+                    env=env,
+                    text=True,
+                    stdout=handle,
+                    stderr=log,
+                    check=False,
+                    timeout=effective_timeout(900),
+                )
+                if completed.returncode:
+                    raise RuntimeError(f"process export failed with exit code {completed.returncode}; log: {compiled_log}")
+            export_sha256 = sha256_file(compiled_processes)
+            provenance_path = output_root / "compiled-processes-provenance.json"
+            provenance = {
+                "source_git_sha": source_sha,
+                "config_sha256": sha256_text(config_text),
+                "export_sha256": export_sha256,
+                "seed": config_seed(config),
+                "count": 32,
+                "path": str(compiled_processes),
+                "command": command,
+            }
+            atomic_json(provenance_path, provenance)
+            phase_update(
+                phase_path, phases, "process_export", "complete",
+                path=str(compiled_processes), sha256=export_sha256, count=32,
+                seed=provenance["seed"], source_git_sha=provenance["source_git_sha"],
+                config_sha256=provenance["config_sha256"],
+                provenance_path=str(provenance_path),
+            )
             phase_update(phase_path, phases, "first_training", "running")
             first_output = output_root / "first-training"
             first_env = env.copy()
@@ -475,6 +566,7 @@ def main() -> None:
                 first_env["CUDA_VISIBLE_DEVICES"] = visible or "0"
                 for name in ("WORLD_SIZE", "RANK", "LOCAL_RANK", "LOCAL_WORLD_SIZE"):
                     first_env.pop(name, None)
+            first_env["PRETRAINING_COMPILED_PROCESSES"] = str(compiled_processes)
             run_logged(
                 [
                     sys.executable,
@@ -488,7 +580,12 @@ def main() -> None:
                 cwd=repo,
                 env=first_env,
                 log_path=logs / "first-training.log",
-                timeout=int(config["run"].get("first_training_phase_timeout_seconds", 1800)),
+                timeout=int(
+                    config["run"].get(
+                        "first_training_phase_timeout_seconds",
+                        config["run"].get("max_wall_clock_seconds", 1800),
+                    )
+                ),
             )
             receipt_path = first_output / "scientific_receipt.json"
             if not receipt_path.is_file():
@@ -616,16 +713,7 @@ def main() -> None:
         error = f"{type(exc).__name__}: {exc}\n{traceback.format_exc()}"
         print(error, file=sys.stderr, flush=True)
     finally:
-        artifacts = []
-        for path in sorted(output_root.rglob("*")):
-            if path.is_file() and "checkpoints" not in path.parts:
-                artifacts.append(
-                    {
-                        "path": path.relative_to(output_root).as_posix(),
-                        "size": path.stat().st_size,
-                        "sha256": sha256_file(path),
-                    }
-                )
+        artifacts = manifest_artifacts(output_root)
         manifest = {
             "status": status,
             "error": error,
@@ -693,6 +781,9 @@ def main() -> None:
             )
         if scientific_execution is not None:
             summary["scientific_execution"] = scientific_execution
+        provenance_path = output_root / "compiled-processes-provenance.json"
+        if provenance_path.exists():
+            summary["compiled_processes"] = json.loads(provenance_path.read_text(encoding="utf-8"))
         atomic_json(output_root / "summary.json", summary)
 
     if status != "complete":

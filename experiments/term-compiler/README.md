@@ -21,6 +21,13 @@ WorldTerm -> validate -> lower -> CompiledFragment + CompiledContract
 noninterference, ambiguity, and orbit queries can therefore operate on a
 compiled term without changing the shared audit kernel.
 
+The continuous process bridge in `crates/term-compiler/src/process.rs` uses the
+same typed port boundary for a bounded composition library. Its exporter emits
+all eight combinations of optional actuator lag, goal switch, and disturbance
+operators; the Python runtime consumes the serialized graph and lowered values
+for batch generation. This is procedural composition within those explicit
+operators, not a general DAG executor or process scheduler.
+
 The first-class term components are:
 
 - `BodyTerm`: `Morphology`, `Actuation`, `Sensorium`, action roles, and body

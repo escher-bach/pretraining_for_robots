@@ -4,6 +4,19 @@
 
 ## Active route: first viable training system
 
+The 2026-09-12 user directive supersedes the incremental pilot route: implement
+the compiler-backed procedural system and execute meaningful GPU training as one
+integrated work item. The completed pilot remains evidence, not an approval gate.
+
+| Current delivery | State | Required outcome |
+|---|---|---|
+| Compiler-backed procedural GPU system | Eight-composition compiler/runtime and larger GPU path implemented; integrated readiness verification | Validated process compositions produce public trajectories across embodiments through the shared learner; meaningful GPU run with checkpoint, per-process evaluation and an inspected generated episode. |
+
+Compiler, trajectory-runtime, and training/platform work proceed concurrently.
+Local work is limited to implementation and correctness checks; optimization runs
+use GPU. Structural variety and temporal dependence must be executable rather
+than labels attached to the original memoryless family.
+
 The immediate route is a coherent sampled trajectory system. Historical rows
 below preserve evidence; their old gate language is not the active selector.
 

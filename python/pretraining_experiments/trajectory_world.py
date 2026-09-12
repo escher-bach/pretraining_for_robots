@@ -1045,3 +1045,29 @@ def teacher_public_only() -> bool:
 
     parameters = inspect.signature(PublicHistoryTeacher.action_for).parameters
     return tuple(parameters) == ("self", "history", "action_bounds")
+
+
+# The historical V2 API above remains stable.  The compiler-backed runtime is
+# exposed lazily so importing ``process_runtime`` directly does not create a
+# circular import through this compatibility module.
+_PROCESS_RUNTIME_EXPORTS = {
+    "PROCESS_CONTRACT_VERSION",
+    "PROCESS_TEACHER_VERSION",
+    "PROCESS_WORLD_VERSION",
+    "ProcessEnvironment",
+    "ProcessIR",
+    "ProcessRollout",
+    "ProcessWorldFactory",
+    "TimedPublicProcessTeacher",
+    "compose_processes",
+    "generate_composed_episode",
+    "process_public_only",
+}
+
+
+def __getattr__(name: str):
+    if name in _PROCESS_RUNTIME_EXPORTS:
+        from . import process_runtime
+
+        return getattr(process_runtime, name)
+    raise AttributeError(name)

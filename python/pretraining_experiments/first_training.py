@@ -9,6 +9,7 @@ import hashlib
 import argparse
 import json
 import tomllib
+import os
 from contextlib import nullcontext
 from dataclasses import replace
 
@@ -53,12 +54,19 @@ class FirstTrainingConfig:
     max_grad_norm: float = 1.0
     smoke_steps: int = 2
     resumed_steps: int = 3
+    # Scientific runs checkpoint frequently enough that a wall-clock stop
+    # leaves a usable continuation point.  The apparatus smoke path passes
+    # smoke_steps explicitly and therefore keeps its original cadence.
+    save_steps: int = 256
     world: CalibratedReachConfig = field(default_factory=CalibratedReachConfig)
     sensor_dims: tuple[int, ...] = (8, 10)
     action_dims: tuple[int, ...] = (2, 4)
     goal_modes: tuple[str, ...] = ("absolute", "relative")
     goal_switch_steps: tuple[int, ...] = (-1,)
     disturbance_arms: tuple[bool, ...] = (False,)
+    families: tuple[str, ...] = ("calibrated_reach_v2",)
+    episode_seed_stride: int = 7919
+    compiled_processes_path: str | None = None
     held_out_episodes: int = 0
     evaluation_checkpoints: tuple[int, ...] = (0,)
     closed_loop_checkpoints: tuple[int, ...] = (0,)
@@ -93,9 +101,18 @@ def build_first_system(config: FirstTrainingConfig) -> CommonContentBundle:
 
 
 def _training_arguments(
-    output_dir: Path, config: FirstTrainingConfig, *, max_steps: int, save: bool
+    output_dir: Path,
+    config: FirstTrainingConfig,
+    *,
+    max_steps: int,
+    save: bool,
+    save_steps: int | None = None,
 ) -> TrainingArguments:
     device = _resolve_device(config)
+    if save_steps is None:
+        save_steps = config.smoke_steps
+    if save_steps <= 0:
+        raise ValueError("save_steps must be positive")
     return TrainingArguments(
         output_dir=str(output_dir),
         do_train=True,
@@ -115,7 +132,9 @@ def _training_arguments(
         save_strategy="steps" if save else "no",
         # Keep this stable across the resumed Trainer construction so loading
         # a checkpoint does not silently change the serialized cadence.
-        save_steps=config.smoke_steps,
+        # Keep a final checkpoint even when a short fixed run has fewer than
+        # the scientific cadence.  For the large profile this remains 256.
+        save_steps=min(save_steps, max_steps),
         save_total_limit=2,
         eval_strategy="no",
         prediction_loss_only=True,
@@ -155,6 +174,75 @@ def _evaluation_autocast(config: FirstTrainingConfig, model: torch.nn.Module):
     return nullcontext()
 
 
+def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
+    """Replace a JSON receipt atomically, preserving the last good receipt."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".partial")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    temporary.replace(path)
+
+
+def _latest_checkpoint(output_dir: Path) -> Path | None:
+    checkpoints = []
+    for candidate in output_dir.glob("checkpoint-*"):
+        if not candidate.is_dir():
+            continue
+        try:
+            step = int(candidate.name.split("-", 1)[1])
+        except (IndexError, ValueError):
+            continue
+        checkpoints.append((step, candidate))
+    return max(checkpoints, default=(0, None), key=lambda item: item[0])[1]
+
+
+def _resume_identity(payload: dict[str, Any]) -> dict[str, Any]:
+    """Keep semantic run identity while ignoring operational path/cadence fields."""
+    identity = dict(payload)
+    for key in ("compiled_processes_path", "max_wall_clock_seconds", "save_steps"):
+        identity.pop(key, None)
+    # JSON canonicalization makes dataclass tuples comparable to receipt lists.
+    return json.loads(json.dumps(identity, sort_keys=True))
+
+
+def _load_resume_contract(
+    output_dir: Path,
+    config: FirstTrainingConfig,
+    resume_from_checkpoint: str | Path,
+) -> tuple[Path, dict[str, Any], int]:
+    """Validate a continuation checkpoint against the scientific receipt."""
+    checkpoint = Path(resume_from_checkpoint)
+    if not checkpoint.is_dir():
+        raise ValueError(f"resume checkpoint does not exist: {checkpoint}")
+    state_path = checkpoint / "trainer_state.json"
+    if not state_path.is_file():
+        raise ValueError(f"resume checkpoint is missing trainer_state.json: {checkpoint}")
+    try:
+        trainer_state = json.loads(state_path.read_text(encoding="utf-8"))
+        step = int(trainer_state["global_step"])
+    except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid Trainer state in resume checkpoint: {checkpoint}") from exc
+    if step <= 0 or step >= config.resumed_steps:
+        raise ValueError(
+            f"resume checkpoint step {step} must be between 1 and target {config.resumed_steps - 1}"
+        )
+
+    receipt_path = output_dir / "scientific_receipt.json"
+    if not receipt_path.is_file():
+        raise ValueError(f"scientific receipt required for resume: {receipt_path}")
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        saved_config = receipt["effective_config"]
+    except (OSError, KeyError, TypeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"scientific receipt is not a valid resume contract: {receipt_path}") from exc
+    if _resume_identity(saved_config) != _resume_identity(asdict(config)):
+        raise ValueError("resume checkpoint effective_config does not match the requested run")
+    if int(receipt.get("updates", 0)) > step:
+        raise ValueError("scientific receipt is newer than the requested resume checkpoint")
+    return checkpoint, receipt, step
+
+
 class _StopAfterStep(TrainerCallback):
     """Stop the first phase while retaining the final total-step schedule."""
 
@@ -170,12 +258,59 @@ class _StopAfterStep(TrainerCallback):
 class _FixedEvaluationCallback(TrainerCallback):
     """Run the declared cheap held-out action evaluation at fixed updates."""
 
-    def __init__(self, dataset: CalibratedReachDataset, checkpoints: tuple[int, ...], *, config: FirstTrainingConfig):
+    def __init__(
+        self,
+        dataset: CalibratedReachDataset,
+        checkpoints: tuple[int, ...],
+        *,
+        config: FirstTrainingConfig,
+        output_dir: Path,
+        resume_from_step: int = 0,
+        existing_receipt: dict[str, Any] | None = None,
+    ):
         self.dataset = dataset
         self.checkpoints = set(checkpoints)
         self.config = config
-        self.records: list[dict[str, Any]] = []
-        self.closed_loop_records: list[dict[str, Any]] = []
+        self.output_dir = output_dir
+        self.resume_from_step = resume_from_step
+        self.records: list[dict[str, Any]] = list(
+            (existing_receipt or {}).get("evaluation", [])
+        )
+        self.closed_loop_records: list[dict[str, Any]] = list(
+            (existing_receipt or {}).get("closed_loop", [])
+        )
+        prior_checkpoint = (existing_receipt or {}).get("latest_checkpoint") or (
+            existing_receipt or {}
+        ).get("checkpoint")
+        self.latest_checkpoint = Path(prior_checkpoint) if prior_checkpoint else None
+
+    def _write_partial_receipt(self, step: int, *, checkpoint: Path | None = None) -> None:
+        if checkpoint is not None and checkpoint.is_dir():
+            self.latest_checkpoint = checkpoint
+        elif self.latest_checkpoint is None:
+            self.latest_checkpoint = _latest_checkpoint(self.output_dir)
+        payload = {
+            "status": "partial",
+            "apparatus_only": self.config.purpose == "apparatus_verification",
+            "purpose": self.config.purpose,
+            "effective_config": asdict(self.config),
+            "mode": "scientific",
+            "updates": int(step),
+            "evaluation": self.records,
+            "closed_loop": self.closed_loop_records,
+            "seed_holdout": {
+                "start": self.config.evaluation_seed_start,
+                "count": self.config.evaluation_seed_count,
+            },
+            "transform_holdouts_declared": {
+                "sensor": [list(item) for item in self.config.transform_sensor_permutations],
+                "body": [list(item) for item in self.config.transform_body_permutations],
+            },
+            "checkpoint": str(self.latest_checkpoint) if self.latest_checkpoint else None,
+            "latest_checkpoint": str(self.latest_checkpoint) if self.latest_checkpoint else None,
+            "resumed_from_update": self.resume_from_step or None,
+        }
+        _atomic_json(self.output_dir / "scientific_receipt.json", payload)
 
     def _evaluate(self, step: int, model: Any) -> None:
         model.eval()
@@ -209,14 +344,23 @@ class _FixedEvaluationCallback(TrainerCallback):
             })
 
     def on_train_begin(self, args, state, control, model=None, **kwargs):
-        if 0 in self.checkpoints and model is not None:
+        # A resumed Trainer has already evaluated the checkpoint's prefix.
+        # In particular, never append a second update-0 record on resume.
+        if self.resume_from_step == 0 and 0 in self.checkpoints and model is not None:
             self._evaluate(0, model)
+            self._write_partial_receipt(0)
         return control
 
     def on_step_end(self, args, state, control, model=None, **kwargs):
         step = int(state.global_step)
         if step in self.checkpoints and model is not None:
             self._evaluate(step, model)
+            self._write_partial_receipt(step)
+        return control
+
+    def on_save(self, args, state, control, **kwargs):
+        step = int(state.global_step)
+        self._write_partial_receipt(step, checkpoint=self.output_dir / f"checkpoint-{step}")
         return control
 
 
@@ -242,7 +386,12 @@ def _move_batch_to_model(
         for name, value in batch.items()
     }
 
-def run_scientific(output_dir: str | Path, config: FirstTrainingConfig) -> dict[str, Any]:
+def run_scientific(
+    output_dir: str | Path,
+    config: FirstTrainingConfig,
+    *,
+    resume_from_checkpoint: str | Path | None = None,
+) -> dict[str, Any]:
     """Run the fixed-mixture scientific path selected explicitly by the CLI."""
     if config.mode != "scientific":
         raise ValueError("run_scientific requires config mode=scientific")
@@ -257,6 +406,17 @@ def run_scientific(output_dir: str | Path, config: FirstTrainingConfig) -> dict[
         torch.set_num_threads(config.cpu_threads)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    compiled_processes_path = config.compiled_processes_path or os.environ.get("PRETRAINING_COMPILED_PROCESSES")
+    if config.families != ("calibrated_reach_v2",) and not compiled_processes_path:
+        raise ValueError("compiler-backed family profiles require PRETRAINING_COMPILED_PROCESSES")
+    config = replace(config, compiled_processes_path=compiled_processes_path)
+    existing_receipt: dict[str, Any] | None = None
+    resume_step = 0
+    resume_checkpoint: Path | None = None
+    if resume_from_checkpoint is not None:
+        resume_checkpoint, existing_receipt, resume_step = _load_resume_contract(
+            output_dir, config, resume_from_checkpoint
+        )
     set_seed(config.seed)
     model = build_first_system(config).to(device)
     adapter_specs = first_system_adapter_specs(config.sensor_dims, config.action_dims)
@@ -270,6 +430,9 @@ def run_scientific(output_dir: str | Path, config: FirstTrainingConfig) -> dict[
             goal_modes=config.goal_modes,
             goal_switch_steps=config.goal_switch_steps,
             disturbance_arms=config.disturbance_arms,
+            families=config.families,
+            episode_seed_stride=config.episode_seed_stride,
+            compiled_processes_path=compiled_processes_path,
         ),
         adapter_specs,
     )
@@ -283,12 +446,28 @@ def run_scientific(output_dir: str | Path, config: FirstTrainingConfig) -> dict[
             goal_modes=config.goal_modes,
             goal_switch_steps=config.goal_switch_steps,
             disturbance_arms=config.disturbance_arms,
+            families=config.families,
+            episode_seed_stride=config.episode_seed_stride,
+            compiled_processes_path=compiled_processes_path,
         ),
         adapter_specs,
     )
     checkpoints = tuple(sorted(set(config.evaluation_checkpoints) & set(range(0, config.resumed_steps + 1))))
-    callback = _FixedEvaluationCallback(heldout_data, checkpoints, config=config)
-    args = _training_arguments(output_dir, config, max_steps=config.resumed_steps, save=True)
+    callback = _FixedEvaluationCallback(
+        heldout_data,
+        checkpoints,
+        config=config,
+        output_dir=output_dir,
+        resume_from_step=resume_step,
+        existing_receipt=existing_receipt,
+    )
+    args = _training_arguments(
+        output_dir,
+        config,
+        max_steps=config.resumed_steps,
+        save=True,
+        save_steps=config.save_steps,
+    )
     trainer = Trainer(
         model=model,
         args=args,
@@ -296,8 +475,13 @@ def run_scientific(output_dir: str | Path, config: FirstTrainingConfig) -> dict[
         data_collator=collate_trajectory_batch,
         callbacks=[callback],
     )
-    trainer.train()
+    if resume_checkpoint is None:
+        trainer.train()
+    else:
+        trainer.train(resume_from_checkpoint=str(resume_checkpoint))
+    latest_checkpoint = _latest_checkpoint(output_dir)
     receipt = {
+        "status": "complete",
         "apparatus_only": config.purpose == "apparatus_verification",
         "purpose": config.purpose,
         "effective_config": asdict(config),
@@ -310,9 +494,11 @@ def run_scientific(output_dir: str | Path, config: FirstTrainingConfig) -> dict[
             "sensor": [list(item) for item in config.transform_sensor_permutations],
             "body": [list(item) for item in config.transform_body_permutations],
         },
-        "checkpoint": str(output_dir / f"checkpoint-{trainer.state.global_step}"),
+        "checkpoint": str(latest_checkpoint) if latest_checkpoint else None,
+        "latest_checkpoint": str(latest_checkpoint) if latest_checkpoint else None,
+        "resumed_from_update": resume_step or None,
     }
-    (output_dir / "scientific_receipt.json").write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _atomic_json(output_dir / "scientific_receipt.json", receipt)
     return receipt
 
 
@@ -381,6 +567,9 @@ def run_cpu_smoke(output_dir: str | Path, config: FirstTrainingConfig | None = N
             goal_modes=config.goal_modes,
             goal_switch_steps=config.goal_switch_steps,
             disturbance_arms=config.disturbance_arms,
+            families=config.families,
+            episode_seed_stride=config.episode_seed_stride,
+            compiled_processes_path=config.compiled_processes_path,
         ),
         first_system_adapter_specs(config.sensor_dims, config.action_dims),
     )
@@ -510,7 +699,7 @@ def load_first_training_config(path: str | Path) -> FirstTrainingConfig:
             "seed", "dataset_size", "learning_rate", "weight_decay", "max_grad_norm",
             "smoke_steps", "resumed_steps", "max_steps", "per_device_train_batch_size",
             "mixed_precision", "mode", "purpose", "cpu_threads", "entrypoint",
-            "max_wall_clock_seconds", "device",
+            "max_wall_clock_seconds", "device", "save_steps",
         },
     )
     if run.get("entrypoint", "first_training") != "first_training":
@@ -522,6 +711,8 @@ def load_first_training_config(path: str | Path) -> FirstTrainingConfig:
             "train_episodes", "held_out_episodes", "horizon", "dt", "sensor_dims",
             "action_dims", "goal_modes", "goal_switch_steps", "action_limit",
             "calibration_pulse", "observation_noise", "disturbance_scale", "disturbance_arms",
+            "families", "episode_seed_stride",
+            "compiled_processes",
         },
     )
     model = section(
@@ -546,9 +737,9 @@ def load_first_training_config(path: str | Path) -> FirstTrainingConfig:
         "heldout",
         {"seed_start", "seed_count", "transform_sensor_permutations", "transform_body_permutations"},
     )
-    if system.get("version", "calibrated-reach-v1") not in {"calibrated-reach-v1", "calibrated-reach-v2"}:
+    if system.get("version", "calibrated-reach-v1") not in {"calibrated-reach-v1", "calibrated-reach-v2", "compiled-process-mixture-v1"}:
         raise ValueError("unsupported first-system version")
-    if system.get("teacher", "public-history-calibration-teacher-v1") != "public-history-calibration-teacher-v1":
+    if system.get("teacher", "public-history-calibration-teacher-v1") not in {"public-history-calibration-teacher-v1", "timed-public-process-teacher-v1"}:
         raise ValueError("unsupported teacher")
     if system.get("online_dagger", False) is not False or system.get("scheduler", "none") != "none":
         raise ValueError("the first fixed system requires online_dagger=false and scheduler=none")
@@ -597,6 +788,9 @@ def load_first_training_config(path: str | Path) -> FirstTrainingConfig:
     max_wall_clock_seconds = int(run.get("max_wall_clock_seconds", 4800))
     if max_wall_clock_seconds <= 0:
         raise ValueError("max_wall_clock_seconds must be positive")
+    save_steps = int(run.get("save_steps", 256))
+    if save_steps <= 0:
+        raise ValueError("save_steps must be positive")
     return FirstTrainingConfig(
         seed=seed,
         purpose=purpose,
@@ -616,12 +810,16 @@ def load_first_training_config(path: str | Path) -> FirstTrainingConfig:
         max_grad_norm=float(run.get("max_grad_norm", 1.0)),
         smoke_steps=smoke_steps,
         resumed_steps=resumed_steps,
+        save_steps=save_steps,
         world=world,
         sensor_dims=tuple(world.sensor_dims),
         action_dims=tuple(world.action_dims),
         goal_modes=tuple(world.goal_modes),
         goal_switch_steps=ints(world_values.get("goal_switch_steps", [-1]), "goal_switch_steps"),
         disturbance_arms=bools(world_values.get("disturbance_arms", [False]), "disturbance_arms"),
+        families=tuple(str(item) for item in world_values.get("families", ["calibrated_reach_v2"])),
+        episode_seed_stride=int(world_values.get("episode_seed_stride", 7919)),
+        compiled_processes_path=(str(world_values["compiled_processes"]) if world_values.get("compiled_processes") is not None else None),
         held_out_episodes=int(world_values.get("held_out_episodes", evaluation.get("held_out_seed_count", 0))),
         evaluation_checkpoints=ints(evaluation.get("checkpoints", [0]), "checkpoints"),
         closed_loop_checkpoints=ints(evaluation.get("closed_loop_checkpoints", [0]), "closed_loop_checkpoints"),
@@ -712,6 +910,80 @@ def evaluate_closed_loop(
             "action_mask": action_mask,
         }
 
+    # Compiler-backed profiles are evaluated through the same public rollout
+    # protocol.  Keep this branch separate from the historical V2 evaluator so
+    # a source-family score cannot be mislabeled as a legacy-world result.
+    if config.compiled_processes_path and all(str(f).startswith("compiled_") for f in config.families):
+        from .process_runtime import ProcessIR, ProcessRollout, TimedPublicProcessTeacher, load_compiled_processes
+
+        programs = load_compiled_processes(config.compiled_processes_path)
+        family_names = {
+            "compiled_reaching": "Reaching", "compiled_actuator_lag": "ActuatorLag",
+            "compiled_goal_switch": "GoalSwitch", "compiled_disturbance": "Disturbance",
+            "compiled_actuator_lag_goal_switch": "ActuatorLagGoalSwitch",
+            "compiled_actuator_lag_disturbance": "ActuatorLagDisturbance",
+            "compiled_goal_switch_disturbance": "GoalSwitchDisturbance",
+            "compiled_lag_goal_switch_disturbance": "LagGoalSwitchDisturbance",
+        }
+        rows: list[dict[str, Any]] = []
+        episodes = max(int(config.held_out_episodes), int(config.evaluation_seed_count), 1)
+        cells = tuple((family, sensor_dim, action_dim, goal_mode)
+                      for family in config.families
+                      for sensor_dim in config.sensor_dims
+                      for action_dim in config.action_dims
+                      for goal_mode in config.goal_modes)
+        for episode_index in range(episodes):
+            family, sensor_dim, action_dim, goal_mode = cells[episode_index % len(cells)]
+            seed_base = config.evaluation_seed_start + config.episode_seed_stride * episode_index
+            wanted = family_names[family]
+            candidates = [item["process"] for item in programs
+                          if str(item["process"].get("family", "")).split("::")[-1] == wanted
+                          and int(item["process"].get("sensor_dim", -1)) == sensor_dim
+                          and int(item["process"].get("action_dim", -1)) == action_dim]
+            if not candidates:
+                raise ValueError(f"compiled evaluation manifest lacks {family}/{sensor_dim}/{action_dim}")
+            ir = ProcessIR.from_compiled_process(candidates[episode_index % len(candidates)])
+            for policy_name in ("learner", "teacher", "reactive", "inaction"):
+                rollout = ProcessRollout.from_seed(seed_base, ir=ir, sensor_dim=sensor_dim, action_dim=action_dim, goal_mode=goal_mode)
+                rollout.reset(); actions: list[np.ndarray] = []; early_errors: list[float] = []; post_errors: list[float] = []
+                process_teacher = TimedPublicProcessTeacher()
+                while not rollout.done:
+                    history = rollout.query(); reference = process_teacher.action_for(history, rollout.action_bounds)
+                    step = rollout.environment.scored_step
+                    if policy_name == "learner":
+                        with torch.inference_mode(), _evaluation_autocast(config, model):
+                            output = model(**_move_batch_to_model(batch(list(rollout.events)), model))
+                        action = output.actions[0, -1, :action_dim].detach().cpu().numpy()
+                    elif policy_name == "teacher": action = reference
+                    elif policy_name == "reactive": action = fixed_reactive_action(history, rollout.action_bounds)
+                    else: action = np.zeros(action_dim, dtype=np.float64)
+                    action = np.clip(np.asarray(action, dtype=np.float64), rollout.action_bounds[:, 0], rollout.action_bounds[:, 1])
+                    error = float(np.mean((action - reference) ** 2)); early_errors.append(error) if step < max(1, ir.horizon // 2) else None
+                    if "goal_switch" in ir.components and ir.goal_switch_step is not None and step >= ir.goal_switch_step: post_errors.append(error)
+                    actions.append(action); rollout.step(action)
+                metrics = rollout.privileged_metrics()
+                rows.append({"seed": seed_base, "process_family": family, "policy": policy_name,
+                             "physical_error": float(metrics["state_error_l2"]), "success": bool(float(metrics["state_error_l2"]) <= config.success_tolerance_physical),
+                             "effort": float(sum(np.dot(a, a) for a in actions) / max(len(actions), 1)),
+                             "sensor_dim": sensor_dim, "body_dim": action_dim, "goal_mode": goal_mode,
+                             "early_action_mse": float(np.mean(early_errors)), "post_switch_action_mse": (float(np.mean(post_errors)) if post_errors else None)})
+            for ablation in ((ablations or ("no_goal", "no_calibration", "no_action_history")) if include_ablations else ()):
+                rollout = ProcessRollout.from_seed(seed_base, ir=ir, sensor_dim=sensor_dim, action_dim=action_dim, goal_mode=goal_mode)
+                rollout.reset(); actions = []; early_errors = []; post_errors = []; process_teacher = TimedPublicProcessTeacher()
+                while not rollout.done:
+                    history = rollout.query(); reference = process_teacher.action_for(history, rollout.action_bounds); events = list(rollout.events)
+                    if ablation == "no_goal": events = [event for event in events if event.kind != "goal"]
+                    elif ablation == "no_calibration": events = [event for event in events if event.kind not in {"calibration_action", "calibration_observation"}]
+                    else: events = [event for event in events if event.kind != "action_executed"]
+                    with torch.inference_mode(), _evaluation_autocast(config, model): output = model(**_move_batch_to_model(batch(events), model))
+                    action = np.clip(output.actions[0, -1, :action_dim].detach().cpu().numpy(), rollout.action_bounds[:, 0], rollout.action_bounds[:, 1]); step = rollout.environment.scored_step
+                    error = float(np.mean((action - reference) ** 2)); early_errors.append(error) if step < max(1, ir.horizon // 2) else None
+                    if "goal_switch" in ir.components and ir.goal_switch_step is not None and step >= ir.goal_switch_step: post_errors.append(error)
+                    actions.append(action); rollout.step(action)
+                metrics = rollout.privileged_metrics()
+                rows.append({"seed": seed_base, "process_family": family, "policy": f"learner:{ablation}", "physical_error": float(metrics["state_error_l2"]), "success": bool(float(metrics["state_error_l2"]) <= config.success_tolerance_physical), "effort": float(sum(np.dot(a, a) for a in actions) / max(len(actions), 1)), "sensor_dim": sensor_dim, "body_dim": action_dim, "goal_mode": goal_mode, "early_action_mse": float(np.mean(early_errors)), "post_switch_action_mse": (float(np.mean(post_errors)) if post_errors else None)})
+        return rows
+
     rows: list[dict[str, Any]] = []
     for seed_base in seeds:
         cell_index = 0
@@ -737,8 +1009,20 @@ def evaluate_closed_loop(
                                 )
                                 rollout.reset()
                                 actions: list[np.ndarray] = []
+                                early_action_errors: list[float] = []
+                                post_switch_action_errors: list[float] = []
                                 while not rollout.done:
                                     history = rollout.query()
+                                    scored_step = rollout.environment.scored_step
+                                    # This is a public-history reference action,
+                                    # so the diagnostic measures acquisition of
+                                    # useful decisions without exposing a
+                                    # private target or changing supervision.
+                                    reference_action = PublicHistoryTeacher(
+                                        control_gain=world.control_gain,
+                                        effort_objective=config.teacher_effort_objective,
+                                        effort_regularization=config.teacher_effort_regularization,
+                                    ).action_for(history, rollout.action_bounds)
                                     if policy_name == "learner":
                                         with torch.inference_mode(), _evaluation_autocast(config, model):
                                             output = model(**_move_batch_to_model(batch(rollout.events), model))
@@ -756,6 +1040,11 @@ def evaluate_closed_loop(
                                         raise ValueError("learner emitted a non-finite or wrong-width action")
                                     if np.any(action < rollout.action_bounds[:, 0]) or np.any(action > rollout.action_bounds[:, 1]):
                                         raise ValueError("learner emitted an out-of-bounds action")
+                                    action_error = float(np.mean((action - reference_action) ** 2))
+                                    if scored_step < max(1, world.horizon // 2):
+                                        early_action_errors.append(action_error)
+                                    if switch and scored_step >= int(switch_step):
+                                        post_switch_action_errors.append(action_error)
                                     actions.append(action)
                                     rollout.step(action)
                                 physical = rollout.privileged_metrics(
@@ -767,6 +1056,7 @@ def evaluate_closed_loop(
                                     {
                                         "seed": cell_seed,
                                         "seed_base": seed_base,
+                                        "process_family": "calibrated_reach_v2",
                                         "cell_index": cell_index,
                                         "body_dim": action_dim,
                                         "sensor_dim": sensor_dim,
@@ -778,6 +1068,11 @@ def evaluate_closed_loop(
                                         "physical_error": float(physical["state_error_l2"]),
                                         "success": bool(physical["success"]),
                                         "effort": effort,
+                                        "early_action_mse": float(np.mean(early_action_errors)) if early_action_errors else None,
+                                        "post_switch_action_mse": (
+                                            float(np.mean(post_switch_action_errors))
+                                            if post_switch_action_errors else None
+                                        ),
                                     }
                                 )
                             if include_ablations:
@@ -823,6 +1118,7 @@ def evaluate_closed_loop(
                                         {
                                             "seed": cell_seed,
                                             "seed_base": seed_base,
+                                            "process_family": "calibrated_reach_v2",
                                             "cell_index": cell_index,
                                             "body_dim": action_dim,
                                             "sensor_dim": sensor_dim,
@@ -845,12 +1141,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
     parser.add_argument("--mode", choices=("apparatus", "scientific"), default=None)
+    parser.add_argument(
+        "--resume-from-checkpoint",
+        type=Path,
+        default=None,
+        help="resume scientific training from a validated Trainer checkpoint",
+    )
     args = parser.parse_args(argv)
     config = load_first_training_config(args.config)
     if args.mode is not None and args.mode != config.mode:
         raise ValueError(f"CLI mode {args.mode!r} disagrees with config mode {config.mode!r}")
     receipt = (
-        run_scientific(args.output_root, config)
+        run_scientific(
+            args.output_root,
+            config,
+            resume_from_checkpoint=args.resume_from_checkpoint,
+        )
         if config.mode == "scientific"
         else run_cpu_smoke(args.output_root, config)
     )

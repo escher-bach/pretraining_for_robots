@@ -1,0 +1,70 @@
+# Integrated source-acquisition run. The Kaggle launcher must use the exact committed source SHA.
+[run]
+mode = "scientific"
+purpose = "source_acquisition"
+entrypoint = "first_training"
+seed = 20260912
+device = "cuda"
+mixed_precision = "fp16"
+per_device_train_batch_size = 8
+max_steps = 4096
+max_wall_clock_seconds = 10800
+learning_rate = 0.0003
+weight_decay = 0.01
+max_grad_norm = 1.0
+
+[system]
+version = "compiled-process-mixture-v1"
+teacher = "timed-public-process-teacher-v1"
+online_dagger = false
+scheduler = "none"
+
+[world]
+# Large on-demand support: the Trainer never cycles a 64-example replay set.
+train_episodes = 65536
+held_out_episodes = 256
+episode_seed_stride = 104729
+families = ["compiled_reaching", "compiled_actuator_lag", "compiled_goal_switch", "compiled_disturbance", "compiled_actuator_lag_goal_switch", "compiled_actuator_lag_disturbance", "compiled_goal_switch_disturbance", "compiled_lag_goal_switch_disturbance"]
+horizon = 12
+dt = 0.1
+sensor_dims = [8, 10]
+action_dims = [2, 4]
+goal_modes = ["absolute", "relative"]
+goal_switch_steps = [-1, 3, 6, 9]
+disturbance_arms = [false, true]
+action_limit = 0.5
+calibration_pulse = 0.06
+observation_noise = 0.0
+disturbance_scale = 0.02
+
+[model]
+hidden_size = 128
+intermediate_size = 512
+num_hidden_layers = 4
+attention_heads = 8
+max_position_embeddings = 512
+max_tokens = 512
+
+[train]
+batch_size = 8
+updates = 4096
+learning_rate = 0.0003
+weight_decay = 0.01
+action_loss = "masked_smooth_l1"
+future_loss_weight = 0.0
+
+[evaluation]
+checkpoints = [0, 128, 512, 1024, 2048, 3072, 4096]
+closed_loop_checkpoints = [0, 1024, 2048, 4096]
+success_tolerance_sensor_l2 = 0.05
+success_tolerance_physical = 0.05
+teacher_effort_objective = "bounded_residual_plus_minimum_l2"
+teacher_effort_regularization = 1.0e-8
+metrics = ["public_action_mse", "early_action_mse", "post_switch_action_mse", "closed_loop_sensor_rms", "closed_loop_physical_error", "success", "effort"]
+ablations = ["no_goal", "no_calibration", "no_action_history"]
+
+[heldout]
+seed_start = 1000000
+seed_count = 256
+transform_sensor_permutations = []
+transform_body_permutations = []

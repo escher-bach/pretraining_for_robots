@@ -117,6 +117,39 @@ class KaggleContractTests(unittest.TestCase):
         report = control.compact_report(summary)
         self.assertEqual(report["purpose"], "source_acquisition")
 
+    def test_large_first_training_notebook_budget_has_finite_flush_margin(self) -> None:
+        control = load_control_plane()
+        config = __import__("tomllib").loads(
+            (ROOT / "configs" / "first_training_system_gpu_large.toml").read_text(encoding="utf-8")
+        )
+        timeout = int(config["run"]["max_wall_clock_seconds"]) + 1200
+        notebook = control.notebook(
+            "https://github.com/example/repository.git",
+            "1" * 40,
+            "configs/first_training_system_gpu_large.toml",
+            "/kaggle/working/pretraining-results",
+            notebook_timeout_seconds=timeout,
+        )
+        code = "\n".join(
+            "".join(cell["source"])
+            for cell in notebook["cells"]
+            if cell["cell_type"] == "code"
+        )
+        self.assertIn(f"NOTEBOOK_TIMEOUT_SECONDS = {timeout}", code)
+
+    def test_manifest_artifacts_excludes_checkpoint_trees(self) -> None:
+        from pretraining_experiments.runner import manifest_artifacts
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "first-training" / "checkpoint-4096").mkdir(parents=True)
+            (root / "first-training" / "checkpoint-4096" / "model.safetensors").write_bytes(b"weights")
+            (root / "first-training" / "scientific_receipt.json").write_text("{}", encoding="utf-8")
+            self.assertEqual(
+                [item["path"] for item in manifest_artifacts(root)],
+                ["first-training/scientific_receipt.json"],
+            )
+
     def test_r10_registry_uses_the_fixed_one_t4_seed_gate_contract(self) -> None:
         control = load_control_plane()
         data, experiment = control.experiment("r10-seed-gate")

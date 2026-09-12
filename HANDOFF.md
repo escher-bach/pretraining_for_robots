@@ -1,5 +1,39 @@
 # Handoff
 
+## Integrated implementation — 2026-09-13
+
+The continuous compiler extension now exports 32 validated programs covering
+eight combinations of actuator lag, goal switching and disturbance across four
+sensor/body configurations. Python consumes the actual graph-derived programs;
+compiled dimensions, gains and event timing affect simulation. The shared data
+and Trainer path uses 65,536 deterministic on-demand episode indices. The GPU
+profile `configs/first_training_system_gpu_large.toml` fixes 4096 updates at
+batch eight, a 128-wide four-layer core, and a 10,800-second wall-clock cap.
+The registered experiment is `first-training-system-large`.
+
+Integrated review caught and repaired incomplete family dispatch, incomplete
+evaluation coverage, and a lag-blind teacher speed shortcut. Current generation
+uses public-history lag identification and bounded SciPy control, with public
+calibration caching. The current eight-composition semantic receipt is
+`artifacts/composed-process-audit-current.json`; the earlier 64-case review and
+the follow-up findings are in `experiments/term-compiler/INTEGRATED-REVIEW.md`.
+Scientific checkpoints save every 256 updates; partial evaluation receipts are
+atomic and CLI resume uses maintained Trainer state. Final readiness review is
+being completed before exact-source commit and GPU launch. No larger GPU run
+has launched at the time of this entry.
+
+## Current directive — 2026-09-12
+
+The user explicitly authorized full compiler-backed procedural system development
+and substantial GPU training, rejecting another sequence of tiny CPU pilots.
+This supersedes the bounded-next-step proposal below. Active work is the
+`Compiler-backed procedural GPU system` row in DEVELOPMENT-PATH.md: existing
+typed compiler/process machinery, compositional trajectory runtime with honest
+timing and public-history teacher, shared procedural data/Trainer, and larger
+GPU execution. Luna agents implement; Astra reviews the integrated result.
+No further per-stage approval is required. Preserve a resumable safe state at
+95% five-hour usage; the account was 65% used when this work began.
+
 ## Active route: first viable training system
 
 The user authorized the fixed 20-update CPU diagnostic and GPU run. Astra's

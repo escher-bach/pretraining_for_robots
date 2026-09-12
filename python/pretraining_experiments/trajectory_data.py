@@ -197,6 +197,9 @@ def collate_trajectory_batch(items: Sequence[dict[str, torch.Tensor]]) -> dict[s
 
 @dataclass(frozen=True)
 class TrajectoryDatasetConfig:
+    # ``size`` is a support size, not a small replay cohort.  Scientific
+    # profiles use a large value so every Trainer index maps to a fresh,
+    # deterministic generated instance.
     size: int = 16
     seed: int = 0
     world: CalibratedReachConfig = CalibratedReachConfig()
@@ -205,6 +208,12 @@ class TrajectoryDatasetConfig:
     goal_modes: tuple[str, ...] = ("absolute", "relative")
     goal_switch_steps: tuple[int, ...] = (-1,)
     disturbance_arms: tuple[bool, ...] = (False,)
+    # Names are process-family contracts.  The default preserves the admitted
+    # calibrated reach family; the compiler-backed world can add composed
+    # families without changing the tensor envelope or Trainer.
+    families: tuple[str, ...] = ("calibrated_reach_v2",)
+    episode_seed_stride: int = 7919
+    compiled_processes_path: str | None = None
 
 
 class CalibratedReachDataset(Dataset[dict[str, torch.Tensor]]):
@@ -219,16 +228,42 @@ class CalibratedReachDataset(Dataset[dict[str, torch.Tensor]]):
             raise ValueError("goal_switch_steps must contain -1 or in-horizon steps")
         if not config.disturbance_arms:
             raise ValueError("disturbance_arms must be nonempty")
+        if not config.families or any(not str(family) for family in config.families):
+            raise ValueError("families must be nonempty and named")
+        if config.episode_seed_stride <= 0:
+            raise ValueError("episode_seed_stride must be positive")
         self.config = config
         self.adapter_codes = {spec.name: index for index, spec in enumerate(adapter_specs)}
         self.raw_width = first_system_raw_width(config.sensor_dims, config.action_dims)
-        self.cells = tuple(
+        self.compiled_processes: tuple[dict[str, object], ...] = ()
+        if config.compiled_processes_path is not None:
+            from .process_runtime import load_compiled_processes
+
+            self.compiled_processes = load_compiled_processes(config.compiled_processes_path)
+            if len(self.compiled_processes) < 8:
+                raise ValueError("compiled process export must contain the eight legal process compositions")
+        compiled_mixture = all(str(family).startswith("compiled_") for family in config.families)
+        cell_switch_steps = (-1,) if compiled_mixture else config.goal_switch_steps
+        cell_disturbance_arms = (False,) if compiled_mixture else config.disturbance_arms
+        base_cells = tuple(
             product(
                 config.sensor_dims,
                 config.action_dims,
                 config.goal_modes,
-                config.goal_switch_steps,
-                config.disturbance_arms,
+                cell_switch_steps,
+                cell_disturbance_arms,
+            )
+        )
+        # Keep the historical single-family ``cells`` ABI (several audit
+        # receipts inspect it directly), while exposing family in every
+        # multi-family cell used by the compiler-backed profile.
+        self.cells = (
+            base_cells
+            if config.families == ("calibrated_reach_v2",)
+            else tuple(
+                (family, *cell)
+                for family in config.families
+                for cell in base_cells
             )
         )
         if not self.cells:
@@ -251,20 +286,93 @@ class CalibratedReachDataset(Dataset[dict[str, torch.Tensor]]):
             raise IndexError(index)
         # The index is the only data-order state.  Repeated access regenerates
         # identical public tensors and remains independent of worker count.
-        seed = self.config.seed + 7919 * index
-        sensor_dim, action_dim, goal_mode, switch_step, disturbance = self.cells[
-            index % len(self.cells)
-        ]
+        seed = self.config.seed + self.config.episode_seed_stride * index
+        selected = self.cells[index % len(self.cells)]
+        if len(selected) == 5:
+            family = "calibrated_reach_v2"
+            sensor_dim, action_dim, goal_mode, switch_step, disturbance = selected
+        else:
+            family, sensor_dim, action_dim, goal_mode, switch_step, disturbance = selected
         world = replace(
             self.config.world,
             goal_switch_step=None if switch_step < 0 else switch_step,
         )
-        episode = generate_episode(
-            seed,
-            config=world,
-            sensor_dim=sensor_dim,
-            action_dim=action_dim,
-            goal_mode=goal_mode,
-            disturbance=disturbance,
-        )
+        # The compiler world owns family semantics.  Keep this adapter narrow:
+        # it asks for a public episode and never receives generator metadata.
+        # The fallback keeps historical configs runnable while the new
+        # compiler registers additional family names in trajectory_world.
+        if family == "calibrated_reach_v2":
+            episode = generate_episode(
+                seed,
+                config=world,
+                sensor_dim=sensor_dim,
+                action_dim=action_dim,
+                goal_mode=goal_mode,
+                disturbance=disturbance,
+            )
+        elif family in {
+            "compiled_reaching", "compiled_actuator_lag", "compiled_goal_switch",
+            "compiled_disturbance", "compiled_actuator_lag_goal_switch",
+            "compiled_actuator_lag_disturbance", "compiled_goal_switch_disturbance",
+            "compiled_composed", "compiled_lag_goal_switch_disturbance", "composed_reach_v1",
+        }:
+            from .process_runtime import ProcessIR, generate_composed_episode
+
+            # Family programs are Rust-generated once per launch.  Their
+            # graph, wiring, and lowered runtime values are authoritative;
+            # Python only supplies the seed-specific realization.
+            if self.compiled_processes:
+                wanted = {
+                    "compiled_reaching": "Reaching",
+                    "compiled_actuator_lag": "ActuatorLag",
+                    "compiled_goal_switch": "GoalSwitch",
+                    "compiled_disturbance": "Disturbance",
+                    "compiled_actuator_lag_goal_switch": "ActuatorLagGoalSwitch",
+                    "compiled_actuator_lag_disturbance": "ActuatorLagDisturbance",
+                    "compiled_goal_switch_disturbance": "GoalSwitchDisturbance",
+                    "compiled_lag_goal_switch_disturbance": "LagGoalSwitchDisturbance",
+                }.get(family)
+                candidates = []
+                for item in self.compiled_processes:
+                    process = item["process"]
+                    enum_family = str(process.get("family", "")).split("::")[-1]
+                    if wanted is not None and enum_family != wanted:
+                        continue
+                    if wanted is None and enum_family in {"Reaching", "ActuatorLag"}:
+                        continue
+                    if int(process.get("sensor_dim", -1)) != sensor_dim or int(process.get("action_dim", -1)) != action_dim:
+                        continue
+                    candidates.append(process)
+                if not candidates:
+                    raise ValueError(
+                        f"compiled export has no {family} program for sensor={sensor_dim}, action={action_dim}"
+                    )
+                compiled = candidates[index % len(candidates)]
+                ir = ProcessIR.from_compiled_process(compiled)
+            else:
+                if family.startswith("compiled_"):
+                    raise ValueError("compiled process families require a Rust process export")
+                # Historical compatibility path for old local profiles.
+                components = ["reach", "actuator_lag"]
+                if switch_step >= 0:
+                    components.append("goal_switch")
+                if disturbance:
+                    components.append("disturbance")
+                ir = ProcessIR(
+                    name="compiled-reach-composition",
+                    components=tuple(components),
+                    horizon=world.horizon,
+                    dt=world.dt,
+                    goal_switch_step=(None if switch_step < 0 else switch_step),
+                    disturbance_scale=(world.disturbance_scale if disturbance else 0.0),
+                )
+            episode = generate_composed_episode(
+                seed,
+                ir=ir,
+                sensor_dim=sensor_dim,
+                action_dim=action_dim,
+                goal_mode=goal_mode,
+            )
+        else:
+            raise ValueError(f"trajectory family {family!r} is unavailable in this world build")
         return _encode_episode(episode, self.adapter_codes, self.raw_width)

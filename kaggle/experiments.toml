@@ -16,6 +16,12 @@ slug_prefix = "pretraining-first-system"
 config = "configs/first_training_system_gpu_proposal.toml"
 purpose = "run the fixed calibrated-reach source-acquisition profile after review"
 
+[experiments.first-training-system-large]
+title = "Compiler-backed multi-family source acquisition"
+slug_prefix = "pretraining-first-large"
+config = "configs/first_training_system_gpu_large.toml"
+purpose = "run the integrated 4096-update on-demand multi-family GPU profile"
+
 [experiments.r10-seed-gate]
 title = "R10 five-family finite-G0 seed gate"
 slug_prefix = "pretraining-r10-seed-gate"
