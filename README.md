@@ -6,14 +6,18 @@ capability decomposition, a process algebra, and procedurally generated worlds.
 The repository has one route through the project:
 
 1. [GOAL.md](GOAL.md) defines the claim and the capability target.
-2. [META-PROCESS.md](META-PROCESS.md) defines how work is selected.
-3. [EMBODIED-PROCESS.md](EMBODIED-PROCESS.md) defines the world model,
+2. [LEARNER-INPUT-ARCHITECTURE.md](LEARNER-INPUT-ARCHITECTURE.md) defines the
+   binding common content path for symbolic, visual, linguistic,
+   proprioceptive, demonstration, and action realizations, and records the
+   rejected cold-sidecar design.
+3. [META-PROCESS.md](META-PROCESS.md) defines how work is selected.
+4. [EMBODIED-PROCESS.md](EMBODIED-PROCESS.md) defines the world model,
    process algebra, capability graph, and transfer boundary.
-4. [DEVELOPMENT-PATH.md](DEVELOPMENT-PATH.md) defines the worlds, cards,
+5. [DEVELOPMENT-PATH.md](DEVELOPMENT-PATH.md) defines the worlds, cards,
    admission gates, current position, and next path.
-5. [CARDS.md](CARDS.md) specifies every card's witness, controls, information
+6. [CARDS.md](CARDS.md) specifies every card's witness, controls, information
    boundary, baselines, admission rule, and transfer falsifier.
-6. [APPARATUS.md](APPARATUS.md) explains the code and exact commands.
+7. [APPARATUS.md](APPARATUS.md) explains the code and exact commands.
 
 The executable surface is deliberately small:
 
@@ -26,11 +30,13 @@ artifacts/    checked-in model configuration
 tools/        Kaggle CLI control plane
 ```
 
-Current position: the common Rust apparatus, finite G0 audit layer, three
-prototype worlds, learner event boundary, and Card 04 semantic audit are built.
-Card 04 still needs a learner-facing profile adapter. Cards 03, 02, 05, and 06
-then complete the proposed four-trunk seed portfolio. Multi-world pretraining
-starts only after that portfolio passes the gate in `DEVELOPMENT-PATH.md`.
+Current position: R5–R10 are closed, but only Card 02 was frontier-admitted, so
+R11 remains blocked. The experimental R3c compiler can generate audited finite
+G0 corpora. The 2026-09-05 architecture review added R3d: the existing
+eight-float symbolic boundary is one modality adapter, not the universal
+learner input, and no new learner, grounding, or demonstration work may treat
+the dormant additive sidecar as sufficient. See `DEVELOPMENT-PATH.md` and
+`LEARNER-INPUT-ARCHITECTURE.md`.
 
 Quick verification:
 

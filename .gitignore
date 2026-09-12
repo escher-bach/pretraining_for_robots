@@ -13,3 +13,10 @@
 /audit/runs/**/pretraining-results/summary.json
 /audit/runs/**/pretraining-results/seed-gate-receipt.json
 /audit/runs/**/pretraining-results/card*/
+
+# Trainer recovery payloads are local/generated evidence, not source artifacts.
+/artifacts/**/checkpoint*/
+/artifacts/**/*.bin
+/artifacts/**/*.pt
+/artifacts/**/*.pth
+/artifacts/**/*.safetensors

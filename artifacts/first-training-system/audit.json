@@ -1,0 +1,567 @@
+{
+  "arm_probe": {
+    "disturbance_present": true,
+    "disturbance_start_step": 0,
+    "goal_switch_present": true,
+    "passed": true,
+    "private_fields_in_learner_bundle": [],
+    "private_receipt_matches_public_target": true,
+    "public_final_sensor_error": 0.0022562103212127415,
+    "public_final_sensor_rmse": 0.0007976908089563041,
+    "public_observation_changes": true,
+    "seed": 4333,
+    "teacher_targets_checked": 12
+  },
+  "cases": [
+    {
+      "action_dim": 2,
+      "fingerprint": "b2ffa5a683baa60830f3948c16fb0b1bce532445aaf81db4ef5150c57cc991e0",
+      "goal_mode": "absolute",
+      "numerical": {
+        "action_nullity": 0,
+        "body_condition": 1.283636407437828,
+        "body_rank": 2,
+        "calibration_clipped": false,
+        "calibration_rank": 2,
+        "calibration_residual": 9.924152063710297e-18,
+        "calibration_smallest_singular": 0.08485281374238571,
+        "composite_rank": 2,
+        "final_sensor_error": 4.133420725051916e-09,
+        "final_sensor_rmse": 1.4613849120906127e-09,
+        "initial_sensor_error": 0.14767570198746915,
+        "initial_sensor_rmse": 0.05221124514591157,
+        "sensor_condition": 1.0459411429666265,
+        "sensor_rank": 2,
+        "teacher_reduced_error": true
+      },
+      "probes": {
+        "absolute_relative_control_equivalent": true,
+        "action_permutation": [
+          1,
+          0
+        ],
+        "action_permutation_invariant": true,
+        "calibration_ablation_rejected": true,
+        "calibration_action_ablation_rejected": true,
+        "goal_ablation_rejected": true,
+        "sensor_permutation": [
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "sensor_row_permutation_invariant": true
+      },
+      "seed": 4200,
+      "sensor_dim": 8,
+      "structure": {
+        "availability_contract": "synchronous_available_at_equals_physical_time",
+        "event_count": 48,
+        "private_fields_in_learner_bundle": [],
+        "public_teacher_signature": true,
+        "query_count": 12,
+        "teacher_parameters": [
+          "self",
+          "history",
+          "action_bounds"
+        ]
+      }
+    },
+    {
+      "action_dim": 2,
+      "fingerprint": "b60acc2d5862983adf2ac2280f9c18c59c957e09e2bbbb104883e51d7f7504af",
+      "goal_mode": "relative",
+      "numerical": {
+        "action_nullity": 0,
+        "body_condition": 1.5510875001599358,
+        "body_rank": 2,
+        "calibration_clipped": false,
+        "calibration_rank": 2,
+        "calibration_residual": 2.3022899745096964e-17,
+        "calibration_smallest_singular": 0.08485281374238571,
+        "composite_rank": 2,
+        "final_sensor_error": 4.942533080279394e-09,
+        "final_sensor_rmse": 1.747449328652197e-09,
+        "initial_sensor_error": 0.15295452188362607,
+        "initial_sensor_rmse": 0.05407758981852909,
+        "sensor_condition": 1.0292874661336013,
+        "sensor_rank": 2,
+        "teacher_reduced_error": true
+      },
+      "probes": {
+        "absolute_relative_control_equivalent": true,
+        "action_permutation": [
+          1,
+          0
+        ],
+        "action_permutation_invariant": true,
+        "calibration_ablation_rejected": true,
+        "calibration_action_ablation_rejected": true,
+        "goal_ablation_rejected": true,
+        "sensor_permutation": [
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "sensor_row_permutation_invariant": true
+      },
+      "seed": 4201,
+      "sensor_dim": 8,
+      "structure": {
+        "availability_contract": "synchronous_available_at_equals_physical_time",
+        "event_count": 48,
+        "private_fields_in_learner_bundle": [],
+        "public_teacher_signature": true,
+        "query_count": 12,
+        "teacher_parameters": [
+          "self",
+          "history",
+          "action_bounds"
+        ]
+      }
+    },
+    {
+      "action_dim": 2,
+      "fingerprint": "fed7484faf40e19ac8f713a75c584f8671b4b0f6de70f73b76c99221f71869cf",
+      "goal_mode": "absolute",
+      "numerical": {
+        "action_nullity": 0,
+        "body_condition": 1.206831190304392,
+        "body_rank": 2,
+        "calibration_clipped": false,
+        "calibration_rank": 2,
+        "calibration_residual": 5.942284768735643e-19,
+        "calibration_smallest_singular": 0.08485281374238571,
+        "composite_rank": 2,
+        "final_sensor_error": 3.894639915845402e-08,
+        "final_sensor_rmse": 1.231593280027797e-08,
+        "initial_sensor_error": 0.13864065169155682,
+        "initial_sensor_rmse": 0.04384202356353955,
+        "sensor_condition": 1.245909814888883,
+        "sensor_rank": 2,
+        "teacher_reduced_error": true
+      },
+      "probes": {
+        "absolute_relative_control_equivalent": true,
+        "action_permutation": [
+          1,
+          0
+        ],
+        "action_permutation_invariant": true,
+        "calibration_ablation_rejected": true,
+        "calibration_action_ablation_rejected": true,
+        "goal_ablation_rejected": true,
+        "sensor_permutation": [
+          9,
+          8,
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "sensor_row_permutation_invariant": true
+      },
+      "seed": 4202,
+      "sensor_dim": 10,
+      "structure": {
+        "availability_contract": "synchronous_available_at_equals_physical_time",
+        "event_count": 48,
+        "private_fields_in_learner_bundle": [],
+        "public_teacher_signature": true,
+        "query_count": 12,
+        "teacher_parameters": [
+          "self",
+          "history",
+          "action_bounds"
+        ]
+      }
+    },
+    {
+      "action_dim": 2,
+      "fingerprint": "2ab954df0c5911ea9164d1f2f9a7a946580095d36ae0e877ca4f87f83ab92c5a",
+      "goal_mode": "relative",
+      "numerical": {
+        "action_nullity": 0,
+        "body_condition": 1.2585909947381793,
+        "body_rank": 2,
+        "calibration_clipped": false,
+        "calibration_rank": 2,
+        "calibration_residual": 1.3970282618292407e-18,
+        "calibration_smallest_singular": 0.08485281374238571,
+        "composite_rank": 2,
+        "final_sensor_error": 8.893167113382213e-10,
+        "final_sensor_rmse": 2.8122663690792685e-10,
+        "initial_sensor_error": 0.11614388879163842,
+        "initial_sensor_rmse": 0.03672792248908788,
+        "sensor_condition": 1.1714074951774058,
+        "sensor_rank": 2,
+        "teacher_reduced_error": true
+      },
+      "probes": {
+        "absolute_relative_control_equivalent": true,
+        "action_permutation": [
+          1,
+          0
+        ],
+        "action_permutation_invariant": true,
+        "calibration_ablation_rejected": true,
+        "calibration_action_ablation_rejected": true,
+        "goal_ablation_rejected": true,
+        "sensor_permutation": [
+          9,
+          8,
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "sensor_row_permutation_invariant": true
+      },
+      "seed": 4203,
+      "sensor_dim": 10,
+      "structure": {
+        "availability_contract": "synchronous_available_at_equals_physical_time",
+        "event_count": 48,
+        "private_fields_in_learner_bundle": [],
+        "public_teacher_signature": true,
+        "query_count": 12,
+        "teacher_parameters": [
+          "self",
+          "history",
+          "action_bounds"
+        ]
+      }
+    },
+    {
+      "action_dim": 4,
+      "fingerprint": "fd72954c3b8d6ed66d4affadd343cf3760cbeaa63fa8d35ed1d3af3e3eab8a57",
+      "goal_mode": "absolute",
+      "numerical": {
+        "action_nullity": 2,
+        "body_condition": 1.0866996705316243,
+        "body_rank": 2,
+        "calibration_clipped": false,
+        "calibration_rank": 4,
+        "calibration_residual": 1.5295754640163996e-18,
+        "calibration_smallest_singular": 0.08485281374238571,
+        "composite_rank": 2,
+        "final_sensor_error": 5.856081768694339e-10,
+        "final_sensor_rmse": 2.070437564913339e-10,
+        "initial_sensor_error": 0.13654348158418977,
+        "initial_sensor_rmse": 0.04827541087750053,
+        "sensor_condition": 1.1634830798389477,
+        "sensor_rank": 2,
+        "teacher_reduced_error": true
+      },
+      "probes": {
+        "absolute_relative_control_equivalent": true,
+        "action_permutation": [
+          3,
+          2,
+          1,
+          0
+        ],
+        "action_permutation_invariant": true,
+        "calibration_ablation_rejected": true,
+        "calibration_action_ablation_rejected": true,
+        "goal_ablation_rejected": true,
+        "sensor_permutation": [
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "sensor_row_permutation_invariant": true
+      },
+      "seed": 4204,
+      "sensor_dim": 8,
+      "structure": {
+        "availability_contract": "synchronous_available_at_equals_physical_time",
+        "event_count": 56,
+        "private_fields_in_learner_bundle": [],
+        "public_teacher_signature": true,
+        "query_count": 12,
+        "teacher_parameters": [
+          "self",
+          "history",
+          "action_bounds"
+        ]
+      }
+    },
+    {
+      "action_dim": 4,
+      "fingerprint": "1f2da7fdb9eb9c70143a259d593e3f4b0d0c93da04608834e038861a5c8cc3bf",
+      "goal_mode": "relative",
+      "numerical": {
+        "action_nullity": 2,
+        "body_condition": 1.1298136082841852,
+        "body_rank": 2,
+        "calibration_clipped": false,
+        "calibration_rank": 4,
+        "calibration_residual": 8.149566296525186e-19,
+        "calibration_smallest_singular": 0.08485281374238571,
+        "composite_rank": 2,
+        "final_sensor_error": 1.6773579071238807e-09,
+        "final_sensor_rmse": 5.930355753020855e-10,
+        "initial_sensor_error": 0.15567264419643054,
+        "initial_sensor_rmse": 0.055038591178268335,
+        "sensor_condition": 1.0684863261094335,
+        "sensor_rank": 2,
+        "teacher_reduced_error": true
+      },
+      "probes": {
+        "absolute_relative_control_equivalent": true,
+        "action_permutation": [
+          3,
+          2,
+          1,
+          0
+        ],
+        "action_permutation_invariant": true,
+        "calibration_ablation_rejected": true,
+        "calibration_action_ablation_rejected": true,
+        "goal_ablation_rejected": true,
+        "sensor_permutation": [
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "sensor_row_permutation_invariant": true
+      },
+      "seed": 4205,
+      "sensor_dim": 8,
+      "structure": {
+        "availability_contract": "synchronous_available_at_equals_physical_time",
+        "event_count": 56,
+        "private_fields_in_learner_bundle": [],
+        "public_teacher_signature": true,
+        "query_count": 12,
+        "teacher_parameters": [
+          "self",
+          "history",
+          "action_bounds"
+        ]
+      }
+    },
+    {
+      "action_dim": 4,
+      "fingerprint": "f22fb5acf5a494229a64232ee23c71ff92d736439f1dda4e8711e8156db7ca06",
+      "goal_mode": "absolute",
+      "numerical": {
+        "action_nullity": 2,
+        "body_condition": 1.266587706123441,
+        "body_rank": 2,
+        "calibration_clipped": false,
+        "calibration_rank": 4,
+        "calibration_residual": 3.18671833661613e-17,
+        "calibration_smallest_singular": 0.08485281374238571,
+        "composite_rank": 2,
+        "final_sensor_error": 2.546382733922623e-10,
+        "final_sensor_rmse": 8.052369233721993e-11,
+        "initial_sensor_error": 0.06216618399298218,
+        "initial_sensor_rmse": 0.019658673485892463,
+        "sensor_condition": 1.06515083885009,
+        "sensor_rank": 2,
+        "teacher_reduced_error": true
+      },
+      "probes": {
+        "absolute_relative_control_equivalent": true,
+        "action_permutation": [
+          3,
+          2,
+          1,
+          0
+        ],
+        "action_permutation_invariant": true,
+        "calibration_ablation_rejected": true,
+        "calibration_action_ablation_rejected": true,
+        "goal_ablation_rejected": true,
+        "sensor_permutation": [
+          9,
+          8,
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "sensor_row_permutation_invariant": true
+      },
+      "seed": 4206,
+      "sensor_dim": 10,
+      "structure": {
+        "availability_contract": "synchronous_available_at_equals_physical_time",
+        "event_count": 56,
+        "private_fields_in_learner_bundle": [],
+        "public_teacher_signature": true,
+        "query_count": 12,
+        "teacher_parameters": [
+          "self",
+          "history",
+          "action_bounds"
+        ]
+      }
+    },
+    {
+      "action_dim": 4,
+      "fingerprint": "3610dd870ff2233a634b1c4f1ac16ad19b6b13cbc416b9830deaad17221d45c3",
+      "goal_mode": "relative",
+      "numerical": {
+        "action_nullity": 2,
+        "body_condition": 1.191820699756091,
+        "body_rank": 2,
+        "calibration_clipped": false,
+        "calibration_rank": 4,
+        "calibration_residual": 2.0572629088031463e-18,
+        "calibration_smallest_singular": 0.08485281374238571,
+        "composite_rank": 2,
+        "final_sensor_error": 1.4031882505874674e-09,
+        "final_sensor_rmse": 4.437270857843498e-10,
+        "initial_sensor_error": 0.15098020975776263,
+        "initial_sensor_rmse": 0.04774413444445087,
+        "sensor_condition": 1.1780133298259399,
+        "sensor_rank": 2,
+        "teacher_reduced_error": true
+      },
+      "probes": {
+        "absolute_relative_control_equivalent": true,
+        "action_permutation": [
+          3,
+          2,
+          1,
+          0
+        ],
+        "action_permutation_invariant": true,
+        "calibration_ablation_rejected": true,
+        "calibration_action_ablation_rejected": true,
+        "goal_ablation_rejected": true,
+        "sensor_permutation": [
+          9,
+          8,
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "sensor_row_permutation_invariant": true
+      },
+      "seed": 4207,
+      "sensor_dim": 10,
+      "structure": {
+        "availability_contract": "synchronous_available_at_equals_physical_time",
+        "event_count": 56,
+        "private_fields_in_learner_bundle": [],
+        "public_teacher_signature": true,
+        "query_count": 12,
+        "teacher_parameters": [
+          "self",
+          "history",
+          "action_bounds"
+        ]
+      }
+    }
+  ],
+  "cpu_only": true,
+  "factorial_cases_passed": 8,
+  "factorial_cases_requested": 8,
+  "failures": [],
+  "feature_gaps": [],
+  "learner_contract": {
+    "availability": "synchronous_only",
+    "success_comparison": "report_raw_sensor_l2_and_l2_over_sqrt_sensor_width",
+    "world_config_propagation": "pending_scientific_toml_runner"
+  },
+  "model_integration": {
+    "apparatus_only": true,
+    "closed_loop": {
+      "action_dim": 4,
+      "apparatus_only": true,
+      "bounded_actions": true,
+      "final_sensor_error": 0.2545884451448774,
+      "final_sensor_rmse": 0.08050793526186487,
+      "note": "freshly initialized bundle; integration evidence only, not learner or regulation evidence",
+      "public_prefix_only": true,
+      "seed": 4344,
+      "sensor_dim": 10,
+      "status": "pass",
+      "steps": 12
+    },
+    "first_steps": 1,
+    "registered_state_groups": {
+      "adapters": true,
+      "core": true,
+      "decoder": true
+    },
+    "resumed_steps": 2,
+    "status": "pass",
+    "trainable_parameters": 22084
+  },
+  "paired_embodiment_probe": {
+    "action_widths": [
+      2,
+      4
+    ],
+    "different_body_effect": true,
+    "environment_isolation": true,
+    "note": "The action target should differ after public calibration; a memoryless action-only baseline cannot infer this embodiment from an unchanged start/goal pair.",
+    "same_initial_state": true,
+    "same_public_goal": true,
+    "same_public_start": true,
+    "same_sensor_transform": true,
+    "same_target_state": true,
+    "seed": 4321
+  },
+  "schema_version": 2,
+  "scientific_split": {
+    "audit_seed_block": [
+      4200,
+      4207
+    ],
+    "held_out_evaluation": "not_run_by_boundary_audit",
+    "note": "This receipt proves world and apparatus seams; it is not a source-versus-held-out learner result.",
+    "smoke_training_size": 2,
+    "status": "pending_scientific_runner"
+  },
+  "status": "pass",
+  "teacher_version": "public-history-calibration-teacher-v1",
+  "trace_case": {
+    "action_dim": 2,
+    "goal_mode": "absolute",
+    "seed": 4200,
+    "sensor_dim": 8
+  },
+  "world_version": "calibrated-reach-v1"
+}

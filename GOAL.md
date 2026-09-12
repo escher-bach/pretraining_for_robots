@@ -7,6 +7,32 @@ decomposing goal-directed behaviour into testable capabilities, expressing the
 required relations as composable processes, and training across procedurally
 generated world families.
 
+## Active objective
+
+Build the first coherent abstract robot pretraining system using a bounded
+calibrated goal-reaching family and one shared content-token interface.
+Astra's pre-run review found V1 solvable by a calibration-blind positive-axis
+controller; V2 removes that shortcut with independently signed/permuted sensor
+and actuator frames. Sensor widths 8/10 are small experimental fixtures, not
+architecture constraints. The user authorized CPU/GPU execution after the
+bounded correction and final readiness checks.
+
+```text
+common content boundary + public trajectory
+  -> CPU boundary and shortcut evidence
+  -> reviewed fixed configuration
+  -> one fixed-mixture abstract pilot
+  -> acquisition/scale/scheduler diagnosis if warranted
+  -> matched grounding experiment
+```
+
+The pilot tests calibrated goal-conditioned reaching within one sampled family,
+not active experimentation, robust disturbance rejection, compositional
+pretraining, or transfer. The original broader objective below remains binding.
+Historical R3/R10/R11 gates are preserved evidence, not current blockers.
+`FIRST-TRAINING-SYSTEM.md` fixes the configuration and interpretation;
+`LEARNER-INPUT-ARCHITECTURE.md` fixes the common continuous content boundary.
+
 ## The claim to test
 
 A core pretrained across admitted abstract worlds should learn a held-out
@@ -58,8 +84,15 @@ silently become learner input or supervision.
 
 ## Boundaries
 
-- The core is modality-free: pixels, words, and robot-specific actuator vectors
-  enter through downstream adapters.
+- The core is modality-free because every symbolic, visual, linguistic,
+  proprioceptive, and action realization is adapted into the same canonical
+  content-token interface. The symbolic G0 payload is one modality input, not a
+  privileged primary route. Modality adapters may participate during abstract
+  pretraining as well as downstream transfer; pixels or words may not be
+  deferred to an otherwise untrained side channel.
+- A demonstration is a public temporal history whose observations and actions
+  use those same modality and embodiment adapters. Actor/body addressing may
+  preserve provenance, but it is not a substitute for perceptual content.
 - Abstract success does not establish visual or physical grounding. Only a
   matched downstream transfer experiment does.
 - A card is an experimental contrast, not a curriculum stage or capability

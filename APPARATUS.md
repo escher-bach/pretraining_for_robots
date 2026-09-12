@@ -2,6 +2,50 @@
 
 This document describes what the code does and how to run it.
 
+## Active first-system apparatus
+
+The active implementation route is `CalibratedReachV2`, a small sampled
+trajectory world in
+`python/pretraining_experiments/trajectory_world.py`. It is intentionally
+separate from the persisted finite-G0 corpus. Each episode contains public
+reset, goal, calibration, observation, action-query, executed-action, and
+episode-end events with explicit physical time. Action labels and the latent
+calibration receipt are separate objects. No transition table is generated or
+sent to the learner.
+
+The public teacher accepts only `PublicHistory` and public action bounds. It
+estimates the action-to-sensor map from public calibration using
+`scipy.optimize.lsq_linear`, solving a declared bounded residual-plus-
+minimum-effort objective. This is a public-history behavior teacher, not an
+optimal privileged planner. Optional disturbance timing is hidden from the
+teacher and only affects the sensed trajectory.
+
+The common learner boundary is in
+`python/pretraining_experiments/common_content.py`. Numeric sensor, goal, and
+past-action adapters produce shared content tokens while role, key, physical
+time, serialization position, and availability remain structural. The
+existing `model.py` payload path remains historical G0 apparatus; it is not
+the first-system path.
+
+The checked-in `configs/first_training_system_cpu.toml` is an apparatus smoke
+profile: it records the small common core and the deterministic trajectory
+mixture used by `FirstTrainingConfig`, then checks save/resume. The scientific
+entrypoint is selected explicitly with `mode = "scientific"`; the bounded
+review profile is `configs/first_training_system_scientific_cpu.toml`. The
+combined CPU readiness command is
+`python tools/audit_training_system.py`; its receipt passes the current CPU
+boundary. GPU access is authorized for the later fixed profile. The scientific
+smoke path now propagates world fields and writes a public closed-loop receipt,
+and the checked-in two-update smoke completes in 57.24 seconds with 32 cells,
+updates 0/1/2, and closed-loop updates 0/2. The fixed 20-update profile is
+authorized for the reviewed CPU diagnostic and subsequent GPU run. Primary
+success is evaluator-only physical
+state error; public sensor RMSE (`L2 / sqrt(sensor_width)`) is a diagnostic so
+8- and 10-channel cells are comparable.
+The current public-event contract is synchronous (`available_at == time`);
+delayed availability is rejected until an explicit learner availability mask is
+implemented and audited. The apparatus smoke is not the first science run.
+
 ## Rust workspace
 
 | Crate | Function |
@@ -26,6 +70,14 @@ Rust family -> public event records -> profiled float rows -> PyO3 batch
 
 Rust owns transitions, teacher/verifier semantics, targets, replay, and rollout
 state. Python does not reproduce those rules.
+
+This is the implemented symbolic apparatus, not the accepted universal
+modality architecture. `LEARNER-INPUT-ARCHITECTURE.md` requires the
+eight-float projection to become the G0 adapter into one common `[B,T,H]`
+content interface shared by symbolic, visual, linguistic, proprioceptive, and
+action realizations. The experimental optional continuous-content sidecar is a
+backward-compatible probe only and may not be treated as the future grounding
+path.
 
 ## Rust commands
 
@@ -55,6 +107,10 @@ The audit binaries write JSON to standard output.
 | `benchmarks.py` | Measures batched Rust generation and binding throughput. |
 | `runner.py` | Performs the non-interactive Kaggle phase sequence and packages compact evidence. |
 | `seed_gate.py` | Validates the immutable R10 contracts, runs the selected-core timing gate and bounded per-family pilots, evaluates grouped G0 decisions, and writes non-transfer receipts. |
+| `common_content.py` | Implements the versioned shared content-token boundary, variable-width adapters, structural time/address inputs, and embodiment action decoder for new trajectories. |
+| `trajectory_world.py` | Generates the public-only CalibratedReachV2 sensor/goal/action trajectories, public-history teacher, and private calibration receipt. |
+| `first_training.py` | Builds the common-content bundle, runs the bounded CPU Trainer save/resume smoke, and dispatches the explicit TOML scientific path; the bounded two-update receipt passes and the reviewed fixed 20-update diagnostic is authorized. |
+| `tools/audit_training_system.py` | Runs the CPU public/private, calibration, permutation/ablation, embodiment, model continuation, and closed-loop apparatus checks and writes the compact receipt. |
 
 The finite-G0 Python boundary exposes one deduplicated corpus and mixture API
 for Cards 04, 03, 02, 05, and 06. Family names, aliases, hashes, and accounting
@@ -64,6 +120,13 @@ The checked-in model profile has 12 layers, width 384, six attention heads,
 SwiGLU width 1024, payload width 8, action horizon 16, and context limit 2048.
 The transformer body is randomly initialized. No pretrained language, vision,
 or robot weights are loaded.
+
+The persisted compiler corpus uses `g0_loader.py` and standard PyTorch
+`Dataset`/`DataLoader` collation. Its model dictionary includes the nine raw
+tensor fields plus loss-only `action_decision_groups`; these select grouped
+categorical supervision and never enter the backbone. See
+`artifacts/g0-learner-input/R3D-REVIEW.md` for a fresh episode, its reproducible
+CPU inspection, and the remaining modality migration requirements.
 
 ## Build the Python extension and run tests
 

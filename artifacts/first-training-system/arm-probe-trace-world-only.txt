@@ -1,0 +1,59 @@
+world=8 sensor dims, 4 actions
+trace=public events only; private receipt is excluded
+000 t= 0.00 reset
+001 t= 0.00 observation values=[ 0.1292 -0.0375  0.2593  0.0753  0.0721 -0.0749 -0.0101 -0.0706]
+002 t= 0.00 goal values=[ 0.0197 -0.0311  0.0884 -0.0192  0.024  -0.021  -0.0254 -0.0091] frame=task_sensor key=relative_goal
+003 t= 0.00 calibration_action action=[0.06 0.   0.   0.  ]
+004 t= 0.00 calibration_observation values=[ 0.1276 -0.0364  0.2596  0.0676  0.0735 -0.0768 -0.0115 -0.0717]
+005 t= 0.00 calibration_action action=[-0.06  0.    0.    0.  ]
+006 t= 0.00 calibration_observation values=[ 0.1292 -0.0375  0.2593  0.0753  0.0721 -0.0749 -0.0101 -0.0706]
+007 t= 0.00 calibration_action action=[0.   0.06 0.   0.  ]
+008 t= 0.00 calibration_observation values=[ 0.1284 -0.037   0.2598  0.0711  0.073  -0.076  -0.011  -0.0713]
+009 t= 0.00 calibration_action action=[ 0.   -0.06  0.    0.  ]
+010 t= 0.00 calibration_observation values=[ 0.1292 -0.0375  0.2593  0.0753  0.0721 -0.0749 -0.0101 -0.0706]
+011 t= 0.00 calibration_action action=[0.   0.   0.06 0.  ]
+012 t= 0.00 calibration_observation values=[ 0.128  -0.0359  0.2555  0.0743  0.0714 -0.0744 -0.0093 -0.0705]
+013 t= 0.00 calibration_action action=[ 0.    0.   -0.06  0.  ]
+014 t= 0.00 calibration_observation values=[ 0.1292 -0.0375  0.2593  0.0753  0.0721 -0.0749 -0.0101 -0.0706]
+015 t= 0.00 calibration_action action=[0.   0.   0.   0.06]
+016 t= 0.00 calibration_observation values=[ 0.1277 -0.0355  0.2542  0.0749  0.071  -0.0741 -0.0089 -0.0703]
+017 t= 0.00 calibration_action action=[ 0.    0.    0.   -0.06]
+018 t= 0.00 calibration_observation values=[ 0.1292 -0.0375  0.2593  0.0753  0.0721 -0.0749 -0.0101 -0.0706]
+019 t= 0.10 action_query
+020 t= 0.10 action_executed action=[-0.0263  0.4    -0.4    -0.4   ]
+021 t= 0.10 observation values=[ 0.1422 -0.0587  0.3217  0.0574  0.0898 -0.0907 -0.0288 -0.0777]
+022 t= 0.20 action_query
+023 t= 0.20 action_executed action=[ 0.018   0.0231 -0.1163 -0.1559]
+024 t= 0.20 observation values=[ 0.1472 -0.066   0.3407  0.057   0.0944 -0.0944 -0.0336 -0.0791]
+025 t= 0.30 action_query
+026 t= 0.30 action_executed action=[ 0.0074  0.0076 -0.031  -0.0418]
+027 t= 0.30 observation values=[ 0.1486 -0.0681  0.3463  0.0563  0.0958 -0.0956 -0.0351 -0.0796]
+028 t= 0.40 action_query
+029 t= 0.40 action_executed action=[ 0.0015  0.0015 -0.0059 -0.008 ]
+030 t= 0.40 observation values=[ 0.1483 -0.0679  0.3464  0.0547  0.0961 -0.096  -0.0354 -0.0798]
+031 t= 0.50 action_query
+032 t= 0.50 action_executed action=[-0.0061 -0.0027 -0.0063 -0.0077]
+033 t= 0.50 observation values=[ 0.1487 -0.0686  0.3488  0.0539  0.0968 -0.0966 -0.0362 -0.0801]
+034 t= 0.60 goal values=[-0.0167  0.0318 -0.1031  0.0503 -0.0326  0.0312  0.0345  0.0145] frame=task_sensor key=relative_goal
+035 t= 0.60 action_query
+036 t= 0.60 action_executed action=[-0.1725 -0.4     0.4     0.4   ]
+037 t= 0.60 observation values=[ 0.1403 -0.0503  0.2849  0.0935  0.0752 -0.0752 -0.0133 -0.0699]
+038 t= 0.70 action_query
+039 t= 0.70 action_executed action=[-0.068  -0.0572  0.171   0.2336]
+040 t= 0.70 observation values=[ 0.1337 -0.0393  0.2523  0.1038  0.0659 -0.0667 -0.0034 -0.0661]
+041 t= 0.80 action_query
+042 t= 0.80 action_executed action=[-0.0048 -0.006   0.0295  0.0396]
+043 t= 0.80 observation values=[ 0.132  -0.0368  0.246   0.1036  0.0644 -0.0656 -0.0019 -0.0657]
+044 t= 0.90 action_query
+045 t= 0.90 action_executed action=[-0.0028 -0.0017  0.001   0.0016]
+046 t= 0.90 observation values=[ 0.1316 -0.0365  0.2456  0.1023  0.0645 -0.0658 -0.002  -0.0659]
+047 t= 1.00 action_query
+048 t= 1.00 action_executed action=[-0.0092 -0.005  -0.0014 -0.0008]
+049 t= 1.00 observation values=[ 0.1322 -0.0373  0.2473  0.1031  0.0648 -0.066  -0.0023 -0.0659]
+050 t= 1.10 action_query
+051 t= 1.10 action_executed action=[-0.0059 -0.0041  0.0066  0.0093]
+052 t= 1.10 observation values=[ 0.1321 -0.0368  0.2451  0.1054  0.0639 -0.065  -0.0014 -0.0654]
+053 t= 1.20 action_query
+054 t= 1.20 action_executed action=[ 0.0059  0.0035 -0.0018 -0.003 ]
+055 t= 1.20 observation values=[ 0.1327 -0.0375  0.2467  0.1059  0.0642 -0.0652 -0.0017 -0.0654]
+056 t= 1.30 episode_end

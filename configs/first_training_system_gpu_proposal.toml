@@ -1,0 +1,69 @@
+# Proposal only. Do not launch without explicit user authorization and a
+# reviewed path row, fixed budget, stop rule, and committed source SHA.
+[run]
+mode = "scientific"
+purpose = "source_acquisition"
+entrypoint = "first_training"
+cpu_threads = 1
+max_steps = 20
+per_device_train_batch_size = 2
+device = "cuda"
+# The declared Kaggle path uses T4; fp16 is the supported mixed precision.
+mixed_precision = "fp16"
+# The official runner preserves partial receipts at this wall-clock stop.
+max_wall_clock_seconds = 3600
+
+[system]
+version = "calibrated-reach-v2"
+seed = 20260908
+teacher = "public-history-calibration-teacher-v1"
+online_dagger = false
+scheduler = "none"
+
+[world]
+train_episodes = 64
+held_out_episodes = 32
+horizon = 12
+dt = 0.1
+sensor_dims = [8, 10]
+action_dims = [2, 4]
+goal_modes = ["absolute", "relative"]
+goal_switch_steps = [-1, 3]
+disturbance_arms = [false, true]
+action_limit = 0.5
+calibration_pulse = 0.06
+observation_noise = 0.0
+disturbance_scale = 0.02
+
+[model]
+hidden_size = 64
+intermediate_size = 128
+num_hidden_layers = 2
+attention_heads = 4
+max_position_embeddings = 512
+max_tokens = 512
+
+[train]
+batch_size = 2
+updates = 20
+learning_rate = 0.001
+weight_decay = 0.0
+action_loss = "masked_smooth_l1"
+future_loss_weight = 0.0
+
+[evaluation]
+checkpoints = [0, 5, 10, 20]
+closed_loop_checkpoints = [0, 20]
+success_tolerance_sensor_l2 = 0.05
+success_tolerance_physical = 0.05
+teacher_effort_objective = "bounded_residual_plus_minimum_l2"
+teacher_effort_regularization = 1.0e-8
+metrics = ["public_action_mse", "closed_loop_sensor_rms", "closed_loop_physical_error", "success", "effort"]
+
+[heldout]
+# This fixed pilot uses seed holdouts only; transform holdouts are not
+# implemented and therefore must remain undeclared.
+seed_start = 100000
+seed_count = 32
+transform_sensor_permutations = []
+transform_body_permutations = []

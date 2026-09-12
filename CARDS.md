@@ -56,8 +56,10 @@ The execution fragments are:
 
 Across all cards, bodies are known unless the card says otherwise, compared
 actions have matched costs, resets and absorbing states are declared, and the
-ambiguity gap is always reported. Pixels occur only in a downstream transfer
-family, never in an abstract witness.
+ambiguity gap is always reported. Abstract witnesses may use symbolic, visual,
+or other public sensor realizations through the common content boundary in
+`LEARNER-INPUT-ARCHITECTURE.md`. Grounded transfer remains a separate experiment;
+using pixels in a source world does not establish it.
 
 ## Card 01: Regulation
 

@@ -94,6 +94,29 @@ class KaggleContractTests(unittest.TestCase):
         toolchain = (ROOT / "rust-toolchain.toml").read_text(encoding="utf-8")
         self.assertIn('channel = "1.88.0"', toolchain)
 
+    def test_first_training_registry_dispatch_is_explicit(self) -> None:
+        control = load_control_plane()
+        data, experiment = control.experiment("first-training-system")
+        self.assertEqual(data["accelerator"], "NvidiaTeslaT4")
+        config_path = ROOT / experiment["config"]
+        self.assertTrue(config_path.is_file())
+        config = __import__("tomllib").loads(config_path.read_text(encoding="utf-8"))
+        self.assertEqual(config["run"]["entrypoint"], "first_training")
+        from pretraining_experiments.runner import entrypoint_for_config
+        self.assertEqual(entrypoint_for_config(config), "first_training")
+        self.assertEqual(config["run"]["max_steps"], 20)
+        self.assertEqual(config["run"]["per_device_train_batch_size"], 2)
+        self.assertEqual(control.config_root_seed(config), 20260908)
+
+    def test_first_training_report_is_preferred_by_collector(self) -> None:
+        control = load_control_plane()
+        summary = {
+            "scientific_report": {"purpose": "source_acquisition"},
+            "seed_gate": {"classification": "legacy"},
+        }
+        report = control.compact_report(summary)
+        self.assertEqual(report["purpose"], "source_acquisition")
+
     def test_r10_registry_uses_the_fixed_one_t4_seed_gate_contract(self) -> None:
         control = load_control_plane()
         data, experiment = control.experiment("r10-seed-gate")

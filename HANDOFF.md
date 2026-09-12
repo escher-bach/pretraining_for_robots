@@ -1,13 +1,69 @@
 # Handoff
 
-Current state of the R5–R10 bootstrap, written so the next agent can continue
-without re-deriving what was already decided. `DEVELOPMENT-PATH.md` remains the
-authority for the progress chart; this document says where the work stopped, what
-was learned building it, and what to do next.
+## Active route: first viable training system
+
+The user authorized the fixed 20-update CPU diagnostic and GPU run. Astra's
+pre-run source review vetoed the original V1 identification premise: fixed
+public goal-error feedback achieves 32/32 held-out success without identifying
+the map. The smallest repair is V2's independent signed/permuted sensor and
+actuator frames, plus configuration-derived sensor adapters/padding. Widths
+8/10 remain a fixture. The public teacher and common content boundary remain.
+
+Astra's final CPU GO is recorded and the fixed V2 CPU run completed on
+2026-09-12. Its receipt and interpretation are in
+`artifacts/first-training-system/cpu-v2-20/`. Held-out loss improved
+0.025209 -> 0.016088 and mean physical error 0.245424 -> 0.143723;
+success remained 2/32, below inaction's 4/32. No acquired reaching claim is
+supported. GPU execution is authorized and its device/control-plane readiness
+is being completed. There is no additional user-approval gate. See `FIRST-TRAINING-SYSTEM.md`,
+`artifacts/first-training-system/ASTRA-REVIEW.md`, and
+`artifacts/first-training-system/astra-baseline-pre-review.json`.
+
+Preserve V1's passing `audit.json` and two-update scientific smoke receipt
+(57.24 seconds) as apparatus evidence. The new `audit-world-only.json` performs
+no optimization and does not repeat checkpoint continuation. It checks the
+corrected world, teacher/inaction/reactive bracket, B/-B information witness,
+and nonlearning public-prefix inference. Teacher exceptions on missing
+calibration are API checks, not evidence calibration is necessary for control.
+
+Interpret the pilot as calibrated goal-conditioned reaching within one sampled
+family. Twenty updates at batch two consume 40 presentations from the 64-episode
+pool. The small disturbance lies below success tolerance; robust regulation,
+active experimentation, compositional generation, transfer and grounding remain
+unestablished. Reuse the content/data/training apparatus for the next family;
+do not create another independent family-specific stack or design it now.
+
+Historical R3d/R10/R11 records below retain their original meaning and receipts;
+they do not block this authorized first-system pilot.
+
+## Binding learner-input correction
+
+Read `LEARNER-INPUT-ARCHITECTURE.md` before doing learner, modality, grounding,
+or demonstration work. The 2026-09-04/05 review rejected the experimental
+"eight-float symbolic primary path plus optional continuous-content sidecar" as
+the future architecture. The sidecar was deliberately inert during existing
+training to preserve R10/R10c compatibility, which makes it a cold channel
+rather than evidence of sensor-realization transfer. Symbolic G0 payloads must
+instead become one adapter input among visual, linguistic, proprioceptive, and
+embodiment inputs, all producing the same trained `[B,T,H]` content interface.
+The failure and the user's justified disappointment with the earlier analysis
+are recorded in that document. R3d now gates new learner or grounding work.
 
 ## Where the work stopped
 
-**R5–R10 are closed. The preserved first R10 one-T4 pilot exposed a loss/metric
+**2026-09-08 R3d review:** The modality correction remains specified, not
+implemented. A fresh generated episode and robotics-data compatibility mapping
+are in `artifacts/g0-learner-input/R3D-REVIEW.md`, with reproducible inspection
+script and JSON receipt beside it. The episode is coherent supplied-dynamics
+planning (150 transition rows among 195 tokens), not evidence of learning
+unknown dynamics. The persisted G0 loader now retains loss-only
+`action_decision_groups`, preventing silent fallback to the old row-wise L1
+objective. Eight targeted loader tests pass; the fresh episode passes grouped
+loss and first-decision causal-prefix checks. `CARDS.md` no longer forbids
+visual abstract witnesses. Next work is the versioned R3d implementation;
+robot data ingestion, multimodal training and matched acquisition remain undone.
+
+**R5â€“R10 are closed. The preserved first R10 one-T4 pilot exposed a loss/metric
 and accounting defect; its one allowed grouped-objective repair completed and
 is the decisive result. R10 is `seed_gate_incomplete`: Card 02 alone is
 frontier-admitted, while Cards 04, 03, 05, and 06 are audited and
@@ -22,8 +78,8 @@ compatibility-characterized but inconclusive. R11 remains blocked.**
 | R7 card 02 predictive state | Complete | `crates/card02-predictive-state` |
 | R8 card 05 active experimentation | Complete | `crates/card05-active-experimentation` |
 | R9 card 06 perceptual organization | Complete | `crates/card06-perceptual-organization` |
-| R10 seed gate | Complete — `seed_gate_incomplete` | `crates/world-py`, `python/pretraining_experiments/seed_gate.py`, `configs/r10` |
-| R10a post-gate compatibility triage | Complete — Card 06 `support_fit_incomplete` | `CARDS.md`, `DEVELOPMENT-PATH.md`, `configs/r10/card06_compatibility_scale_t4.toml` |
+| R10 seed gate | Complete â€” `seed_gate_incomplete` | `crates/world-py`, `python/pretraining_experiments/seed_gate.py`, `configs/r10` |
+| R10a post-gate compatibility triage | Complete â€” Card 06 `support_fit_incomplete` | `CARDS.md`, `DEVELOPMENT-PATH.md`, `configs/r10/card06_compatibility_scale_t4.toml` |
 
 The isolated `codex/term-compiler-spike` branch also carries experimental R3c
 and R13 apparatus. It freezes the compiler's version-2 public trace, keeps
@@ -38,7 +94,7 @@ they do not reopen R10, authorize R11, establish a general finite-domain RDDL
 profile, integrate a modality encoder, or make a transfer claim.
 
 `cargo test --workspace --locked` passes with no failures.
-`cargo fmt --all -- --check` is clean. The Python suite passes too — 60 tests —
+`cargo fmt --all -- --check` is clean. The Python suite passes too â€” 60 tests â€”
 but **only after rebuilding the PyO3 wheel**, because the `0.3.1` envelope bump
 changed a constant the installed extension carries:
 
@@ -68,14 +124,14 @@ The others are `card03-audit`, `card04-audit`, `card05-audit`, and
 
 ## What R9 completed
 
-Card 06 is the last seed family and the first executable user of the `⊗`
+Card 06 is the last seed family and the first executable user of the `âŠ—`
 shared-coupling seam. Contract `76a08f38947c8cae` has 36 exact seeded cases and
 32 distinct public episodes.
 
 The implementation has:
 
 - two exchangeable latent sources with hidden drift;
-- public observation channels carrying **values** rather than selections — the
+- public observation channels carrying **values** rather than selections â€” the
   `FiniteG0` profile's content-kind flag exists for this and is so far unused;
 - executable `Coupling { rule: Override }` resolving competing source and
   matched-marginal noise writers through a hidden assignment;
@@ -113,9 +169,9 @@ implies and does not change any outcome. The fixed barriers were final macro
 `>= 0.80`, gain `>= 0.25`, and every-case-kind `>= 0.60`. These were
 predeclared, useful gate decisions, but heuristic and unpowered rather than
 scientifically derived learnability thresholds. In contrast, the gate's
-structural barriers — valid audited contracts, leakage-free public rendering,
+structural barriers â€” valid audited contracts, leakage-free public rendering,
 distinct public support, working ABI/bounds, exact consumed-step accounting,
-and sealed transfer — are grounded in executable audits and receipts.
+and sealed transfer â€” are grounded in executable audits and receipts.
 
 The overall result is `seed_gate_incomplete`. It is source-family learner
 evidence only, not transfer evidence. R10 permits no second repair and does
@@ -162,7 +218,7 @@ refuses an uninformative calibration.
 **A vacuous ambiguity gap reads exactly like a real one.** `ambiguity_gap`
 compares `privileged_value` with `value`, and a fragment that does not override
 the former is comparing a quantity with itself. Cards 04 and 02 report theirs as
-vacuous on purpose and carry the real quantity separately — the
+vacuous on purpose and carry the real quantity separately â€” the
 published-information gap and the latch-ablation gap. Card 05 is the first family
 where the shared comparison says something.
 
@@ -240,14 +296,14 @@ groups.
 
 ## Interfaces you will touch
 
-- `crates/g0-contract/src/kernel.rs` — the five operators and the norm algebra,
+- `crates/g0-contract/src/kernel.rs` â€” the five operators and the norm algebra,
   as shared data. `KernelUse::declared(card)` holds `EMBODIED-PROCESS.md`'s
   coverage table so a card can be checked against it.
-- `crates/g0-contract/src/query.rs` — all six declared queries plus the two
+- `crates/g0-contract/src/query.rs` â€” all six declared queries plus the two
   auditor operations. `AmbiguitySet` is the object everything is derived from.
-- `crates/g0-render/src/lib.rs` — a card emits a `G0Episode` transcript and
+- `crates/g0-render/src/lib.rs` â€” a card emits a `G0Episode` transcript and
   nothing else. `boundary_check` renders and decodes and requires equality.
-- `physical-event-abi-0.3.1` — the envelope. `0.3.0` refused every condition
+- `physical-event-abi-0.3.1` â€” the envelope. `0.3.0` refused every condition
   record, which the finite families need for `reveal`; the guard is narrowed to
   the header signature and the canonical decoder refuses a malformed condition
   quantity so a skipped envelope still cannot be read as a public fact.

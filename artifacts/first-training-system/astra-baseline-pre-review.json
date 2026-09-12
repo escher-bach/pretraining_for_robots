@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "reviewer": "Astra",
+  "training_performed": false,
+  "cohort": {
+    "seed_start": 100000,
+    "seed_stride": 7919,
+    "sensor_dims": [
+      8,
+      10
+    ],
+    "action_dims": [
+      2,
+      4
+    ],
+    "goal_modes": [
+      "absolute",
+      "relative"
+    ],
+    "goal_switch_steps": [
+      -1,
+      3
+    ],
+    "disturbance_arms": [
+      false,
+      true
+    ],
+    "horizon": 12,
+    "dt": 0.1,
+    "disturbance_scale": 0.02,
+    "physical_success_tolerance": 0.05
+  },
+  "fixed_reactive_policy": "u[:2] = clip(8 * (public_target - current_sensor)[:2], -0.5, 0.5); other actuators zero; public goal-frame reconstruction only, no calibration-map estimate",
+  "original_v1": {
+    "fixed_reactive": {
+      "successes": 32,
+      "episodes": 32,
+      "mean_physical_error": 0.0006478464623070219,
+      "max_physical_error": 0.0019752983752493614
+    },
+    "teacher": {
+      "successes": 32,
+      "episodes": 32,
+      "mean_physical_error": 0.0006881795698432091,
+      "max_physical_error": 0.0019497055752811692
+    },
+    "inaction": {
+      "successes": 4,
+      "episodes": 32,
+      "mean_physical_error": 0.12243657504336178,
+      "max_physical_error": 0.2091345331284942
+    }
+  },
+  "signed_permutation_prototype": {
+    "transformation": "Independent sensor row permutation/sign including offset, actuator column permutation/sign. RNG default_rng(SeedSequence([seed,812817])); sensor permutation then signs then action permutation then signs. Prototype evaluated in memory over original V1; final V2 may choose a different explicit random stream.",
+    "fixed_reactive": {
+      "successes": 8,
+      "episodes": 32,
+      "mean_physical_error": 0.2994403863580058,
+      "max_physical_error": 0.866253674857003
+    },
+    "teacher": {
+      "successes": 32,
+      "episodes": 32,
+      "mean_physical_error": 0.0006881795698432055,
+      "max_physical_error": 0.0019497055752811692
+    },
+    "inaction": {
+      "successes": 4,
+      "episodes": 32,
+      "mean_physical_error": 0.12243657504336178,
+      "max_physical_error": 0.2091345331284942
+    }
+  },
+  "timing": {
+    "first_baseline_process_wall_seconds": 6.8798897,
+    "paired_original_and_prototype_process_wall_seconds": 4.4588664,
+    "note": "Includes Python startup; these are tool-measured CPU process wall times, not training throughput."
+  },
+  "verdict": "Original V1 is not an identification witness. Versioned signed-frame repair is justified before the source pilot. This prototype is not final V2 validation."
+}

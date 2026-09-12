@@ -10,6 +10,12 @@ slug_prefix = "pretraining-single-world"
 config = "configs/kaggle/t4x2_single_world.toml"
 purpose = "verify the two-T4 apparatus and produce one bounded single-world candidate"
 
+[experiments.first-training-system]
+title = "First calibrated-reach scientific system"
+slug_prefix = "pretraining-first-system"
+config = "configs/first_training_system_gpu_proposal.toml"
+purpose = "run the fixed calibrated-reach source-acquisition profile after review"
+
 [experiments.r10-seed-gate]
 title = "R10 five-family finite-G0 seed gate"
 slug_prefix = "pretraining-r10-seed-gate"

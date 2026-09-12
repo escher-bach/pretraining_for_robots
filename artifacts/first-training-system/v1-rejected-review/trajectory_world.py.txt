@@ -1,0 +1,976 @@
+"""A small public-history trajectory world for the first robot system.
+
+This module deliberately does not reuse the finite-G0 corpus format.  It
+produces sampled sensor/goal/action histories, while the latent dynamics and
+the calibration audit remain separate.  The public teacher has no reference
+to the private world: it estimates the action-to-sensor map from the public
+calibration prefix and then controls in the published sensor coordinates.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+import copy
+import hashlib
+import inspect
+import json
+from typing import Iterable, Sequence
+
+import numpy as np
+from scipy.optimize import lsq_linear
+
+
+WORLD_VERSION = "calibrated-reach-v1"
+TEACHER_VERSION = "public-history-calibration-teacher-v1"
+
+
+def _array_tuple(values: Iterable[float]) -> tuple[float, ...]:
+    return tuple(float(value) for value in values)
+
+
+@dataclass(frozen=True)
+class PublicEvent:
+    """One learner-visible event.
+
+    ``values`` carries observation or goal content.  ``action`` carries a
+    public executed action.  Query events intentionally carry neither: their
+    action labels live in ``TrajectoryEpisode.supervision``.
+    """
+
+    event_id: int
+    kind: str
+    time: float
+    values: tuple[float, ...] = ()
+    value_valid: tuple[bool, ...] = ()
+    action: tuple[float, ...] = ()
+    action_valid: tuple[bool, ...] = ()
+    available_at: float | None = None
+    key: str = ""
+    actor: str = "target"
+    namespace: str = ""
+    frame: str = "task_sensor"
+
+    def __post_init__(self) -> None:
+        if self.event_id < 0:
+            raise ValueError("event_id must be nonnegative")
+        if not np.isfinite(self.time):
+            raise ValueError("event time must be finite")
+        if self.available_at is not None and not np.isfinite(self.available_at):
+            raise ValueError("available_at must be finite")
+        if self.values and len(self.values) != len(self.value_valid):
+            raise ValueError("values and value_valid must have equal lengths")
+        if self.action and len(self.action) != len(self.action_valid):
+            raise ValueError("action and action_valid must have equal lengths")
+        if self.available_at is not None and self.available_at < self.time:
+            raise ValueError("an event cannot be available before its physical time")
+        if not self.frame:
+            raise ValueError("event frame must be nonempty")
+
+    def public_dict(self) -> dict[str, object]:
+        """Serialize only the public event, with no latent or generator data."""
+
+        result: dict[str, object] = {
+            "event_id": self.event_id,
+            "kind": self.kind,
+            "time": self.time,
+            "available_at": self.available_at if self.available_at is not None else self.time,
+            "key": self.key,
+            "actor": self.actor,
+            "namespace": self.namespace,
+            "frame": self.frame,
+        }
+        if self.values:
+            result["values"] = list(self.values)
+            result["value_valid"] = list(self.value_valid)
+        if self.action:
+            result["action"] = list(self.action)
+            result["action_valid"] = list(self.action_valid)
+        return result
+
+
+@dataclass(frozen=True)
+class ActionTarget:
+    """Loss-only action supervision addressed to one public query event."""
+
+    query_event_id: int
+    action: tuple[float, ...]
+    action_valid: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        if self.query_event_id < 0:
+            raise ValueError("query_event_id must be nonnegative")
+        if len(self.action) != len(self.action_valid):
+            raise ValueError("action and action_valid must have equal lengths")
+
+    def private_dict(self) -> dict[str, object]:
+        return {
+            "query_event_id": self.query_event_id,
+            "action": list(self.action),
+            "action_valid": list(self.action_valid),
+        }
+
+
+@dataclass(frozen=True)
+class CalibratedReachConfig:
+    """Fixed, bounded settings for the first CPU-verifiable system."""
+
+    horizon: int = 12
+    dt: float = 0.1
+    state_limit: float = 0.8
+    action_limit: float = 0.5
+    calibration_pulse: float = 0.06
+    control_gain: float = 0.8
+    sensor_dims: tuple[int, ...] = (8, 10)
+    action_dims: tuple[int, ...] = (2, 4)
+    goal_modes: tuple[str, ...] = ("absolute", "relative")
+    observation_noise: float = 0.0
+    disturbance_scale: float = 0.0
+    goal_switch_step: int | None = None
+
+    def __post_init__(self) -> None:
+        if self.horizon <= 0 or self.dt <= 0:
+            raise ValueError("horizon and dt must be positive")
+        if self.state_limit <= 0 or self.action_limit <= 0:
+            raise ValueError("state and action limits must be positive")
+        if self.calibration_pulse <= 0:
+            raise ValueError("calibration_pulse must be positive")
+        if not 0.0 < self.control_gain <= 1.0:
+            raise ValueError("control_gain must be in (0, 1] for bounded conservative control")
+        if not self.sensor_dims or any(value not in (8, 10) for value in self.sensor_dims):
+            raise ValueError("the first system admits sensor widths 8 and 10")
+        if not self.action_dims or any(value not in (2, 4) for value in self.action_dims):
+            raise ValueError("the first system admits action widths 2 and 4")
+        if set(self.goal_modes) - {"absolute", "relative"}:
+            raise ValueError("goal_modes must contain only absolute or relative")
+        if self.observation_noise < 0 or self.disturbance_scale < 0:
+            raise ValueError("noise and disturbance scales cannot be negative")
+        if self.goal_switch_step is not None and not 0 <= self.goal_switch_step < self.horizon:
+            raise ValueError("goal_switch_step must be inside the scored horizon")
+
+
+@dataclass(frozen=True)
+class PublicHistory:
+    """The only object accepted by :class:`PublicHistoryTeacher`."""
+
+    events: tuple[PublicEvent, ...]
+
+    @classmethod
+    def from_events(cls, events: Sequence[PublicEvent]) -> "PublicHistory":
+        ordered = tuple(events)
+        if any(left.event_id >= right.event_id for left, right in zip(ordered, ordered[1:])):
+            raise ValueError("public history must be ordered by event_id")
+        return cls(ordered)
+
+    def append(self, *events: PublicEvent) -> "PublicHistory":
+        return PublicHistory.from_events((*self.events, *events))
+
+    def latest(self, kind: str) -> PublicEvent:
+        for event in reversed(self.events):
+            if event.kind == kind:
+                return event
+        raise ValueError(f"public history has no {kind!r} event")
+
+    def of_kind(self, kind: str) -> tuple[PublicEvent, ...]:
+        return tuple(event for event in self.events if event.kind == kind)
+
+    def latest_sensor(self) -> PublicEvent:
+        """Return the latest public sensor frame, including calibration frames."""
+
+        for event in reversed(self.events):
+            if event.kind in {"observation", "calibration_observation"}:
+                return event
+        raise ValueError("public history has no sensor observation")
+
+
+@dataclass(frozen=True)
+class TrajectoryEpisode:
+    """Public history, loss-only labels, and a separate private audit receipt."""
+
+    events: tuple[PublicEvent, ...]
+    supervision: tuple[ActionTarget, ...]
+    private_audit: dict[str, object]
+
+    def __post_init__(self) -> None:
+        if not self.events or self.events[0].kind != "reset":
+            raise ValueError("a trajectory must begin with reset")
+        if self.events[-1].kind != "episode_end":
+            raise ValueError("a trajectory must end with episode_end")
+        if any(left.event_id >= right.event_id for left, right in zip(self.events, self.events[1:])):
+            raise ValueError("events must be strictly ordered")
+        query_ids = {event.event_id for event in self.events if event.kind == "action_query"}
+        if any(target.query_event_id not in query_ids for target in self.supervision):
+            raise ValueError("supervision may address only action_query events")
+
+    @property
+    def public_history(self) -> PublicHistory:
+        return PublicHistory.from_events(self.events)
+
+    def public_input(self) -> tuple[dict[str, object], ...]:
+        return tuple(event.public_dict() for event in self.events)
+
+    def learner_bundle(self) -> dict[str, object]:
+        """Return the public inputs and separate labels, never private audit data."""
+
+        return {
+            "world_version": WORLD_VERSION,
+            "events": [event.public_dict() for event in self.events],
+            "supervision": [target.private_dict() for target in self.supervision],
+        }
+
+
+@dataclass(frozen=True)
+class PublicHistoryTeacher:
+    """Calibration-only controller using public event history.
+
+    The constructor has no world, latent state, matrix, seed, or goal object.
+    It estimates the action-to-sensor map from public calibration pulses and
+    then uses a bounded ridge least-squares inverse in the published sensor
+    space, followed by a conservative control gain.
+    """
+
+    control_gain: float = 0.8
+    calibration_rank_tolerance: float = 1.0e-8
+    effort_objective: str = "bounded_residual_plus_minimum_l2"
+    effort_regularization: float = 1.0e-8
+
+    def _calibration_map(self, history: PublicHistory) -> np.ndarray:
+        actions = history.of_kind("calibration_action")
+        calibration_observations = history.of_kind("calibration_observation")
+        initial_observations = history.of_kind("observation")
+        observations = initial_observations[:1] + calibration_observations
+        if len(actions) == 0 or len(observations) != len(actions) + 1:
+            raise ValueError("public calibration prefix is incomplete")
+        action_matrix = np.asarray([event.action for event in actions], dtype=np.float64)
+        sensor_deltas = np.asarray(
+            [
+                np.asarray(observations[index + 1].values)
+                - np.asarray(observations[index].values)
+                for index in range(len(actions))
+            ],
+            dtype=np.float64,
+        )
+        singular = np.linalg.svd(action_matrix, compute_uv=False)
+        if singular.size == 0 or singular[-1] <= self.calibration_rank_tolerance:
+            raise ValueError("public calibration actions are rank-deficient")
+        # action_matrix @ map.T = sensor_deltas; map includes dt and dynamics.
+        estimate, _, rank, _ = np.linalg.lstsq(action_matrix, sensor_deltas, rcond=None)
+        if rank != action_matrix.shape[1]:
+            raise ValueError("public calibration does not identify every actuator")
+        return estimate.T
+
+    def _target(self, history: PublicHistory) -> np.ndarray:
+        goal_indices = [index for index, event in enumerate(history.events) if event.kind == "goal"]
+        if not goal_indices:
+            raise ValueError("public history has no goal event")
+        goal_index = goal_indices[-1]
+        goal = history.events[goal_index]
+        if goal.frame != "task_sensor":
+            raise ValueError("goal must be expressed in the task sensor frame")
+        if goal.key == "absolute_goal":
+            return np.asarray(goal.values, dtype=np.float64)
+        if goal.key == "relative_goal":
+            anchors = [
+                event
+                for event in history.events[:goal_index]
+                if event.kind == "observation"
+            ]
+            if not anchors:
+                raise ValueError("relative goal has no public observation anchor")
+            anchor = anchors[-1]
+            return np.asarray(anchor.values, dtype=np.float64) + np.asarray(goal.values)
+        raise ValueError(f"unsupported public goal key {goal.key!r}")
+
+    def action_for(self, history: PublicHistory, action_bounds: np.ndarray) -> np.ndarray:
+        """Choose the next action using only ``history`` and public bounds."""
+
+        bounds = np.asarray(action_bounds, dtype=np.float64)
+        if bounds.ndim != 2 or bounds.shape[1] != 2:
+            raise ValueError("action_bounds must have shape [action_dim, 2]")
+        if not 0.0 < self.control_gain <= 1.0:
+            raise ValueError("control_gain must be in (0, 1] for bounded conservative control")
+        if not np.isfinite(bounds).all() or np.any(bounds[:, 0] >= bounds[:, 1]):
+            raise ValueError("action_bounds must be finite with lower < upper")
+        action_to_sensor = self._calibration_map(history)
+        observation = np.asarray(history.latest_sensor().values, dtype=np.float64)
+        error = self._target(history) - observation
+        # The four-actuator body has a two-dimensional nullspace.  Solve the
+        # declared bounded ridge objective with SciPy rather than clipping an
+        # unconstrained pseudoinverse (which is not generally optimal after
+        # clipping): residual fit plus a tiny minimum-effort regularizer.
+        if self.effort_objective != "bounded_residual_plus_minimum_l2":
+            raise ValueError(f"unsupported effort objective {self.effort_objective!r}")
+        if self.effort_regularization <= 0:
+            raise ValueError("effort_regularization must be positive")
+        regularizer = np.sqrt(self.effort_regularization) * np.eye(bounds.shape[0])
+        result = lsq_linear(
+            np.vstack((action_to_sensor, regularizer)),
+            np.concatenate((error, np.zeros(bounds.shape[0]))),
+            bounds=(bounds[:, 0], bounds[:, 1]),
+            lsmr_tol="auto",
+            max_iter=200,
+        )
+        if not result.success or not np.isfinite(result.x).all():
+            raise ValueError(f"bounded public control solve failed: {result.message}")
+        action = self.control_gain * result.x
+        if np.any(action < bounds[:, 0]) or np.any(action > bounds[:, 1]):
+            raise ValueError("conservative teacher action exceeds public bounds")
+        return action
+
+
+def _well_conditioned_sensor_matrix(rng: np.random.Generator, dimension: int) -> np.ndarray:
+    """Generate a structured, bounded sensor map with two observable axes."""
+
+    while True:
+        matrix = np.zeros((dimension, 2), dtype=np.float64)
+        matrix[:2] = np.diag(rng.uniform(0.85, 1.15, size=2))
+        matrix[2:] = rng.uniform(-0.35, 0.35, size=(dimension - 2, 2))
+        singular = np.linalg.svd(matrix, compute_uv=False)
+        if singular[-1] > 0.85 and singular[0] / singular[-1] < 3.5:
+            return matrix
+
+
+def _well_conditioned_body_map(rng: np.random.Generator, action_dim: int) -> np.ndarray:
+    """Generate an independently varied 2-by-A actuator effect map."""
+
+    if action_dim == 2:
+        base = np.eye(2)
+    elif action_dim == 4:
+        base = np.asarray([[1.0, 0.0, 0.65, 0.0], [0.0, 1.0, 0.0, 0.65]])
+    else:  # guarded by CalibratedReachConfig
+        raise ValueError("unsupported action dimension")
+    while True:
+        matrix = base + rng.uniform(-0.16, 0.16, size=base.shape)
+        matrix *= rng.uniform(0.8, 1.2, size=(1, action_dim))
+        singular = np.linalg.svd(matrix, compute_uv=False)
+        if singular[-1] > 0.55 and singular[0] / singular[-1] < 4.0:
+            return matrix
+
+
+def _event(
+    event_id: int,
+    kind: str,
+    time: float,
+    *,
+    values: Sequence[float] = (),
+    action: Sequence[float] = (),
+    key: str = "",
+    action_dim: int = 0,
+    sensor_dim: int = 0,
+    frame: str | None = None,
+) -> PublicEvent:
+    has_values = len(values) > 0
+    has_action = len(action) > 0
+    return PublicEvent(
+        event_id=event_id,
+        kind=kind,
+        time=float(time),
+        values=_array_tuple(values),
+        value_valid=tuple(True for _ in range(sensor_dim if has_values else 0)),
+        action=_array_tuple(action),
+        action_valid=tuple(True for _ in range(action_dim if has_action else 0)),
+        available_at=float(time),
+        key=key,
+        namespace="sensor" if has_values else ("actuator" if has_action else "episode"),
+        frame=frame or ("task_sensor" if has_values else ("body_local" if has_action else "episode")),
+    )
+
+
+def _sensor_observation(
+    x: np.ndarray,
+    matrix: np.ndarray,
+    offset: np.ndarray,
+    rng: np.random.Generator,
+    noise: float,
+) -> np.ndarray:
+    value = matrix @ x + offset
+    if noise:
+        value = value + rng.normal(0.0, noise, size=value.shape)
+    return value
+
+
+@dataclass
+class CalibratedReachEnvironment:
+    """Reset/step execution object shared by generation and closed-loop eval."""
+
+    config: CalibratedReachConfig
+    seed: int
+    sensor_dim: int
+    action_dim: int
+    goal_mode: str
+    sensor_matrix: np.ndarray
+    sensor_offset: np.ndarray
+    body_map: np.ndarray
+    dynamics_gain: float
+    initial_state: np.ndarray
+    target_state: np.ndarray
+    reset_target_state: np.ndarray
+    task_rng: np.random.Generator
+    noise_rng: np.random.Generator
+    disturbance_rng: np.random.Generator
+    disturbance_start: int
+    use_disturbance: bool
+    reset_task_rng_state: dict[str, object]
+    reset_noise_rng_state: dict[str, object]
+    reset_disturbance_rng_state: dict[str, object]
+    state: np.ndarray
+    scored_step: int = 0
+
+    @classmethod
+    def from_seed(
+        cls,
+        seed: int,
+        *,
+        config: CalibratedReachConfig,
+        sensor_dim: int | None = None,
+        action_dim: int | None = None,
+        goal_mode: str | None = None,
+        disturbance: bool | None = None,
+    ) -> "CalibratedReachEnvironment":
+        seed_sequence = np.random.SeedSequence(int(seed))
+        (
+            selector_sequence,
+            task_sequence,
+            sensor_sequence,
+            body_sequence,
+            dynamics_sequence,
+            noise_sequence,
+            disturbance_sequence,
+        ) = seed_sequence.spawn(7)
+        selector_rng = np.random.default_rng(selector_sequence)
+        task_rng = np.random.default_rng(task_sequence)
+        sensor_rng = np.random.default_rng(sensor_sequence)
+        body_rng = np.random.default_rng(body_sequence)
+        dynamics_rng = np.random.default_rng(dynamics_sequence)
+        noise_rng = np.random.default_rng(noise_sequence)
+        disturbance_rng = np.random.default_rng(disturbance_sequence)
+        sensor_dim = sensor_dim if sensor_dim is not None else int(selector_rng.choice(config.sensor_dims))
+        action_dim = action_dim if action_dim is not None else int(selector_rng.choice(config.action_dims))
+        goal_mode = goal_mode or str(selector_rng.choice(config.goal_modes))
+        if sensor_dim not in config.sensor_dims or action_dim not in config.action_dims:
+            raise ValueError("requested realization is outside the declared support")
+        if goal_mode not in config.goal_modes:
+            raise ValueError("requested goal mode is outside the declared support")
+        use_disturbance = bool(config.disturbance_scale) if disturbance is None else disturbance
+        sensor_matrix = _well_conditioned_sensor_matrix(sensor_rng, sensor_dim)
+        sensor_offset = sensor_rng.uniform(-0.08, 0.08, size=sensor_dim)
+        body_map = _well_conditioned_body_map(body_rng, action_dim)
+        dynamics_gain = float(dynamics_rng.uniform(0.85, 1.15))
+        initial_state = task_rng.uniform(-0.22, 0.22, size=2)
+        target_state = np.clip(
+            initial_state + task_rng.uniform(-0.18, 0.18, size=2), -0.42, 0.42
+        )
+        disturbance_start = (
+            int(disturbance_rng.integers(0, config.horizon))
+            if use_disturbance
+            else config.horizon
+        )
+        return cls(
+            config=config,
+            seed=int(seed),
+            sensor_dim=sensor_dim,
+            action_dim=action_dim,
+            goal_mode=goal_mode,
+            sensor_matrix=sensor_matrix,
+            sensor_offset=sensor_offset,
+            body_map=body_map,
+            dynamics_gain=dynamics_gain,
+            initial_state=initial_state.copy(),
+            target_state=target_state.copy(),
+            reset_target_state=target_state.copy(),
+            task_rng=task_rng,
+            noise_rng=noise_rng,
+            disturbance_rng=disturbance_rng,
+            disturbance_start=disturbance_start,
+            use_disturbance=use_disturbance,
+            reset_task_rng_state=copy.deepcopy(task_rng.bit_generator.state),
+            reset_noise_rng_state=copy.deepcopy(noise_rng.bit_generator.state),
+            reset_disturbance_rng_state=copy.deepcopy(disturbance_rng.bit_generator.state),
+            state=initial_state.copy(),
+        )
+
+    @property
+    def action_bounds(self) -> np.ndarray:
+        return np.full((self.action_dim, 2), (-self.config.action_limit, self.config.action_limit))
+
+    def observe(self) -> np.ndarray:
+        return _sensor_observation(
+            self.state,
+            self.sensor_matrix,
+            self.sensor_offset,
+            self.noise_rng,
+            self.config.observation_noise,
+        )
+
+    def reset(self) -> np.ndarray:
+        self.task_rng.bit_generator.state = copy.deepcopy(self.reset_task_rng_state)
+        self.noise_rng.bit_generator.state = copy.deepcopy(self.reset_noise_rng_state)
+        self.disturbance_rng.bit_generator.state = copy.deepcopy(self.reset_disturbance_rng_state)
+        self.state = self.initial_state.copy()
+        self.target_state = self.reset_target_state.copy()
+        self.scored_step = 0
+        return self.observe()
+
+    def calibration_step(self, action: Sequence[float]) -> np.ndarray:
+        pulse = np.asarray(action, dtype=np.float64)
+        if (
+            pulse.shape != (self.action_dim,)
+            or not np.isfinite(pulse).all()
+            or np.any(np.abs(pulse) > self.config.action_limit)
+        ):
+            raise ValueError("calibration action has the wrong shape or exceeds public bounds")
+        next_state = self.state + self.config.dt * self.dynamics_gain * self.body_map @ pulse
+        if np.max(np.abs(next_state)) > self.config.state_limit:
+            raise ValueError("calibration pulse left the declared safe region")
+        self.state = next_state
+        return self.observe()
+
+    def step(self, action: Sequence[float]) -> np.ndarray:
+        command = np.asarray(action, dtype=np.float64)
+        if command.shape != (self.action_dim,):
+            raise ValueError("action has the wrong shape")
+        if not np.isfinite(command).all():
+            raise ValueError("action must be finite")
+        if np.any(command < self.action_bounds[:, 0]) or np.any(command > self.action_bounds[:, 1]):
+            raise ValueError("action exceeds public bounds")
+        disturbance_value = np.zeros(2, dtype=np.float64)
+        if self.use_disturbance and self.scored_step >= self.disturbance_start:
+            disturbance_value = self.disturbance_rng.uniform(
+                -self.config.disturbance_scale * self.config.dt,
+                self.config.disturbance_scale * self.config.dt,
+                size=2,
+            )
+        self.state = np.clip(
+            self.state
+            + self.config.dt * self.dynamics_gain * self.body_map @ command
+            + disturbance_value,
+            -self.config.state_limit,
+            self.config.state_limit,
+        )
+        self.scored_step += 1
+        return self.observe()
+
+    def switch_goal(self) -> np.ndarray:
+        self.target_state = np.clip(
+            self.state + self.task_rng.uniform(-0.18, 0.18, size=2), -0.42, 0.42
+        )
+        return self.target_sensor
+
+    @property
+    def target_sensor(self) -> np.ndarray:
+        return self.sensor_matrix @ self.target_state + self.sensor_offset
+
+    def goal_values(self, anchor_sensor: np.ndarray) -> np.ndarray:
+        if self.goal_mode == "absolute":
+            return self.target_sensor.copy()
+        return self.target_sensor - anchor_sensor
+
+    def private_audit(self) -> dict[str, object]:
+        return {
+            "seed": self.seed,
+            "initial_state": self.initial_state.tolist(),
+            "target_state": self.target_state.tolist(),
+            "sensor_matrix": self.sensor_matrix.tolist(),
+            "sensor_offset": self.sensor_offset.tolist(),
+            "body_map": self.body_map.tolist(),
+            "dynamics_gain": self.dynamics_gain,
+            "sensor_dim": self.sensor_dim,
+            "action_dim": self.action_dim,
+            "goal_mode": self.goal_mode,
+            "disturbance_enabled": self.use_disturbance,
+            "disturbance_start_step": self.disturbance_start,
+        }
+
+    def privileged_metrics(
+        self,
+        *,
+        success_tolerance_state_l2: float = 0.05,
+        success_tolerance_sensor_rmse: float | None = None,
+        scored_steps: int | None = None,
+        goal_switch_count: int | None = None,
+        action_effort_l2_sum: float = 0.0,
+    ) -> dict[str, object]:
+        """Return private physical outcome metrics for evaluation only.
+
+        The state-space result is the primary embodiment-independent outcome:
+        it compares the current physical state with the environment's latest
+        target state, including any goal switch.  Sensor-space diagnostics are
+        reported separately because sensor width and gain affect their scale.
+        No value returned here is part of a learner history or feature tensor.
+        """
+
+        if not np.isfinite(success_tolerance_state_l2) or success_tolerance_state_l2 < 0:
+            raise ValueError("success_tolerance_state_l2 must be finite and nonnegative")
+        if success_tolerance_sensor_rmse is not None and (
+            not np.isfinite(success_tolerance_sensor_rmse) or success_tolerance_sensor_rmse < 0
+        ):
+            raise ValueError("success_tolerance_sensor_rmse must be finite and nonnegative")
+        state_error = self.target_state - self.state
+        state_error_l2 = float(np.linalg.norm(state_error))
+        current_sensor = _sensor_observation(
+            self.state,
+            self.sensor_matrix,
+            self.sensor_offset,
+            self.noise_rng,
+            0.0,
+        )
+        target_sensor = self.target_sensor
+        sensor_error = target_sensor - current_sensor
+        sensor_error_l2 = float(np.linalg.norm(sensor_error))
+        sensor_rmse = float(sensor_error_l2 / np.sqrt(self.sensor_dim))
+        return {
+            "schema_version": "calibrated-reach-physical-metrics-v1",
+            "sensor_dim": self.sensor_dim,
+            "action_dim": self.action_dim,
+            "goal_mode": self.goal_mode,
+            "scored_steps": self.scored_step if scored_steps is None else int(scored_steps),
+            "goal_switch_count": 0 if goal_switch_count is None else int(goal_switch_count),
+            "current_state": self.state.tolist(),
+            "target_state": self.target_state.tolist(),
+            "state_error": state_error.tolist(),
+            "state_error_l2": state_error_l2,
+            "sensor_error": sensor_error.tolist(),
+            "sensor_error_l2": sensor_error_l2,
+            "sensor_rmse": sensor_rmse,
+            "success_tolerance_state_l2": float(success_tolerance_state_l2),
+            "success": bool(state_error_l2 <= success_tolerance_state_l2),
+            "success_tolerance_sensor_rmse": (
+                None
+                if success_tolerance_sensor_rmse is None
+                else float(success_tolerance_sensor_rmse)
+            ),
+            "sensor_success": (
+                None
+                if success_tolerance_sensor_rmse is None
+                else bool(sensor_rmse <= success_tolerance_sensor_rmse)
+            ),
+            "action_effort_l2_sum": float(action_effort_l2_sum),
+        }
+
+
+@dataclass
+class CalibratedReachRollout:
+    """Public event recorder around one reset/step environment.
+
+    The rollout owns event serialization and schedule handling while
+    :class:`CalibratedReachEnvironment` owns all latent dynamics.  A policy
+    calls ``reset()``, then repeats ``query()`` -> ``step(action)``.  The
+    query history is public and contains no target action; ``step`` validates
+    the action against the public bounds and advances the shared environment.
+    ``record_supervision`` is only for the public teacher transcript.
+    """
+
+    environment: CalibratedReachEnvironment
+    events: list[PublicEvent] = field(default_factory=list)
+    supervision: list[ActionTarget] = field(default_factory=list)
+    _next_event_id: int = 0
+    _pending_query_id: int | None = None
+    _done: bool = False
+    executed_actions: list[tuple[float, ...]] = field(default_factory=list)
+
+    @classmethod
+    def from_seed(
+        cls,
+        seed: int,
+        *,
+        config: CalibratedReachConfig | None = None,
+        sensor_dim: int | None = None,
+        action_dim: int | None = None,
+        goal_mode: str | None = None,
+        disturbance: bool | None = None,
+    ) -> "CalibratedReachRollout":
+        environment = CalibratedReachEnvironment.from_seed(
+            seed,
+            config=config or CalibratedReachConfig(),
+            sensor_dim=sensor_dim,
+            action_dim=action_dim,
+            goal_mode=goal_mode,
+            disturbance=disturbance,
+        )
+        return cls(environment)
+
+    @property
+    def config(self) -> CalibratedReachConfig:
+        return self.environment.config
+
+    @property
+    def action_bounds(self) -> np.ndarray:
+        return self.environment.action_bounds.copy()
+
+    @property
+    def done(self) -> bool:
+        return self._done
+
+    @property
+    def pending_query_event_id(self) -> int | None:
+        return self._pending_query_id
+
+    @property
+    def history(self) -> PublicHistory:
+        return PublicHistory.from_events(self.events)
+
+    def _append(self, event: PublicEvent) -> PublicEvent:
+        if event.event_id != self._next_event_id:
+            raise ValueError("rollout event ids must be contiguous")
+        self.events.append(event)
+        self._next_event_id += 1
+        return event
+
+    def reset(self) -> PublicHistory:
+        """Reset and publish the common calibration prefix."""
+
+        observation = self.environment.reset()
+        self.events.clear()
+        self.supervision.clear()
+        self._next_event_id = 0
+        self._pending_query_id = None
+        self._done = False
+        self.executed_actions.clear()
+        self._append(_event(0, "reset", 0.0, key="task_reset"))
+        initial_sensor = observation.copy()
+        self._append(
+            _event(
+                self._next_event_id,
+                "observation",
+                0.0,
+                values=initial_sensor,
+                key="sensor",
+                sensor_dim=self.environment.sensor_dim,
+            )
+        )
+        self._append(
+            _event(
+                self._next_event_id,
+                "goal",
+                0.0,
+                values=self.environment.goal_values(initial_sensor),
+                key=("absolute_goal" if self.environment.goal_mode == "absolute" else "relative_goal"),
+                sensor_dim=self.environment.sensor_dim,
+            )
+        )
+        # Positive/negative basis pulses identify every actuator and are
+        # checked by the environment before changing its state.
+        for actuator in range(self.environment.action_dim):
+            for sign in (1.0, -1.0):
+                pulse = np.zeros(self.environment.action_dim, dtype=np.float64)
+                pulse[actuator] = sign * self.config.calibration_pulse
+                self._append(
+                    _event(
+                        self._next_event_id,
+                        "calibration_action",
+                        0.0,
+                        action=pulse,
+                        key=f"calibration_{actuator}",
+                        action_dim=self.environment.action_dim,
+                    )
+                )
+                calibration_observation = self.environment.calibration_step(pulse)
+                self._append(
+                    _event(
+                        self._next_event_id,
+                        "calibration_observation",
+                        0.0,
+                        values=calibration_observation,
+                        key="sensor",
+                        sensor_dim=self.environment.sensor_dim,
+                    )
+                )
+        return self.history
+
+    def privileged_metrics(
+        self,
+        *,
+        success_tolerance_state_l2: float = 0.05,
+        success_tolerance_sensor_rmse: float | None = None,
+    ) -> dict[str, object]:
+        """Evaluate the completed rollout against private physical state."""
+
+        if not self._done:
+            raise RuntimeError("privileged_metrics requires a completed rollout")
+        action_effort = float(
+            sum(np.dot(action, action) for action in self.executed_actions)
+        )
+        return self.environment.privileged_metrics(
+            success_tolerance_state_l2=success_tolerance_state_l2,
+            success_tolerance_sensor_rmse=success_tolerance_sensor_rmse,
+            scored_steps=self.environment.scored_step,
+            goal_switch_count=max(0, len(self.history.of_kind("goal")) - 1),
+            action_effort_l2_sum=action_effort,
+        )
+
+    def query(self) -> PublicHistory:
+        """Publish the next action query, including a scheduled goal switch."""
+
+        if not self.events:
+            raise RuntimeError("call reset() before query()")
+        if self._done:
+            raise RuntimeError("rollout is complete")
+        if self._pending_query_id is not None:
+            return self.history
+        step = self.environment.scored_step
+        time = (step + 1) * self.config.dt
+        if self.config.goal_switch_step is not None and step == self.config.goal_switch_step:
+            anchor = np.asarray(self.history.latest("observation").values, dtype=np.float64)
+            self.environment.switch_goal()
+            self._append(
+                _event(
+                    self._next_event_id,
+                    "goal",
+                    time,
+                    values=self.environment.goal_values(anchor),
+                    key=("absolute_goal" if self.environment.goal_mode == "absolute" else "relative_goal"),
+                    sensor_dim=self.environment.sensor_dim,
+                )
+            )
+        query = self._append(
+            _event(self._next_event_id, "action_query", time, key="target_action")
+        )
+        self._pending_query_id = query.event_id
+        return self.history
+
+    # The descriptive alias makes policy code read naturally and preserves a
+    # stable API if callers do not want to depend on the method name ``query``.
+    next_action_query = query
+
+    def step(self, action: Sequence[float], *, record_supervision: bool = False) -> PublicHistory:
+        """Execute one bounded policy action and publish the resulting frame."""
+
+        if self._done:
+            raise RuntimeError("rollout is complete")
+        if self._pending_query_id is None:
+            raise RuntimeError("call query() before step(action)")
+        command = np.asarray(action, dtype=np.float64)
+        bounds = self.action_bounds
+        if command.shape != (self.environment.action_dim,):
+            raise ValueError("action has the wrong shape")
+        if not np.isfinite(command).all():
+            raise ValueError("action must be finite")
+        if np.any(command < bounds[:, 0]) or np.any(command > bounds[:, 1]):
+            raise ValueError("action exceeds public bounds")
+        query_id = self._pending_query_id
+        time = (self.environment.scored_step + 1) * self.config.dt
+        observation = self.environment.step(command)
+        self.executed_actions.append(_array_tuple(command))
+        self._append(
+            _event(
+                self._next_event_id,
+                "action_executed",
+                time,
+                action=command,
+                key="target_action",
+                action_dim=self.environment.action_dim,
+            )
+        )
+        self._append(
+            _event(
+                self._next_event_id,
+                "observation",
+                time,
+                values=observation,
+                key="sensor",
+                sensor_dim=self.environment.sensor_dim,
+            )
+        )
+        if record_supervision:
+            self.supervision.append(
+                ActionTarget(
+                    query_event_id=query_id,
+                    action=_array_tuple(command),
+                    action_valid=tuple(True for _ in range(self.environment.action_dim)),
+                )
+            )
+        self._pending_query_id = None
+        if self.environment.scored_step >= self.config.horizon:
+            self._append(
+                _event(
+                    self._next_event_id,
+                    "episode_end",
+                    (self.config.horizon + 1) * self.config.dt,
+                    key="episode_end",
+                )
+            )
+            self._done = True
+        return self.history
+
+    def to_episode(self, *, private_audit: dict[str, object] | None = None) -> TrajectoryEpisode:
+        if not self._done:
+            raise RuntimeError("cannot materialize an incomplete rollout")
+        return TrajectoryEpisode(
+            tuple(self.events),
+            tuple(self.supervision),
+            private_audit if private_audit is not None else self.environment.private_audit(),
+        )
+
+
+def generate_episode(
+    seed: int,
+    *,
+    config: CalibratedReachConfig | None = None,
+    sensor_dim: int | None = None,
+    action_dim: int | None = None,
+    goal_mode: str | None = None,
+    disturbance: bool | None = None,
+) -> TrajectoryEpisode:
+    """Generate one deterministic public teacher trajectory and receipt."""
+
+    rollout = CalibratedReachRollout.from_seed(
+        seed,
+        config=config,
+        sensor_dim=sensor_dim,
+        action_dim=action_dim,
+        goal_mode=goal_mode,
+        disturbance=disturbance,
+    )
+    rollout.reset()
+    controls_start = rollout._next_event_id
+    teacher = PublicHistoryTeacher(control_gain=rollout.config.control_gain)
+    for _ in range(rollout.config.horizon):
+        history = rollout.query()
+        action = teacher.action_for(history, rollout.action_bounds)
+        rollout.step(action, record_supervision=True)
+    history = rollout.history
+    final_sensor = np.asarray(history.latest("observation").values, dtype=np.float64)
+    final_error = float(np.linalg.norm(final_sensor - rollout.environment.target_sensor))
+    physical_metrics = rollout.privileged_metrics()
+    calibration_actions = history.of_kind("calibration_action")
+    calibration_matrix = np.asarray([event.action for event in calibration_actions])
+    calibration_singular = np.linalg.svd(calibration_matrix, compute_uv=False)
+    private_audit = {
+        **rollout.environment.private_audit(),
+        "goal_target_count": len(history.of_kind("goal")),
+        "action_to_sensor_dt": (
+            rollout.environment.sensor_matrix
+            @ (rollout.environment.dynamics_gain * rollout.environment.body_map)
+            * rollout.config.dt
+        ).tolist(),
+        "teacher_version": TEACHER_VERSION,
+        "teacher_effort_objective": teacher.effort_objective,
+        "teacher_effort_regularization": teacher.effort_regularization,
+        "teacher_control_gain": teacher.control_gain,
+        "teacher_final_sensor_error": final_error,
+        "teacher_physical_metrics": physical_metrics,
+        "calibration_rank": int(np.linalg.matrix_rank(calibration_matrix)),
+        "calibration_smallest_singular": float(calibration_singular[-1]),
+        "controls_start_event_id": controls_start,
+    }
+    return rollout.to_episode(private_audit=private_audit)
+
+
+def corpus_fingerprint(episode: TrajectoryEpisode) -> str:
+    """Hash public inputs and labels separately from the private receipt."""
+
+    encoded = json.dumps(
+        {
+            "events": list(episode.public_input()),
+            "supervision": [target.private_dict() for target in episode.supervision],
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def teacher_public_only() -> bool:
+    """Small audit helper: the teacher API has no private-world argument."""
+
+    parameters = inspect.signature(PublicHistoryTeacher.action_for).parameters
+    return tuple(parameters) == ("self", "history", "action_bounds")

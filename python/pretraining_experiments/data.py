@@ -175,3 +175,24 @@ def g0_corpus_manifest(
 
 def tensorize_rollout(raw: dict[str, Any], device: torch.device | str) -> dict[str, torch.Tensor]:
     return tensorize(raw, device)
+
+
+def load_g0_corpus(*args: Any, **kwargs: Any):
+    """Load a persisted finite-G0 corpus through the learner tensor ABI."""
+    from .g0_loader import load_g0_corpus as _load_g0_corpus
+
+    return _load_g0_corpus(*args, **kwargs)
+
+
+def collate_g0_episodes(*args: Any, **kwargs: Any):
+    """Collate independent finite-G0 episodes with public padding only."""
+    from .g0_loader import collate_g0_episodes as _collate_g0_episodes
+
+    return _collate_g0_episodes(*args, **kwargs)
+
+
+def g0_corpus_loader(*args: Any, **kwargs: Any):
+    """Build a standard DataLoader for one persisted finite-G0 split."""
+    from .g0_loader import g0_corpus_loader as _g0_corpus_loader
+
+    return _g0_corpus_loader(*args, **kwargs)

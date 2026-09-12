@@ -32,6 +32,24 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def entrypoint_for_config(config: dict[str, Any]) -> str:
+    """Resolve the official runner dispatch without silently ignoring a mode."""
+    entrypoint = str(config.get("run", {}).get("entrypoint", "legacy"))
+    if entrypoint not in {"legacy", "seed_gate", "first_training"}:
+        raise ValueError(f"unsupported runner entrypoint {entrypoint!r}")
+    return entrypoint
+
+
+def repository_root(config_path: Path) -> Path:
+    """Find the checkout root for configs at either supported depth."""
+    for candidate in config_path.parent, *config_path.parent.parents:
+        if (candidate / ".git").exists():
+            return candidate
+    # The Kaggle checkout is expected to contain .git; retain the historical
+    # fallback for tests that construct a temporary config path.
+    return config_path.parents[2]
+
+
 def atomic_json(path: Path, value: Any) -> None:
     """Write JSON via a temporary file and one rename.
 
@@ -244,7 +262,7 @@ def main() -> None:
     config_path = Path(args.config).resolve()
     config_text = config_path.read_text(encoding="utf-8")
     config = tomllib.loads(config_text)
-    repo = config_path.parents[2]
+    repo = repository_root(config_path)
     output_root = Path(args.output_root).resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     logs = output_root / "logs"
@@ -252,6 +270,7 @@ def main() -> None:
     phases: dict[str, Any] = {}
     status = "failed"
     error: str | None = None
+    scientific_execution: dict[str, Any] | None = None
     env = os.environ.copy()
     env.update(
         {
@@ -270,7 +289,7 @@ def main() -> None:
         output_root,
         {
             "purpose": config["run"]["purpose"],
-            "checkpoint_label": config["run"]["checkpoint_label"],
+            "checkpoint_label": config["run"].get("checkpoint_label", entrypoint_for_config(config)),
             "config_sha256": sha256_text(config_text),
         },
     )
@@ -410,7 +429,8 @@ def main() -> None:
         )
         phase_update(phase_path, phases, "correctness_tests", "complete")
 
-        if config["run"].get("entrypoint") == "seed_gate":
+        entrypoint = entrypoint_for_config(config)
+        if entrypoint == "seed_gate":
             phase_update(phase_path, phases, "seed_gate", "running")
             run_logged(
                 [
@@ -438,6 +458,68 @@ def main() -> None:
                 "complete",
                 classification=receipt.get("classification"),
             )
+            status = "complete"
+            return
+
+        if entrypoint == "first_training":
+            phase_update(phase_path, phases, "first_training", "running")
+            first_output = output_root / "first-training"
+            first_env = env.copy()
+            requested_device = str(config.get("run", {}).get("device", "cpu")).lower()
+            if requested_device == "cuda":
+                # Kaggle's NvidiaTeslaT4 shape has historically exposed two
+                # T4s.  The first-system contract is a one-process, one-GPU
+                # Trainer run; keep the second device out of this subprocess
+                # rather than silently changing the 40-presentation budget.
+                visible = first_env.get("CUDA_VISIBLE_DEVICES", "").split(",", 1)[0].strip()
+                first_env["CUDA_VISIBLE_DEVICES"] = visible or "0"
+                for name in ("WORLD_SIZE", "RANK", "LOCAL_RANK", "LOCAL_WORLD_SIZE"):
+                    first_env.pop(name, None)
+            run_logged(
+                [
+                    sys.executable,
+                    "-m",
+                    "pretraining_experiments.first_training",
+                    "--config",
+                    str(config_path),
+                    "--output-root",
+                    str(first_output),
+                ],
+                cwd=repo,
+                env=first_env,
+                log_path=logs / "first-training.log",
+                timeout=int(config["run"].get("first_training_phase_timeout_seconds", 1800)),
+            )
+            receipt_path = first_output / "scientific_receipt.json"
+            if not receipt_path.is_file():
+                raise RuntimeError("first-training entrypoint finished without scientific_receipt.json")
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            phase_update(
+                phase_path,
+                phases,
+                "first_training",
+                "complete",
+                purpose=receipt.get("purpose"),
+                updates=receipt.get("updates"),
+                execution_device=requested_device,
+                visible_cuda_devices=first_env.get("CUDA_VISIBLE_DEVICES"),
+                world_size=1,
+            )
+            updates = int(receipt.get("updates", 0))
+            batch_size = int(
+                config["run"].get(
+                    "per_device_train_batch_size", config.get("train", {}).get("batch_size", 1)
+                )
+            )
+            scientific_execution = {
+                "launcher": "plain_python_trainer",
+                "requested_device": requested_device,
+                "visible_cuda_devices": first_env.get("CUDA_VISIBLE_DEVICES"),
+                "world_size": 1,
+                "per_device_train_batch_size": batch_size,
+                "updates": updates,
+                "episode_presentations": updates * batch_size,
+            }
             status = "complete"
             return
 
@@ -562,7 +644,7 @@ def main() -> None:
             "status": status,
             "error": error,
             "purpose": config["run"]["purpose"],
-            "checkpoint_label": config["run"]["checkpoint_label"],
+            "checkpoint_label": config["run"].get("checkpoint_label", entrypoint_for_config(config)),
             "phase_status": phases,
             "git_sha": manifest["git_sha"],
             "config_sha256": manifest["config_sha256"],
@@ -604,6 +686,13 @@ def main() -> None:
                 summary["card06_scale_diagnostic"] = finite_g0_receipt
             else:
                 summary["seed_gate"] = finite_g0_receipt
+        scientific_receipt_path = output_root / "first-training" / "scientific_receipt.json"
+        if scientific_receipt_path.exists():
+            summary["scientific_report"] = json.loads(
+                scientific_receipt_path.read_text(encoding="utf-8")
+            )
+        if scientific_execution is not None:
+            summary["scientific_execution"] = scientific_execution
         atomic_json(output_root / "summary.json", summary)
 
     if status != "complete":

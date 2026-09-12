@@ -1,0 +1,70 @@
+[reviewer metadata; excluded from public learner events]
+world=8 sensor dims, 2 actions
+seed=4200 goal_mode=absolute
+calibration_rank=2 nullity=0
+sensor_error=0.14767570198746915 -> 4.133420725051916e-09
+calibration_scaffold=public signed pulse/observation pairs; t=0.00 is the acquisition boundary, not elapsed exploration
+
+[public event content]
+000 t= 0.00 reset
+001 t= 0.00 observation values=[ 0.0476  0.0261 -0.0311  0.0253  0.0643 -0.108   0.0485  0.0781]
+002 t= 0.00 goal values=[ 0.0814  0.0698  0.01    0.0685  0.0724 -0.1435  0.0276  0.1941] frame=task_sensor key=absolute_goal
+003 t= 0.00 calibration_action action=[0.06 0.  ]
+004 t= 0.00 calibration_observation values=[ 0.0501  0.0281 -0.0288  0.0273  0.0649 -0.1075  0.0469  0.0844]
+005 t= 0.00 calibration_action action=[-0.06  0.  ]
+006 t= 0.00 calibration_observation values=[ 0.0476  0.0261 -0.0311  0.0253  0.0643 -0.108   0.0485  0.0781]
+007 t= 0.00 calibration_action action=[0.   0.06]
+008 t= 0.00 calibration_observation values=[ 0.0492  0.0252 -0.0309  0.0244  0.0648 -0.102   0.0474  0.0782]
+009 t= 0.00 calibration_action action=[ 0.   -0.06]
+010 t= 0.00 calibration_observation values=[ 0.0476  0.0261 -0.0311  0.0253  0.0643 -0.108   0.0485  0.0781]
+011 t= 0.10 action_query
+012 t= 0.10 action_executed action=[ 0.4    -0.2842]
+013 t= 0.10 observation values=[ 0.0568  0.0438 -0.0168  0.0427  0.0661 -0.1326  0.0431  0.1196]
+014 t= 0.20 action_query
+015 t= 0.20 action_executed action=[ 0.4    -0.1127]
+016 t= 0.20 observation values=[ 0.0704  0.0586 -0.0017  0.0574  0.0695 -0.14    0.0346  0.1616]
+017 t= 0.30 action_query
+018 t= 0.30 action_executed action=[ 0.2472 -0.0517]
+019 t= 0.30 observation values=[ 0.0792  0.0675  0.0076  0.0663  0.0718 -0.1428  0.029   0.1876]
+020 t= 0.40 action_query
+021 t= 0.40 action_executed action=[ 0.0494 -0.0103]
+022 t= 0.40 observation values=[ 0.081   0.0693  0.0095  0.068   0.0723 -0.1434  0.0279  0.1928]
+023 t= 0.50 action_query
+024 t= 0.50 action_executed action=[ 0.0099 -0.0021]
+025 t= 0.50 observation values=[ 0.0813  0.0697  0.0099  0.0684  0.0724 -0.1435  0.0277  0.1938]
+026 t= 0.60 action_query
+027 t= 0.60 action_executed action=[ 0.002  -0.0004]
+028 t= 0.60 observation values=[ 0.0814  0.0698  0.01    0.0685  0.0724 -0.1435  0.0276  0.194 ]
+029 t= 0.70 action_query
+030 t= 0.70 action_executed action=[ 3.9550e-04 -8.2764e-05]
+031 t= 0.70 observation values=[ 0.0814  0.0698  0.01    0.0685  0.0724 -0.1435  0.0276  0.1941]
+032 t= 0.80 action_query
+033 t= 0.80 action_executed action=[ 7.9101e-05 -1.6553e-05]
+034 t= 0.80 observation values=[ 0.0814  0.0698  0.01    0.0685  0.0724 -0.1435  0.0276  0.1941]
+035 t= 0.90 action_query
+036 t= 0.90 action_executed action=[ 1.5820e-05 -3.3106e-06]
+037 t= 0.90 observation values=[ 0.0814  0.0698  0.01    0.0685  0.0724 -0.1435  0.0276  0.1941]
+038 t= 1.00 action_query
+039 t= 1.00 action_executed action=[ 3.1641e-06 -6.6212e-07]
+040 t= 1.00 observation values=[ 0.0814  0.0698  0.01    0.0685  0.0724 -0.1435  0.0276  0.1941]
+041 t= 1.10 action_query
+042 t= 1.10 action_executed action=[ 6.3281e-07 -1.3243e-07]
+043 t= 1.10 observation values=[ 0.0814  0.0698  0.01    0.0685  0.0724 -0.1435  0.0276  0.1941]
+044 t= 1.20 action_query
+045 t= 1.20 action_executed action=[ 1.2656e-07 -2.6485e-08]
+046 t= 1.20 observation values=[ 0.0814  0.0698  0.01    0.0685  0.0724 -0.1435  0.0276  0.1941]
+047 t= 1.30 episode_end
+
+[reviewer supervision labels; excluded from public event content]
+query_event=011 target=[ 0.4    -0.2842] valid=[True, True]
+query_event=014 target=[ 0.4    -0.1127] valid=[True, True]
+query_event=017 target=[ 0.2472 -0.0517] valid=[True, True]
+query_event=020 target=[ 0.0494 -0.0103] valid=[True, True]
+query_event=023 target=[ 0.0099 -0.0021] valid=[True, True]
+query_event=026 target=[ 0.002  -0.0004] valid=[True, True]
+query_event=029 target=[ 3.9550e-04 -8.2764e-05] valid=[True, True]
+query_event=032 target=[ 7.9101e-05 -1.6553e-05] valid=[True, True]
+query_event=035 target=[ 1.5820e-05 -3.3106e-06] valid=[True, True]
+query_event=038 target=[ 3.1641e-06 -6.6212e-07] valid=[True, True]
+query_event=041 target=[ 6.3281e-07 -1.3243e-07] valid=[True, True]
+query_event=044 target=[ 1.2656e-07 -2.6485e-08] valid=[True, True]

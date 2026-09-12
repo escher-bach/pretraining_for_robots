@@ -413,9 +413,13 @@ declared fragment.
 
 ## Grounding boundary
 
-The core is pretrained on typed non-pixel observations. A grounded descendant
-replaces the sensor realization and adds a maintained adapter while preserving
-a named agent-process relation. The transfer contract fixes:
+The learner may be pretrained on symbolic, visual, linguistic,
+proprioceptive, or other public sensor realizations, but every realization must
+enter through the one trained canonical content-token interface defined in
+`LEARNER-INPUT-ARCHITECTURE.md`. The finite-G0 eight-float representation is
+one symbolic adapter input, not a privileged core pathway. A grounded
+descendant changes the sensor realization and uses a maintained adapter while
+preserving a named agent-process relation. The transfer contract fixes:
 
 ```text
 GroundingTransferContract = (
@@ -434,8 +438,14 @@ reachability, regulation, or epistemic action. It cannot establish that this
 organization survives pixels, a new viewpoint, or another body. Only the
 matched descendant learning curve can do that.
 
-The current scope includes externally supplied goals, explicit viability
-constraints, nonlinguistic physical demonstrations, and simulated grounded
-descendants. It excludes learner-originated norms, language, claims of human
-developmental order, real-robot deployment, and open-ended novelty without a
-transfer contract.
+A modality adapter first activated as an additive sidecar at transfer is not a
+sufficient realization of this boundary. Abstract pretraining must exercise the
+common content path, and a downstream comparison must give pretrained and
+scratch cores the same adapter, observations, actions, data, and optimization.
+
+The current scope includes externally supplied goals carried symbolically or
+linguistically, explicit viability constraints, nonlinguistic physical
+demonstrations, and simulated grounded descendants. Language is an admissible
+sensor or goal realization, not a separate language-capability claim. The scope
+excludes learner-originated norms, claims of human developmental order,
+real-robot deployment, and open-ended novelty without a transfer contract.

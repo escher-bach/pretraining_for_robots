@@ -42,9 +42,11 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
+pub mod acceptance;
 pub mod kernel;
 pub mod query;
 
+pub use acceptance::{accepts, assess, AcceptanceReport};
 pub use kernel::{
     BoundaryEffect, Coupling, CouplingRule, Displaced, Guard, GuardContext, IndexSet, Interrupt,
     KernelUse, Norm, NormVerdict, ResourceScope, Restriction, Resume, Reveal,

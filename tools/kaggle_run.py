@@ -134,6 +134,25 @@ def exact_head() -> str:
     return sha
 
 
+def config_root_seed(config: dict[str, Any]) -> int:
+    """Read the launch seed from either supported experiment profile shape."""
+    value = config.get("run", {}).get("seed")
+    if value is None:
+        value = config.get("system", {}).get("seed")
+    if value is None:
+        raise SystemExit("selected experiment config does not declare a root seed")
+    return int(value)
+
+
+def compact_report(summary: dict[str, Any]) -> Any:
+    """Select the first-system report before preserved legacy reports."""
+    return (
+        summary.get("scientific_report")
+        or summary.get("card06_scale_diagnostic")
+        or summary.get("seed_gate")
+    )
+
+
 def validate_kernel_slug(slug: str) -> None:
     """Reject generated slugs that Kaggle will refuse at kernel creation."""
     if len(slug) > KAGGLE_KERNEL_SLUG_MAX_LENGTH:
@@ -309,7 +328,7 @@ def launch(name: str) -> str:
                 "git_remote_url": repo_url,
                 "config": config,
                 "config_sha256": config_sha256,
-                "root_seed": int(config_data["run"]["seed"]),
+                "root_seed": config_root_seed(config_data),
                 "requested_accelerator": str(data["accelerator"]),
                 "purpose": selected["purpose"],
                 "launched_at_unix": time.time(),
@@ -349,9 +368,10 @@ def collect(kernel: str) -> Path:
     pattern = (
         r"(^|/)(summary|training-result|architecture-gate-progress|cpu-benchmark|world-validation|"
         r"trivial-policy-baselines|seed-gate-receipt|timing-preflight-receipt|phase_status|environment|audit-manifest)\.json$"
+        r"|(^|/)first-training/scientific_receipt\.json$"
         r"|(^|/)logs/(pip-install|rustup-download|rustup-install|rust-toolchain|maturin-build|"
         r"world-wheel-install|rust-tests|python-tests|world-validation|cpu-benchmark|"
-        r"trivial-policy-baselines|gpu-training|seed-gate)\.log$"
+        r"trivial-policy-baselines|gpu-training|seed-gate|first-training)\.log$"
     )
     command_run(
         [
@@ -395,7 +415,7 @@ def collect(kernel: str) -> Path:
     training_result = (
         json.loads(training_files[0].read_text(encoding="utf-8")) if len(training_files) == 1 else {}
     )
-    finite_g0_report = summary.get("card06_scale_diagnostic") or summary.get("seed_gate")
+    finite_g0_report = compact_report(summary)
     receipt = {
         "schema_version": 1,
         "run_id": versioned_kernel,
@@ -422,7 +442,10 @@ def collect(kernel: str) -> Path:
         "root_seed": launch_record["root_seed"],
         "requested_accelerator": launch_record["requested_accelerator"],
         "observed_accelerator_inventory": training_result.get("device_names"),
-        "world_size": training_result.get("world_size"),
+        "world_size": training_result.get(
+            "world_size", summary.get("scientific_execution", {}).get("world_size")
+        ),
+        "scientific_execution": summary.get("scientific_execution"),
         "upstream_kaggle_versions": [],
         "model_sha256": summary.get("model_sha256"),
         "recovery_artifact": summary.get("recovery_artifact"),

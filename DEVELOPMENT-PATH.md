@@ -1,7 +1,43 @@
 # Development Path
 
-`EMBODIED-PROCESS.md` defines the capability graph and process semantics. This
-document applies them to the current implementation route and progress state.
+`EMBODIED-PROCESS.md` defines the capability graph and process semantics.
+
+## Active route: first viable training system
+
+The immediate route is a coherent sampled trajectory system. Historical rows
+below preserve evidence; their old gate language is not the active selector.
+
+| Stage | State | Decision it can change |
+|---|---|---|
+| Coherent first system | V2 bounded correction passed Astra review and targeted checks | Whether public trajectory, shared content and embodiment action seams remain executable after removing the positive-axis shortcut. |
+| User-reviewed fixed CPU run | Completed 20 updates; loss/error improved, success remained 2/32 | Whether the corrected fixed profile is ready for the initial diagnostic. |
+| Fixed-mixture abstract run | CPU diagnostic complete; authorized GPU execution preparation | Whether the core begins acquiring calibrated goal-conditioned reaching within one generated family. |
+| Acquisition/scale/scheduler diagnosis | Evidence-gated | Whether a short learning curve warrants one next acquisition or scale diagnostic. |
+| Matched grounding | Deferred | Whether an abstract checkpoint transfers under matched controls. |
+
+Astra found fixed public reactive control succeeds on all 32 V1 held-out cells.
+V2 independently signs/permutates sensor and actuator frames, preserving public
+calibration and conditioning. The 8/10 sensor widths remain profile fixtures;
+reusable adapters and padding derive from configured widths. The new
+world-only audit checks the baseline bracket and a B/-B information witness
+without optimizing weights. Historical checkpoint continuation evidence is
+preserved. No further user permission is needed after final readiness checks.
+
+This pilot is one sampled continuous family, not the completed compositional
+world generator. Full basis calibration precedes scored decisions. Twenty
+updates at batch two consume 40 presentations from a 64-episode pool. The small
+disturbance's accumulated bound lies below success tolerance. Interpret results
+as calibrated reaching acquisition, not active experimentation, robust
+regulation, predictive state, compositional generalization or transfer.
+
+See `FIRST-TRAINING-SYSTEM.md` and
+`artifacts/first-training-system/ASTRA-REVIEW.md` for the fixed contract,
+information boundaries, correction evidence and stop rules.
+
+The fixed CPU result is in `artifacts/first-training-system/cpu-v2-20/CPU-RESULT.md`.
+Held-out action loss fell from 0.025209 to 0.016088 and mean physical error
+from 0.245424 to 0.143723, while success remained 2/32 (inaction 4/32,
+fixed reactive 7/32, teacher 32/32). This does not establish acquired reaching.
 
 ## Working vocabulary
 
@@ -175,19 +211,20 @@ Every piece of work names one row.
 | R2 | Typed mixed-family event boundary | Complete for existing families | Canonical record plus explicit interpretation profile round-trip existing producers. |
 | R3 | Shared finite G0 audit layer | Complete | Enumeration, bounds, ambiguity, invariance orbit, isolation bracket, and contract hash are reusable. |
 | R3a | Executable process kernel and query algebra | Complete | The five operators and the norm algebra are shared data in `pretraining-g0-contract::kernel`; identification, public/privileged policy ceilings, epistemic value, matched controls, non-interference, and history ablation are shared in `::query`. Card 04's evaluator is composed from them with a byte-identical audit. |
-| R3b | One learner event boundary | Complete | `pretraining-g0-render` turns a card's public transcript into a canonical episode and then into profiled tokens. One profile serves the whole portfolio, so the envelope never publishes family identity. |
-| R3c | Typed embodied-world compiler spike | Experimental — isolated compiler, graph, and factored-source boundary | A separate `codex/term-compiler-spike` worktree carries a finite typed term compiler, exact action/scoring/prelude/reveal semantics, deterministic receipt-filtered embodiment families, and a general finite deterministic graph backend. It remains outside cards, renderers, and production learner profiles. The version-2 public trace is frozen, including its opaque non-injective norm token and known `AfterStep(3)`/`Never` collision; a visibility-gated structured goal diagnostic is compiler-only. Norm references are validated from the denotation itself, including private norms and `OnCellEntry` guards. A maintained-pyRDDLGym Gate-0 adapter now exhausts nine two-step relational traces, proves the complete noop/singleton action surface and three transform classes, emits four prompted-interface query episodes, and fresh-revalidates an 11-node/12-edge reachable-horizon graph plus supervision/grounding receipts. This is not a total finite-domain RDDL profile or Rust Graph-IR lowering: the source retains an unbounded integer fluent whose reachable values are bounded only by horizon two. Generated composite-goal admission, rendering, ambiguity/orbit parity, and any card or family admission claim remain follow-up gates. |
+| R3b | One learner event boundary | Complete for existing symbolic families; not a universal modality boundary | `pretraining-g0-render` turns a card's public transcript into a canonical episode and then into profiled tokens. One profile serves the finite portfolio without publishing family identity. Architecture review found that treating its eight-float symbolic payload as the primary core path and later modalities as an unused additive sidecar would create a cold-channel transfer mismatch. `LEARNER-INPUT-ARCHITECTURE.md` is now binding. |
+| R3c | Typed embodied-world compiler spike | Experimental â€” generated G0 corpus pipeline operational | The typed term compiler now generates deterministic, semantically unique chain, star, tree, DAG, rectangular-grid, toroidal-lattice, local-ring, and general-graph worlds. A serialized target distribution assigns exact quotas over shortest optimal non-fallback plan length, and every compiled feature overlay is re-measured before admission; local ring actions and protected route edges remove the former one-step global shortcut. An explicit coverage schedule emits isolated calibration, restoration, disturbance-event, scaffold-event, coupling, interrupt-event, reveal-event, and action/viability/resource-restriction terms while preserving raw topology; disturbance, scaffold, interrupt, and reveal remain public-event-only relations in current G0 and are not treated as regulation or recovery evidence. `pretraining-g0-corpus` consumes typed public events and the complete time-indexed transition function, produces semantically disjoint train/held-out schema-v2 artifacts, records plan length as evaluator-only metadata, and renders one profiled learner episode per world without exposing split or generator metadata. Its CLI declares topology, feature schedule, and sparse plan-length weights; the Python loader validates the artifact and preserves episode boundaries in model-ready padded batches. The existing version-2 trace, structured-goal diagnostic, factored RDDL Gate-0 adapter, and continuous-content seam remain intact. Current generation is deliberately limited to public `Settle` goals and fully published deterministic dynamics; composite norms, hidden-state families, stateful interrupted processes, broad factored-source lowering, learner acquisition, and transfer remain future technical work. |
+| R3d | Unified modality-to-content learner boundary | Generated-episode review complete; modality implementation still required | `LEARNER-INPUT-ARCHITECTURE.md` requires one `[B,T,H]` content interface. The 2026-09-08 [episode review](artifacts/g0-learner-input/R3D-REVIEW.md) confirms the executable model still requires the symbolic payload plus optional sidecar. A fresh 195-token episode contains 150 public transition-table rows: coherent supplied-dynamics planning, not unknown-dynamics robotics. The persisted loader's omitted loss-only decision groups are repaired; eight targeted tests and a fresh-episode grouped-loss/causal-prefix check pass on CPU. The conflicting prohibition on visual abstract witnesses is removed. Completion still requires a versioned common-content implementation, another sensor realization exercised in training, embodiment action decoding, physical-time/availability alignment, and matched acquisition controls. This is apparatus evidence only. |
 | R4 | Card 04 semantic family | Audited | Exact 20-case audit, 27 action sequences per case, zero ambiguity gap, and full orbit tests. |
 | R5 | Card 04 learner-facing family | Complete | All 20 cases render through the shared finite-G0 profile on `physical-event-abi-0.3.1`, decode back exactly, and are taught by a published-information policy. The rendering found that the audited optimal first action on the two unannounced-switch witnesses was privileged; the corrected boundary is reported per case. |
 | R6 | Card 03 affordance family | Complete | Nine-cell ring, two scored decisions, twelve cases. Calibration identifies the body exactly, the scored-phase ambiguity gap is zero, making calibration uninformative reopens it, both negatives isolate, all eleven orbit verdicts hold, and every case renders and round-trips. |
 | R7 | Card 02 predictive-state family | Complete | Seven-cell ring, three decisions, ten cases. Ablating the latch costs exactly half the ceiling on the witness and nothing on either control; the required memory span is sharp at three; the aliasing interval separates no two modes under any probe; all sixteen value-orbit and four information-orbit verdicts hold. |
 | R8 | Card 05 active-experimentation family | Complete | Three outcome cells, two decisions, sixteen cases. Privileged 99, public 98, no-probe 49.5: the first non-vacuous ambiguity gap in the portfolio. Probing is the correct public opening on the witness and on no control; the matched control holds where the probe is matched and informative, and the audit names which clause each control breaks. |
 | R9 | Card 06 perceptual-organization family | Complete | Contract `76a08f38947c8cae`: 36 exact cases and 32 distinct public episodes. Two evolving latent sources execute shared `Override` coupling and continue/freeze interruption; the audit reports the exact shared posterior, agent-equivalence ambiguity, noninterference, four preserving orbits, three meaning-changing/information orbits, all four controls, and learner round-trips. |
-| R10 | Four-trunk seed portfolio | Complete — seed gate incomplete | The one permitted grouped-objective repair is audit-verified at source `e2dc1856ab56e45f55d5fa01e63d0bd0f90035b6`: CUDA preflight passed (four updates 3.0558 s; full-corpus evaluation 0.7171 s), and every finite pilot completed with ABI/bounds checks and exactly 256 consumed presentations. Only Card 02 (`74b2d0da16ad3b31`) is frontier-admitted: macro grouped argmax `0.1667 -> 0.9375`, final all-case-kind minimum `0.8333`. Cards 04 (`0.3395 -> 0.4259`, minimum `0.3333`), 03 (`0.4667 -> 0.6000`, minimum `0.2500`), 05 (`0.1250 -> 0.6875`, minimum `0.2500`), and 06 (`0.2500 -> 0.6875`, minimum `0.5625`) are audited and inconclusive under the fixed `0.80` final / `0.25` gain / `0.60` every-case-kind barriers. The configuration's `required_primary_case_kind_argmax` name is stale: classification used all `by_case_kind` entries, not only primary kinds; that stricter implementation changes no outcome. The overall classifier is `seed_gate_incomplete`; no second R10 repair or R11 launch is authorized. Compact evidence: `audit/runs/pretraining-r10-seed-gate-grouped-e2dc185/receipt.json`; run: `https://www.kaggle.com/code/aniruddhavarma/pretraining-r10-seed-gate-grouped-e2dc185`. This is source-family learner evidence, not transfer evidence. |
-| R10a | Post-gate compatibility triage | Complete — Card 06 support fit incomplete; does not reopen R10 | Cards 04, 03, and 05 are decomposed/deferred as declared. The audit-verified Card-06-only scale profile at source `f4fd45edcda699f7a2e1fe4ec54c1a0a5117a2fc` completed 256 updates and 1,024 presentations. Exact full-support fit was false at every decision rung (64/128/256); macro case-kind argmax rose `0.2500 -> 0.7250 -> 0.7875 -> 0.8750`, but the witness went `0.2500 -> 0.6250 -> 0.4375 -> 0.5000` while channel-locked, frozen-through-absence, and shuffled-covariance controls reached `1.0000` and identity-tag reached `0.8750`. The fixed result is `support_fit_incomplete`: the audited composite is valid, but this learner/support pairing did not acquire binding through occlusion. Card 06 is decomposed/deferred under its certificate in `CARDS.md`; no more scaling, R10 reopening, or R11 launch is authorized. Compact evidence: `audit/runs/pretraining-r10a-c06-scale-f4fd45e/receipt.json`; run: `https://www.kaggle.com/code/aniruddhavarma/pretraining-r10a-c06-scale-f4fd45e`. The earlier pre-training path-validation failure remains preserved at `audit/runs/pretraining-r10a-c06-scale-a9f1180/receipt.json`. |
+| R10 | Four-trunk seed portfolio | Complete â€” seed gate incomplete | The one permitted grouped-objective repair is audit-verified at source `e2dc1856ab56e45f55d5fa01e63d0bd0f90035b6`: CUDA preflight passed (four updates 3.0558 s; full-corpus evaluation 0.7171 s), and every finite pilot completed with ABI/bounds checks and exactly 256 consumed presentations. Only Card 02 (`74b2d0da16ad3b31`) is frontier-admitted: macro grouped argmax `0.1667 -> 0.9375`, final all-case-kind minimum `0.8333`. Cards 04 (`0.3395 -> 0.4259`, minimum `0.3333`), 03 (`0.4667 -> 0.6000`, minimum `0.2500`), 05 (`0.1250 -> 0.6875`, minimum `0.2500`), and 06 (`0.2500 -> 0.6875`, minimum `0.5625`) are audited and inconclusive under the fixed `0.80` final / `0.25` gain / `0.60` every-case-kind barriers. The configuration's `required_primary_case_kind_argmax` name is stale: classification used all `by_case_kind` entries, not only primary kinds; that stricter implementation changes no outcome. The overall classifier is `seed_gate_incomplete`; no second R10 repair or R11 launch is authorized. Compact evidence: `audit/runs/pretraining-r10-seed-gate-grouped-e2dc185/receipt.json`; run: `https://www.kaggle.com/code/aniruddhavarma/pretraining-r10-seed-gate-grouped-e2dc185`. This is source-family learner evidence, not transfer evidence. |
+| R10a | Post-gate compatibility triage | Complete â€” Card 06 support fit incomplete; does not reopen R10 | Cards 04, 03, and 05 are decomposed/deferred as declared. The audit-verified Card-06-only scale profile at source `f4fd45edcda699f7a2e1fe4ec54c1a0a5117a2fc` completed 256 updates and 1,024 presentations. Exact full-support fit was false at every decision rung (64/128/256); macro case-kind argmax rose `0.2500 -> 0.7250 -> 0.7875 -> 0.8750`, but the witness went `0.2500 -> 0.6250 -> 0.4375 -> 0.5000` while channel-locked, frozen-through-absence, and shuffled-covariance controls reached `1.0000` and identity-tag reached `0.8750`. The fixed result is `support_fit_incomplete`: the audited composite is valid, but this learner/support pairing did not acquire binding through occlusion. Card 06 is decomposed/deferred under its certificate in `CARDS.md`; no more scaling, R10 reopening, or R11 launch is authorized. Compact evidence: `audit/runs/pretraining-r10a-c06-scale-f4fd45e/receipt.json`; run: `https://www.kaggle.com/code/aniruddhavarma/pretraining-r10a-c06-scale-f4fd45e`. The earlier pre-training path-validation failure remains preserved at `audit/runs/pretraining-r10a-c06-scale-a9f1180/receipt.json`. |
 | R11 | Multi-world learner lineage | Blocked by incomplete R10 seed gate | Matched fixed-mixture and direct hill-climbing sessions over immutable checkpoints require frontier families across T1, T2, T3, and T4. R10 admitted only Card 02 (T1), so no lineage may launch. |
 | R12 | Held-out transfer claim | Blocked by R11 | Learning-curve advantage over scratch and alternative pretraining with retention. |
-| R13 | Dependent composition, prompting, and grounding | Evidence-gated — versioned interface, source adapter, and model seam isolated | Cards 01/07/08 and visual or physical descendants remain gated by R11–R12 evidence. The standalone `prompted-interface/0.2` fixture separates private goal denotation, explicit publication, public carrier, loss-only supervision, and private exact grounding/evaluator receipts. Its addressed prompt/target events scope ports and actions by actor and embodiment, validate all four carrier kinds, and reject source-action leakage, identity-copy shortcuts, caller labels, stale grounding, and public/private interference. The RDDL Gate-0 adapter follows that public profile and recomputes cumulative-return labels and grounding from fresh exhaustive simulation; closed event schemas reject arbitrary private-field injection. The learner has an optional mask-aligned `[B,T,H]` continuous-content sidecar with inert unselected positions; absence preserves the R10/R10c raw contract and model parameterization. No encoder, production event ABI/profile, generated training batch, learner acquisition result, or transfer claim exists yet. |
+| R13 | Dependent composition, prompting, and grounding | Evidence-gated â€” protocol evidence retained; input architecture must migrate through R3d | Cards 01/07/08 and visual or physical descendants remain gated by R11â€“R12 evidence. The standalone `prompted-interface/0.2` fixture retains useful public/private, actor/body, executable-action, and grounding checks. Its optional mask-aligned `[B,T,H]` sidecar is only historical apparatus evidence: because it was absent during symbolic training, it is not accepted as the future vision/language path. Demonstration observations and actions must instead pass through the unified trained content boundary required by `LEARNER-INPUT-ARCHITECTURE.md`. No encoder, production multimodal profile, generated multimodal batch, learner acquisition result, or transfer claim exists yet. |
 
 ## Learner lineage after the seed gate
 
@@ -208,25 +245,25 @@ cards claim the same construct.
 
 Proceed in this order:
 
-1. **R5 — finish Card 04 rendering.** Render the audited norm-swap contract
+1. **R5 â€” finish Card 04 rendering.** Render the audited norm-swap contract
    through the profiled event boundary and pass the boundary and integration
    checks needed to expose it to the common learner.
-2. **R6 — implement Card 03.** Reuse the shared G0 environment, add the
+2. **R6 â€” implement Card 03.** Reuse the shared G0 environment, add the
    affordance/reachability contract, audit identification and reveal semantics,
    and add learner rendering.
-3. **R7 — implement Card 02.** Add the predictive-state family, exact history
+3. **R7 â€” implement Card 02.** Add the predictive-state family, exact history
    ablation and ambiguity audit, and learner rendering.
-4. **R8 — implement Card 05.** Add the active-experimentation family, exact
+4. **R8 â€” implement Card 05.** Add the active-experimentation family, exact
    value-of-information comparison, matched-cost non-informative control, and
    learner rendering.
-5. **R9 — implement Card 06.** Add the perceptual-organization family, source
+5. **R9 â€” implement Card 06.** Add the perceptual-organization family, source
    binding controls, exact small-instance posterior, preserving/changing orbit,
    and learner rendering.
-6. **R10 — close the seed gate.** Run one bounded learner pilot per family,
+6. **R10 â€” close the seed gate.** Run one bounded learner pilot per family,
    retain only families with usable progress signals, and fix the admitted
    contract hashes, source sentinels, fixed-mixture comparator, mixture
    accounting, checkpoint cadence, total budget, and stop rules.
-7. **R11 — start matched lineages.** Initialize the adaptive and fixed-mixture
+7. **R11 â€” start matched lineages.** Initialize the adaptive and fixed-mixture
    arms from the same checkpoint. Use the same admitted family versions,
    learner objective, episode accounting, optimizer budget, and evaluation
    support. Emit immutable checkpoints and retain the evidence needed to replay
