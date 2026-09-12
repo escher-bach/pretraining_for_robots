@@ -89,8 +89,20 @@ Manual evaluation tensors must follow model device placement; declarations
 of unimplemented transform holdouts must be removed. The Kaggle control plane
 requires a committed full SHA reachable from public origin and records exact
 configuration identity. Checkpoints remain on Kaggle; collect compact verified
-receipts. CPU/GPU authorization is present, but implementation readiness must
-be verified before launch.
+receipts. CPU/GPU authorization was present, and both fixed 20-update runs are
+now complete. The verified GPU receipt is
+`audit/runs/pretraining-first-system-f8bcb79/receipt.json` (source
+`f8bcb7977ba77f9c5fb8f6c9f2d008efed1a7b9a`, configuration SHA256
+`c9c1776db9a2b87f6ffa0e99602d3f844dae103ab0a8a903fff3c1cef203a183`). It
+used one visible T4, world size 1, and 40 episode presentations. CPU and GPU
+both reduced held-out action loss `0.025209 -> 0.016089` and mean physical
+error `0.245424 -> 0.143723`, while success stayed `2/32` against inaction
+`4/32`, fixed reactive `7/32`, and teacher `32/32`. The supplied calibration
+prefix is sequential in event order, but its actual physical timestamps
+collapse to zero, so timing-sensitive calibration evidence is not established.
+The next smallest question is whether the policy learns informative early
+decisions versus small late teacher actions; propose a bounded acquisition
+diagnostic before considering any scale change.
 
 Public events contain observations, goals, executed/calibration actions,
 queries and boundaries. Queries contain no targets. Action supervision is

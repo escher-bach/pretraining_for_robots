@@ -11,7 +11,7 @@ below preserve evidence; their old gate language is not the active selector.
 |---|---|---|
 | Coherent first system | V2 bounded correction passed Astra review and targeted checks | Whether public trajectory, shared content and embodiment action seams remain executable after removing the positive-axis shortcut. |
 | User-reviewed fixed CPU run | Completed 20 updates; loss/error improved, success remained 2/32 | Whether the corrected fixed profile is ready for the initial diagnostic. |
-| Fixed-mixture abstract run | CPU diagnostic complete; authorized GPU execution preparation | Whether the core begins acquiring calibrated goal-conditioned reaching within one generated family. |
+| Fixed-mixture abstract run | Completed CPU20 and verified GPU20; success remained 2/32 | Whether the core begins acquiring calibrated goal-conditioned reaching within one generated family. |
 | Acquisition/scale/scheduler diagnosis | Evidence-gated | Whether a short learning curve warrants one next acquisition or scale diagnostic. |
 | Matched grounding | Deferred | Whether an abstract checkpoint transfers under matched controls. |
 
@@ -38,6 +38,14 @@ The fixed CPU result is in `artifacts/first-training-system/cpu-v2-20/CPU-RESULT
 Held-out action loss fell from 0.025209 to 0.016088 and mean physical error
 from 0.245424 to 0.143723, while success remained 2/32 (inaction 4/32,
 fixed reactive 7/32, teacher 32/32). This does not establish acquired reaching.
+The matching GPU20 run used one visible T4, world size 1, and 40 presentations;
+its verified receipt is `audit/runs/pretraining-first-system-f8bcb79/receipt.json`
+at source `f8bcb7977ba77f9c5fb8f6c9f2d008efed1a7b9a`, with configuration hash
+`c9c1776db9a2b87f6ffa0e99602d3f844dae103ab0a8a903fff3c1cef203a183`. The
+calibration prefix is sequentially supplied but its physical timestamps
+collapse to zero. The next smallest evidence question is whether learning
+improves informative early decisions rather than only small late teacher
+actions; this remains a proposed acquisition diagnostic, not autonomous scaling.
 
 ## Working vocabulary
 

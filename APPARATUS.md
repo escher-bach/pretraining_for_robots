@@ -37,9 +37,11 @@ combined CPU readiness command is
 boundary. GPU access is authorized for the later fixed profile. The scientific
 smoke path now propagates world fields and writes a public closed-loop receipt,
 and the checked-in two-update smoke completes in 57.24 seconds with 32 cells,
-updates 0/1/2, and closed-loop updates 0/2. The fixed 20-update profile is
-authorized for the reviewed CPU diagnostic and subsequent GPU run. Primary
-success is evaluator-only physical
+updates 0/1/2, and closed-loop updates 0/2. The fixed 20-update profile
+completed on CPU and on the verified one-T4 GPU run. Its compact GPU receipt is
+`audit/runs/pretraining-first-system-f8bcb79/receipt.json`; source and
+configuration identities are recorded in
+`artifacts/first-training-system/GPU-RESULT.md`. Primary success is evaluator-only physical
 state error; public sensor RMSE (`L2 / sqrt(sensor_width)`) is a diagnostic so
 8- and 10-channel cells are comparable.
 The current public-event contract is synchronous (`available_at == time`);

@@ -32,6 +32,12 @@ pretraining, or transfer. The original broader objective below remains binding.
 Historical R3/R10/R11 gates are preserved evidence, not current blockers.
 `FIRST-TRAINING-SYSTEM.md` fixes the configuration and interpretation;
 `LEARNER-INPUT-ARCHITECTURE.md` fixes the common continuous content boundary.
+The fixed CPU20 and GPU20 runs are complete. Both improved held-out action loss
+and mean physical error, but success remained 2/32; this is a learner/support
+diagnostic, not an acquired-reaching or scaling result. The next bounded
+question is whether informative early decisions improve, given that the
+supplied sequential calibration prefix currently has collapsed physical
+timestamps.
 
 ## The claim to test
 

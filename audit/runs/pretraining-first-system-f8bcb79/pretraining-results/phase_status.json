@@ -1,0 +1,32 @@
+{
+  "capture_environment": {
+    "elapsed_seconds": 0.44681525230407715,
+    "started_at": 1789220845.1818855,
+    "status": "complete",
+    "timestamp": 1789220845.6287007
+  },
+  "correctness_tests": {
+    "elapsed_seconds": 110.61972451210022,
+    "started_at": 1789220928.3564312,
+    "status": "complete",
+    "timestamp": 1789221038.9761558
+  },
+  "first_training": {
+    "elapsed_seconds": 54.58944892883301,
+    "execution_device": "cuda",
+    "purpose": "source_acquisition",
+    "started_at": 1789221038.9765468,
+    "status": "complete",
+    "timestamp": 1789221093.5659957,
+    "updates": 20,
+    "visible_cuda_devices": "0",
+    "world_size": 1
+  },
+  "install_and_build": {
+    "elapsed_seconds": 82.72688579559326,
+    "started_at": 1789220845.629219,
+    "status": "complete",
+    "timestamp": 1789220928.3561049,
+    "wheel_sha256": "877cbf5207f214a4031ba7e5984cab2a0aac03614654dfd8007bcfc306439651"
+  }
+}

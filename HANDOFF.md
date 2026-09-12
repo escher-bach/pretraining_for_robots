@@ -14,8 +14,12 @@ Astra's final CPU GO is recorded and the fixed V2 CPU run completed on
 `artifacts/first-training-system/cpu-v2-20/`. Held-out loss improved
 0.025209 -> 0.016088 and mean physical error 0.245424 -> 0.143723;
 success remained 2/32, below inaction's 4/32. No acquired reaching claim is
-supported. GPU execution is authorized and its device/control-plane readiness
-is being completed. There is no additional user-approval gate. See `FIRST-TRAINING-SYSTEM.md`,
+supported. GPU execution completed on 2026-09-12 with one visible T4, world
+size 1, and 40 episode presentations. The verified receipt is
+`audit/runs/pretraining-first-system-f8bcb79/receipt.json` for source
+`f8bcb7977ba77f9c5fb8f6c9f2d008efed1a7b9a`; its configuration hash is
+`c9c1776db9a2b87f6ffa0e99602d3f844dae103ab0a8a903fff3c1cef203a183`.
+There is no additional user-approval gate. See `FIRST-TRAINING-SYSTEM.md`,
 `artifacts/first-training-system/ASTRA-REVIEW.md`, and
 `artifacts/first-training-system/astra-baseline-pre-review.json`.
 
@@ -32,6 +36,16 @@ pool. The small disturbance lies below success tolerance; robust regulation,
 active experimentation, compositional generation, transfer and grounding remain
 unestablished. Reuse the content/data/training apparatus for the next family;
 do not create another independent family-specific stack or design it now.
+
+The CPU and GPU curves agree: held-out action loss fell from `0.025209` to
+`0.016089`, and mean physical error fell from `0.245424` to `0.143723`, while
+success remained `2/32` (inaction `4/32`, fixed reactive `7/32`, teacher
+`32/32`). The supplied calibration prefix is sequential in event order, but
+its actual physical timestamps collapse to zero; this is a timing limitation
+of the current evidence, not evidence for a timed calibration policy. The
+smallest next question is whether the policy learns informative early
+decisions or mainly predicts small late teacher actions. That is a bounded
+acquisition diagnostic proposal, not authorization to scale autonomously.
 
 Historical R3d/R10/R11 records below retain their original meaning and receipts;
 they do not block this authorized first-system pilot.

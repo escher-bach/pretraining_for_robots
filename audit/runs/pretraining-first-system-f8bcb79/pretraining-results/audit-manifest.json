@@ -1,0 +1,113 @@
+{
+  "artifacts": [
+    {
+      "path": "environment.json",
+      "sha256": "23a695a86cf798ea3ba1f124da8351c6edbc79932b39d5659a6378814d5eb500",
+      "size": 2981
+    },
+    {
+      "path": "first-training/checkpoint-20/config.json",
+      "sha256": "042fcaae390565546fcbcc338ce56369095c023f3018ff36b3a811425c3da091",
+      "size": 3610
+    },
+    {
+      "path": "first-training/checkpoint-20/model.safetensors",
+      "sha256": "3755bb7fe8935842e581c164aebf8902c59a8dd6a56909e5af24b37b9d7a5a82",
+      "size": 436432
+    },
+    {
+      "path": "first-training/checkpoint-20/optimizer.pt",
+      "sha256": "f468a84d175a58ecef759f42426cb073ec94b6854961186f0a3d7152b573b24d",
+      "size": 902155
+    },
+    {
+      "path": "first-training/checkpoint-20/rng_state.pth",
+      "sha256": "d362b4b0b0d7080680ffb38e685bc22df666d612359db2b7b30047fc56357c31",
+      "size": 14645
+    },
+    {
+      "path": "first-training/checkpoint-20/scaler.pt",
+      "sha256": "4fee0874fa9afae54661807fadac685c3d3f843473b6af99cc43d812ec6e1b36",
+      "size": 1383
+    },
+    {
+      "path": "first-training/checkpoint-20/scheduler.pt",
+      "sha256": "2572f7426ad5a0ed608c13432c7099b006ffcc8ca526a93a4326b6952b4714b2",
+      "size": 1465
+    },
+    {
+      "path": "first-training/checkpoint-20/trainer_state.json",
+      "sha256": "550889187fe432466cdb47c8463c2a9d20fd36e65cb65cf0d93fe8be84d70641",
+      "size": 3938
+    },
+    {
+      "path": "first-training/checkpoint-20/training_args.bin",
+      "sha256": "ca94a752f721db3a5f001565493d0466db2e75d7511efdde2a3f2052a32038fe",
+      "size": 5905
+    },
+    {
+      "path": "first-training/receipt.json",
+      "sha256": "be592879b258ebdf0e97fe01cd21915800095beddfc4c2f812a4c79471a4fdb2",
+      "size": 209655
+    },
+    {
+      "path": "first-training/scientific_receipt.json",
+      "sha256": "be592879b258ebdf0e97fe01cd21915800095beddfc4c2f812a4c79471a4fdb2",
+      "size": 209655
+    },
+    {
+      "path": "logs/first-training.log",
+      "sha256": "b615f2bb60ad0268eedaf12ab0b13be24f8f3ffe0586844351720dad7ebd81a3",
+      "size": 212251
+    },
+    {
+      "path": "logs/maturin-build.log",
+      "sha256": "e4e487c44d5de540cf495ee4645aa9d8843c3d8b020aff085e5f53298ce76b99",
+      "size": 6680
+    },
+    {
+      "path": "logs/pip-install.log",
+      "sha256": "c499d0a68e3e983bb2f99c6315a9dfac35ac8f545be465d64a6f86a21d96b23a",
+      "size": 13288
+    },
+    {
+      "path": "logs/python-tests.log",
+      "sha256": "9a7a01eca9e8dd4601138b936649c8d548a196cfdaaaf2e32b29fef10d782d4c",
+      "size": 24614
+    },
+    {
+      "path": "logs/rust-tests.log",
+      "sha256": "2632225867fd9338a8f350667cf76b01e12e88230c71ec29a6196dcc3b9838ae",
+      "size": 36695
+    },
+    {
+      "path": "logs/rust-toolchain.log",
+      "sha256": "eb407fb00aaa6c2362c6109acc534c26432350bc77ddebf3eb3280663466babe",
+      "size": 251
+    },
+    {
+      "path": "logs/rustup-download.log",
+      "sha256": "65ab67427918399433c826dc3d69d1a19dc47a96b0439717ad27931fb699e6ce",
+      "size": 111
+    },
+    {
+      "path": "logs/rustup-install.log",
+      "sha256": "1c9a36dbb24fa254404003fcb0c281633f8f3eaa9eb150e9d8e8e39313b5aeb8",
+      "size": 1644
+    },
+    {
+      "path": "logs/world-wheel-install.log",
+      "sha256": "eeacb1c3d9398a021181ef7732ba4a0596422ca3912d5fd910cdeddc06411841",
+      "size": 353
+    },
+    {
+      "path": "phase_status.json",
+      "sha256": "21b473863c84d9144a2337f35664a9c32a73614f9be4d92d9b72aeaca2a8f069",
+      "size": 921
+    }
+  ],
+  "config_sha256": "c9c1776db9a2b87f6ffa0e99602d3f844dae103ab0a8a903fff3c1cef203a183",
+  "error": null,
+  "git_sha": "f8bcb7977ba77f9c5fb8f6c9f2d008efed1a7b9a",
+  "status": "complete"
+}
