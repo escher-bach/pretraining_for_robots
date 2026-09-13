@@ -1,0 +1,331 @@
+{
+  "cases": [
+    {
+      "case_id": "teacher_failure_1",
+      "checks": {
+        "action_bounds_respected": true,
+        "action_saturation_count": 0,
+        "action_saturation_fraction": 0.0,
+        "all_public_values_finite": true,
+        "calibration_action_count": 4,
+        "calibration_before_first_query": true,
+        "calibration_observation_count": 4,
+        "calibration_times_strict": true,
+        "compiled_lag_response_alpha": 0.25,
+        "event_ids_contiguous": true,
+        "event_times_monotone": true,
+        "goal_count": 2,
+        "goal_margin_to_0.05": -0.019763248545104306,
+        "goal_mode": "absolute",
+        "goal_reachable_within_horizon_at_0.05": false,
+        "goal_switch_causal": true,
+        "goal_switch_time_expected": 1.0,
+        "goal_switch_time_observed": 0.9999999999999999,
+        "horizon_matches_supervision": true,
+        "identified_lag_response_alpha": 0.24,
+        "interface_fields": [
+          "observation",
+          "goal",
+          "action_query",
+          "action_executed",
+          "embodiment dimensions",
+          "timed public history"
+        ],
+        "physical_metrics": {
+          "action_dim": 2,
+          "goal_switch_count": 1,
+          "schema_version": "composed-process-physical-metrics-v1",
+          "scored_steps": 13,
+          "sensor_dim": 8,
+          "state_error_l2": 0.06976324854510431,
+          "success": true
+        },
+        "public_event_count": 52,
+        "public_forbidden_fields_absent": true,
+        "public_query_has_no_label": true,
+        "public_sha256": "fbe3453506de3be2d7ba57b47c249fb74e3d60418c98a511e2afb2f228ba8eff",
+        "query_action_alignment": true,
+        "seed": 11053984,
+        "supervision_count": 13,
+        "transition_table_absent_from_public_input": true
+      },
+      "compiled_contract_hash": "03855744d8e46d824f63900b2c10f419df2968ff57a10d40497e611da88d992c",
+      "compiled_process_contract": {
+        "action_dim": 2,
+        "actuator_lag": 0.25,
+        "components": [
+          "reach",
+          "actuator_lag",
+          "goal_switch"
+        ],
+        "disturbance_scale": 0.0,
+        "disturbance_start_step": null,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": 6,
+        "horizon": 13,
+        "name": "actuator-lag-goal-switch-0004",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "actuator_lag.command"
+          ],
+          [
+            "actuator_lag.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "goal.out",
+            "goal_switch.goal"
+          ],
+          [
+            "goal_switch.out",
+            "goal_observation.goal"
+          ],
+          [
+            "zero_disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "compiled_process_name": "actuator-lag-goal-switch-0004",
+      "source_row": {
+        "body_dim": 2,
+        "early_action_mse": 0.0,
+        "effort": 0.30354421768328904,
+        "goal_mode": "absolute",
+        "physical_error": 0.06976324854510431,
+        "policy": "teacher",
+        "post_switch_action_mse": 0.0,
+        "process_family": "compiled_actuator_lag_goal_switch",
+        "seed": 11053984,
+        "sensor_dim": 8,
+        "success": false
+      }
+    },
+    {
+      "case_id": "teacher_failure_2",
+      "checks": {
+        "action_bounds_respected": true,
+        "action_saturation_count": 0,
+        "action_saturation_fraction": 0.0,
+        "all_public_values_finite": true,
+        "calibration_action_count": 4,
+        "calibration_before_first_query": true,
+        "calibration_observation_count": 4,
+        "calibration_times_strict": true,
+        "compiled_lag_response_alpha": 0.25,
+        "event_ids_contiguous": true,
+        "event_times_monotone": true,
+        "goal_count": 2,
+        "goal_margin_to_0.05": -0.026095861079382623,
+        "goal_mode": "relative",
+        "goal_reachable_within_horizon_at_0.05": false,
+        "goal_switch_causal": true,
+        "goal_switch_time_expected": 1.0,
+        "goal_switch_time_observed": 0.9999999999999999,
+        "horizon_matches_supervision": true,
+        "identified_lag_response_alpha": 0.24,
+        "interface_fields": [
+          "observation",
+          "goal",
+          "action_query",
+          "action_executed",
+          "embodiment dimensions",
+          "timed public history"
+        ],
+        "physical_metrics": {
+          "action_dim": 2,
+          "goal_switch_count": 1,
+          "schema_version": "composed-process-physical-metrics-v1",
+          "scored_steps": 13,
+          "sensor_dim": 8,
+          "state_error_l2": 0.07609586107938263,
+          "success": false
+        },
+        "public_event_count": 52,
+        "public_forbidden_fields_absent": true,
+        "public_query_has_no_label": true,
+        "public_sha256": "46bf61ddc278fc44c29bebdeb673bdc8d0c5533a7b6244dcae6e50a36ee11c5b",
+        "query_action_alignment": true,
+        "seed": 24564025,
+        "supervision_count": 13,
+        "transition_table_absent_from_public_input": true
+      },
+      "compiled_contract_hash": "03855744d8e46d824f63900b2c10f419df2968ff57a10d40497e611da88d992c",
+      "compiled_process_contract": {
+        "action_dim": 2,
+        "actuator_lag": 0.25,
+        "components": [
+          "reach",
+          "actuator_lag",
+          "goal_switch"
+        ],
+        "disturbance_scale": 0.0,
+        "disturbance_start_step": null,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": 6,
+        "horizon": 13,
+        "name": "actuator-lag-goal-switch-0004",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "actuator_lag.command"
+          ],
+          [
+            "actuator_lag.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "goal.out",
+            "goal_switch.goal"
+          ],
+          [
+            "goal_switch.out",
+            "goal_observation.goal"
+          ],
+          [
+            "zero_disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "compiled_process_name": "actuator-lag-goal-switch-0004",
+      "source_row": {
+        "body_dim": 2,
+        "early_action_mse": 0.0,
+        "effort": 0.33321205098516127,
+        "goal_mode": "relative",
+        "physical_error": 0.07609586107938263,
+        "policy": "teacher",
+        "post_switch_action_mse": 0.0,
+        "process_family": "compiled_actuator_lag_goal_switch",
+        "seed": 24564025,
+        "sensor_dim": 8,
+        "success": false
+      }
+    },
+    {
+      "case_id": "representative_lag_switch_disturbance",
+      "checks": {
+        "action_bounds_respected": true,
+        "action_saturation_count": 0,
+        "action_saturation_fraction": 0.0,
+        "all_public_values_finite": true,
+        "calibration_action_count": 4,
+        "calibration_before_first_query": true,
+        "calibration_observation_count": 4,
+        "calibration_times_strict": true,
+        "compiled_lag_response_alpha": 0.25,
+        "event_ids_contiguous": true,
+        "event_times_monotone": true,
+        "goal_count": 2,
+        "goal_margin_to_0.05": 0.047091768213400095,
+        "goal_mode": "relative",
+        "goal_reachable_within_horizon_at_0.05": true,
+        "goal_switch_causal": true,
+        "goal_switch_time_expected": 1.6,
+        "goal_switch_time_observed": 1.6000000000000003,
+        "horizon_matches_supervision": true,
+        "identified_lag_response_alpha": 0.24,
+        "interface_fields": [
+          "observation",
+          "goal",
+          "action_query",
+          "action_executed",
+          "embodiment dimensions",
+          "timed public history"
+        ],
+        "physical_metrics": {
+          "action_dim": 2,
+          "goal_switch_count": 1,
+          "schema_version": "composed-process-physical-metrics-v1",
+          "scored_steps": 24,
+          "sensor_dim": 8,
+          "state_error_l2": 0.002908231786599904,
+          "success": true
+        },
+        "public_event_count": 85,
+        "public_forbidden_fields_absent": true,
+        "public_query_has_no_label": true,
+        "public_sha256": "c06c43301fcc205421ff49f8fe7e7458b3ddcfbf970dd2bc68a4bca070afabf3",
+        "query_action_alignment": true,
+        "seed": 20260913,
+        "supervision_count": 24,
+        "transition_table_absent_from_public_input": true
+      },
+      "compiled_contract_hash": "88bf5ce024d2eb1b94eabc656f0ed19f613ea0fd5f59eca19c51146a001e4264",
+      "compiled_process_contract": {
+        "action_dim": 2,
+        "actuator_lag": 0.25,
+        "components": [
+          "reach",
+          "actuator_lag",
+          "goal_switch",
+          "disturbance"
+        ],
+        "disturbance_scale": 0.035,
+        "disturbance_start_step": 8,
+        "dt": 0.1,
+        "goal_switch_magnitude": 0.22,
+        "goal_switch_step": 12,
+        "horizon": 24,
+        "name": "actuator-lag-goal-switch-disturbance-0007",
+        "plant_gain": 1.0,
+        "sensor_dim": 8,
+        "wiring": [
+          [
+            "action.out",
+            "actuator_lag.command"
+          ],
+          [
+            "actuator_lag.out",
+            "plant.action"
+          ],
+          [
+            "plant.state",
+            "observation.state"
+          ],
+          [
+            "goal.out",
+            "goal_switch.goal"
+          ],
+          [
+            "goal_switch.out",
+            "goal_observation.goal"
+          ],
+          [
+            "disturbance.out",
+            "plant.disturbance"
+          ]
+        ]
+      },
+      "compiled_process_name": "actuator-lag-goal-switch-disturbance-0007",
+      "source_row": {
+        "body_dim": 2,
+        "goal_mode": "relative",
+        "process_family": "compiled_lag_goal_switch_disturbance",
+        "seed": 20260913,
+        "sensor_dim": 8
+      }
+    }
+  ],
+  "public_interface_note": "The learner-facing path contains timed observations, goals, executed actions, action queries, and declared embodiment widths. It does not contain a transition table, latent state, private process graph, generator seed, vision encoder, language encoder, or full robotic corpus adapter.",
+  "schema_version": "generated-episode-review-v1",
+  "source_compiled_processes": "audit\\runs\\pretraining-first-large-93a62b5\\pretraining-results\\compiled-processes.json",
+  "source_scientific_receipt": "audit\\runs\\pretraining-first-large-93a62b5\\pretraining-results\\first-training\\scientific_receipt.json",
+  "teacher_version": "timed-public-process-teacher-v1"
+}

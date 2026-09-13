@@ -1,0 +1,4385 @@
+{
+  "cases": [
+    {
+      "case_id": "teacher_failure_1",
+      "events": [
+        {
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 0,
+          "frame": "episode",
+          "key": "task_reset",
+          "kind": "reset",
+          "namespace": "episode",
+          "time": 0.0
+        },
+        {
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 1,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.0,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.07333063464209232,
+            -0.04711203685774086,
+            0.051680443910153945,
+            -0.072539364540349,
+            0.10351544231383358,
+            0.07886042858381329,
+            0.04198104118701278,
+            0.19072008556624406
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 2,
+          "frame": "task_sensor",
+          "key": "absolute_goal",
+          "kind": "goal",
+          "namespace": "sensor",
+          "time": 0.0,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.006879727331589994,
+            -0.008566063226531405,
+            0.09123339076480157,
+            -0.028433480891613096,
+            0.08198315264885388,
+            0.06265620887508315,
+            0.04469696989420271,
+            0.03128533951442361
+          ]
+        },
+        {
+          "action": [
+            0.08,
+            0.0
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 3,
+          "frame": "body_local",
+          "key": "calibration_0",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.0
+        },
+        {
+          "actor": "target",
+          "available_at": 0.1,
+          "event_id": 4,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.1,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.07515679575597084,
+            -0.047380661388237065,
+            0.05120158955389001,
+            -0.07311983540226823,
+            0.10312226512280909,
+            0.07857171811328803,
+            0.042110623644347145,
+            0.1908816661720412
+          ]
+        },
+        {
+          "action": [
+            -0.08,
+            0.0
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.1,
+          "event_id": 5,
+          "frame": "body_local",
+          "key": "calibration_0",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.1
+        },
+        {
+          "actor": "target",
+          "available_at": 0.2,
+          "event_id": 6,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.2,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.07470025547750121,
+            -0.047313505255613016,
+            0.05132130314295599,
+            -0.07297471768678841,
+            0.10322055942056521,
+            0.07864389573091934,
+            0.042078228030013556,
+            0.1908412710205919
+          ]
+        },
+        {
+          "action": [
+            0.0,
+            0.08
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.2,
+          "event_id": 7,
+          "frame": "body_local",
+          "key": "calibration_1",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.2
+        },
+        {
+          "actor": "target",
+          "available_at": 0.30000000000000004,
+          "event_id": 8,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.30000000000000004,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.07433046573498758,
+            -0.04690652612148625,
+            0.05166240469847302,
+            -0.07261185756841104,
+            0.10278868760573738,
+            0.07832159074147006,
+            0.042162817466302724,
+            0.18880042361520805
+          ]
+        },
+        {
+          "action": [
+            0.0,
+            -0.08
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.30000000000000004,
+          "event_id": 9,
+          "frame": "body_local",
+          "key": "calibration_1",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.30000000000000004
+        },
+        {
+          "actor": "target",
+          "available_at": 0.4,
+          "event_id": 10,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.4,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.07408050796176377,
+            -0.0469579038055499,
+            0.051666914501393255,
+            -0.07259373431139553,
+            0.10297037628276143,
+            0.07845630020205586,
+            0.04211737339648024,
+            0.18928033910296704
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.4,
+          "event_id": 11,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.4
+        },
+        {
+          "action": [
+            -0.4499999999505837,
+            0.4499999999999877
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.5,
+          "event_id": 12,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.5
+        },
+        {
+          "actor": "target",
+          "available_at": 0.5,
+          "event_id": 13,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.5,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.06346684536556184,
+            -0.04347948138976715,
+            0.0557775071531834,
+            -0.06788612046700455,
+            0.10247430646273428,
+            0.07806386380398725,
+            0.04196687359878403,
+            0.17742203520117
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.5,
+          "event_id": 14,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.5
+        },
+        {
+          "action": [
+            -0.44999999999999996,
+            0.44999999999996776
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.6,
+          "event_id": 15,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.6
+        },
+        {
+          "actor": "target",
+          "available_at": 0.6,
+          "event_id": 16,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.6,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.0450804041509983,
+            -0.03735370889893377,
+            0.06296766194192172,
+            -0.059661388681723486,
+            0.10146991777016173,
+            0.07727606801210626,
+            0.04173758200510247,
+            0.15631006675710668
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.6,
+          "event_id": 17,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.6
+        },
+        {
+          "action": [
+            -0.44999999999990614,
+            0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.7,
+          "event_id": 18,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.7
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7,
+          "event_id": 19,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.7,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.020864378972665708,
+            -0.02924242385181257,
+            0.07246748833337069,
+            -0.04879881844077543,
+            0.10008428992317947,
+            0.0761917526748655,
+            0.04144919656443208,
+            0.12825784990634295
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7,
+          "event_id": 20,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.7
+        },
+        {
+          "action": [
+            -0.4499995624141791,
+            0.4499999999999974
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.7999999999999999,
+          "event_id": 21,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.7999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7999999999999999,
+          "event_id": 22,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.7999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.007723824189718204,
+            -0.019642005856803785,
+            0.08369956580760475,
+            -0.03595787253314919,
+            0.09841273055978084,
+            0.07488504609941016,
+            0.04111649144731298,
+            0.09500044763437111
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7999999999999999,
+          "event_id": 23,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.7999999999999999
+        },
+        {
+          "action": [
+            0.4499999996535257,
+            0.4499999999960665
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.8999999999999999,
+          "event_id": 24,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.8999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 0.8999999999999999,
+          "event_id": 25,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.8999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.019046858305692443,
+            -0.011946762648487135,
+            0.09084372270726829,
+            -0.028163438894531437,
+            0.09210348131238162,
+            0.0701635548823487,
+            0.04220834850850931,
+            0.05965693722729279
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.8999999999999999,
+          "event_id": 26,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.8999999999999999
+        },
+        {
+          "action": [
+            0.4499999998936913,
+            0.06294856977261656
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 27,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.9999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 28,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.9999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.01728852534488154,
+            -0.007405740506615451,
+            0.09370603469937351,
+            -0.025382883375582622,
+            0.08476209358829279,
+            0.06470223699240638,
+            0.043841820467042374,
+            0.03247617892267879
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 29,
+          "frame": "task_sensor",
+          "key": "absolute_goal",
+          "kind": "goal",
+          "namespace": "sensor",
+          "time": 0.9999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.013999913454688442,
+            -0.04411132607856696,
+            0.06776302209205423,
+            -0.05163028523910417,
+            0.13660056763730116,
+            0.10329954757390146,
+            0.032689397133217696,
+            0.23906728326509047
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 30,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.9999999999999999
+        },
+        {
+          "action": [
+            0.4499999999983605,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.0999999999999999,
+          "event_id": 31,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.0999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 1.0999999999999999,
+          "event_id": 32,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.0999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.005543581356898711,
+            -0.007516929579202653,
+            0.09174555839356645,
+            -0.02799148813834705,
+            0.0798883891227866,
+            0.06109971706828525,
+            0.04518334118134889,
+            0.024308850711931368
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.0999999999999999,
+          "event_id": 33,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.0999999999999999
+        },
+        {
+          "action": [
+            -0.06690180106507629,
+            -0.4499999999183599
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.2,
+          "event_id": 34,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.2
+        },
+        {
+          "actor": "target",
+          "available_at": 1.2,
+          "event_id": 35,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.2,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.001891996291487355,
+            -0.009381620766978762,
+            0.08926199935458043,
+            -0.03089138268725098,
+            0.07940587207792177,
+            0.06075673264565057,
+            0.045468630892817136,
+            0.0293575787426138
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.2,
+          "event_id": 36,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.2
+        },
+        {
+          "action": [
+            -0.28142334781677897,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.3,
+          "event_id": 37,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.3
+        },
+        {
+          "actor": "target",
+          "available_at": 1.3,
+          "event_id": 38,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.3,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.0011986628506158725,
+            -0.011841116669291784,
+            0.08767018548013537,
+            -0.03245320073672867,
+            0.08327105783862966,
+            0.063632582558271,
+            0.04461426948730488,
+            0.043885067437911866
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.3,
+          "event_id": 39,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.3
+        },
+        {
+          "action": [
+            -0.08093519639009791,
+            -0.44999999999998663
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.4000000000000001,
+          "event_id": 40,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.4000000000000001
+        },
+        {
+          "actor": "target",
+          "available_at": 1.4000000000000001,
+          "event_id": 41,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.4000000000000001,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.0010148080830888473,
+            -0.015419916551845476,
+            0.08554712267047145,
+            -0.03446618053742713,
+            0.0894116786008716,
+            0.06819902036566852,
+            0.043229916585660944,
+            0.06592656409370476
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.4000000000000001,
+          "event_id": 42,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.4000000000000001
+        },
+        {
+          "action": [
+            -0.031776519106276026,
+            -0.44999999999995927
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.5000000000000002,
+          "event_id": 43,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.5000000000000002
+        },
+        {
+          "actor": "target",
+          "available_at": 1.5000000000000002,
+          "event_id": 44,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.5000000000000002,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.0032462363256007543,
+            -0.02000325975214431,
+            0.08273137507482431,
+            -0.037174221398712945,
+            0.09701727473115224,
+            0.0738559912835361,
+            0.041527696339440076,
+            0.0937028553305644
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.5000000000000002,
+          "event_id": 45,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.5000000000000002
+        },
+        {
+          "action": [
+            -0.03862486286247221,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.6000000000000003,
+          "event_id": 46,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.6000000000000003
+        },
+        {
+          "actor": "target",
+          "available_at": 1.6000000000000003,
+          "event_id": 47,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.6000000000000003,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.005647459787993525,
+            -0.025317015026674876,
+            0.07943710588020023,
+            -0.04035386725540342,
+            0.10575526004447754,
+            0.08035557689110848,
+            0.03957598276962898,
+            0.1257664105090647
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.6000000000000003,
+          "event_id": 48,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.6000000000000003
+        },
+        {
+          "action": [
+            -0.043423695245615804,
+            -0.4499999995563721
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.7000000000000004,
+          "event_id": 49,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.7000000000000004
+        },
+        {
+          "actor": "target",
+          "available_at": 1.7000000000000004,
+          "event_id": 50,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.7000000000000004,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.008285572679075273,
+            -0.031162465803703552,
+            0.07581266976013269,
+            -0.04385239707761814,
+            0.11536612213524018,
+            0.08750444192831341,
+            0.03742937615157224,
+            0.16103572115460146
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.7000000000000004,
+          "event_id": 51,
+          "frame": "episode",
+          "key": "episode_end",
+          "kind": "episode_end",
+          "namespace": "episode",
+          "time": 1.7000000000000004
+        }
+      ],
+      "supervision": [
+        {
+          "action": [
+            -0.4499999999505837,
+            0.4499999999999877
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 11
+        },
+        {
+          "action": [
+            -0.44999999999999996,
+            0.44999999999996776
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 14
+        },
+        {
+          "action": [
+            -0.44999999999990614,
+            0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 17
+        },
+        {
+          "action": [
+            -0.4499995624141791,
+            0.4499999999999974
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 20
+        },
+        {
+          "action": [
+            0.4499999996535257,
+            0.4499999999960665
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 23
+        },
+        {
+          "action": [
+            0.4499999998936913,
+            0.06294856977261656
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 26
+        },
+        {
+          "action": [
+            0.4499999999983605,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 30
+        },
+        {
+          "action": [
+            -0.06690180106507629,
+            -0.4499999999183599
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 33
+        },
+        {
+          "action": [
+            -0.28142334781677897,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 36
+        },
+        {
+          "action": [
+            -0.08093519639009791,
+            -0.44999999999998663
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 39
+        },
+        {
+          "action": [
+            -0.031776519106276026,
+            -0.44999999999995927
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 42
+        },
+        {
+          "action": [
+            -0.03862486286247221,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 45
+        },
+        {
+          "action": [
+            -0.043423695245615804,
+            -0.4499999995563721
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 48
+        }
+      ],
+      "world_schema": "trajectory-public-events-v2"
+    },
+    {
+      "case_id": "teacher_failure_2",
+      "events": [
+        {
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 0,
+          "frame": "episode",
+          "key": "task_reset",
+          "kind": "reset",
+          "namespace": "episode",
+          "time": 0.0
+        },
+        {
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 1,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.0,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.2046638377368911,
+            0.028953293746956474,
+            -0.08995172121104154,
+            0.10021962363754006,
+            -0.031951792092351716,
+            0.007516448889945182,
+            0.012968607515150735,
+            -0.085119888916433
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 2,
+          "frame": "task_sensor",
+          "key": "relative_goal",
+          "kind": "goal",
+          "namespace": "sensor",
+          "time": 0.0,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            -0.15781090336874237,
+            -0.04275732356446968,
+            -0.07425009988971294,
+            -0.04302620600450102,
+            -0.0007136377664039711,
+            -0.011825301419003419,
+            0.0037853780465186976,
+            -0.0411800260292612
+          ]
+        },
+        {
+          "action": [
+            0.08,
+            0.0
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 3,
+          "frame": "body_local",
+          "key": "calibration_0",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.0
+        },
+        {
+          "actor": "target",
+          "available_at": 0.1,
+          "event_id": 4,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.1,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.2043405911758234,
+            0.02862259638251871,
+            -0.08789836330073565,
+            0.10037431881676984,
+            -0.0311167753686665,
+            0.006991833938124525,
+            0.012247432686092338,
+            -0.08470327839833838
+          ]
+        },
+        {
+          "action": [
+            -0.08,
+            0.0
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.1,
+          "event_id": 5,
+          "frame": "body_local",
+          "key": "calibration_0",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.1
+        },
+        {
+          "actor": "target",
+          "available_at": 0.2,
+          "event_id": 6,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.2,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.20442140281609034,
+            0.02870527072362815,
+            -0.08841170277831213,
+            0.10033564502196239,
+            -0.0313255295495878,
+            0.0071229876760796895,
+            0.012427726393356944,
+            -0.08480743102786203
+          ]
+        },
+        {
+          "action": [
+            0.0,
+            0.08
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.2,
+          "event_id": 7,
+          "frame": "body_local",
+          "key": "calibration_1",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.2
+        },
+        {
+          "actor": "target",
+          "available_at": 0.30000000000000004,
+          "event_id": 8,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.30000000000000004,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.20275063114878158,
+            0.028198603785745124,
+            -0.08870805004659137,
+            0.09993404221715602,
+            -0.03114733264007151,
+            0.006886671532725902,
+            0.012305933591459053,
+            -0.08513216560945468
+          ]
+        },
+        {
+          "action": [
+            0.0,
+            -0.08
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.30000000000000004,
+          "event_id": 9,
+          "frame": "body_local",
+          "key": "calibration_1",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.30000000000000004
+        },
+        {
+          "actor": "target",
+          "available_at": 0.4,
+          "event_id": 10,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.4,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.20322893279580895,
+            0.028387276276047965,
+            -0.0890189678377039,
+            0.10000543757225203,
+            -0.03134844750314157,
+            0.007044115872030729,
+            0.012471602072381974,
+            -0.08512909643619926
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.4,
+          "event_id": 11,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.4
+        },
+        {
+          "action": [
+            -0.4499999999999741,
+            0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.5,
+          "event_id": 12,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.5
+        },
+        {
+          "actor": "target",
+          "available_at": 0.5,
+          "event_id": 13,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.5,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.19566690620109733,
+            0.0271901694165899,
+            -0.10030359688955316,
+            0.09709296300021455,
+            -0.034313213404382384,
+            0.008230575092136927,
+            0.015206763258329245,
+            -0.08885746683619543
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.5,
+          "event_id": 14,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.5
+        },
+        {
+          "action": [
+            -0.44999999779002814,
+            0.4499999856787666
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.6,
+          "event_id": 15,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.6
+        },
+        {
+          "actor": "target",
+          "available_at": 0.6,
+          "event_id": 16,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.6,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.18207463372609575,
+            0.024953728137477052,
+            -0.1198185093461034,
+            0.091942586053801,
+            -0.03935071762111218,
+            0.010188795518265181,
+            0.019869043999132113,
+            -0.09538441686047291
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.6,
+          "event_id": 17,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.6
+        },
+        {
+          "action": [
+            -0.11105245972199963,
+            0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.7,
+          "event_id": 18,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.7
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7,
+          "event_id": 19,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.7,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.16259013120514737,
+            0.02053667272279988,
+            -0.13680637673442475,
+            0.08576920163679133,
+            -0.0424049397302968,
+            0.010503124959580779,
+            0.022921158949742712,
+            -0.1022451877790925
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7,
+          "event_id": 20,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.7
+        },
+        {
+          "action": [
+            0.2126939784662361,
+            0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.7999999999999999,
+          "event_id": 21,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.7999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7999999999999999,
+          "event_id": 22,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.7999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.13737833211471068,
+            0.013145880533262468,
+            -0.1435893689492348,
+            0.07945458678284127,
+            -0.04059252913231377,
+            0.007461508386384055,
+            0.021847177279975802,
+            -0.10767037222665757
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7999999999999999,
+          "event_id": 23,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.7999999999999999
+        },
+        {
+          "action": [
+            -0.051102294559448334,
+            0.44999999803783053
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.8999999999999999,
+          "event_id": 24,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.8999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 0.8999999999999999,
+          "event_id": 25,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.8999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.10893695111559877,
+            0.004615244929503978,
+            -0.14948955683516718,
+            0.07252394896362643,
+            -0.03788357275744424,
+            0.003632825673809792,
+            0.02005666355254876,
+            -0.1133926205895911
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.8999999999999999,
+          "event_id": 26,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.8999999999999999
+        },
+        {
+          "action": [
+            -0.1189797594000632,
+            0.44999997985470913
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 27,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.9999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 28,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.9999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.07834764854205076,
+            -0.00448968687157341,
+            -0.1564698506116169,
+            0.06500004004778552,
+            -0.035210692354788575,
+            -0.00034103740538986294,
+            0.018340644829084735,
+            -0.11969114765542439
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 29,
+          "frame": "task_sensor",
+          "key": "relative_goal",
+          "kind": "goal",
+          "namespace": "sensor",
+          "time": 0.9999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.18157268621403558,
+            0.07548765459588433,
+            -0.15308182371798718,
+            0.023243816085081304,
+            -0.08964136947336583,
+            0.06772174730274816,
+            0.07447592637295167,
+            -0.006796684539826278
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 30,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.9999999999999999
+        },
+        {
+          "action": [
+            -0.44999999999998974,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.0999999999999999,
+          "event_id": 31,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.0999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 1.0999999999999999,
+          "event_id": 32,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.0999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.06696294825388313,
+            -0.006259429145271625,
+            -0.17375390672637947,
+            0.06058280868292923,
+            -0.03978604044031697,
+            0.001512107527564796,
+            0.022555937788138247,
+            -0.12537123900342584
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.0999999999999999,
+          "event_id": 33,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.0999999999999999
+        },
+        {
+          "action": [
+            -0.4499999999998771,
+            -0.44999999999998064
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.2,
+          "event_id": 34,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.2
+        },
+        {
+          "actor": "target",
+          "available_at": 1.2,
+          "event_id": 35,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.2,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.06998169967974993,
+            -0.00252777927343608,
+            -0.1987657845948737,
+            0.05849558548131152,
+            -0.04979755989198216,
+            0.007735508469634347,
+            0.031219714509078816,
+            -0.1305875035630529
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.2,
+          "event_id": 36,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.2
+        },
+        {
+          "action": [
+            -0.44999999999969026,
+            -0.4499999999999986
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.3,
+          "event_id": 37,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.3
+        },
+        {
+          "actor": "target",
+          "available_at": 1.3,
+          "event_id": 38,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.3,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.08380303989114218,
+            0.005329914707549149,
+            -0.229573528778662,
+            0.05815586840212321,
+            -0.06388620786824804,
+            0.017236601418538944,
+            0.04321985405143308,
+            -0.13545589803139813
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.3,
+          "event_id": 39,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.3
+        },
+        {
+          "action": [
+            -0.4499999999858419,
+            -0.4499999999997856
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.4000000000000001,
+          "event_id": 40,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.4000000000000001
+        },
+        {
+          "actor": "target",
+          "available_at": 1.4000000000000001,
+          "event_id": 41,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.4000000000000001,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.10572632169161797,
+            0.016282141770337877,
+            -0.26472817269856513,
+            0.059126780914782726,
+            -0.08103270223781904,
+            0.029195963372478123,
+            0.05772226570972207,
+            -0.14006338993121048
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.4000000000000001,
+          "event_id": 42,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.4000000000000001
+        },
+        {
+          "action": [
+            -0.4499999927844037,
+            -0.44999999978763144
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.5000000000000002,
+          "event_id": 43,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.5000000000000002
+        },
+        {
+          "actor": "target",
+          "available_at": 1.5000000000000002,
+          "event_id": 44,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.5000000000000002,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.1337260596502169,
+            0.029555268613202457,
+            -0.30314299123548016,
+            0.06108066563426535,
+            -0.10047258132631458,
+            0.042999027032080875,
+            0.07410138138936181,
+            -0.14447520486777482
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.5000000000000002,
+          "event_id": 45,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.5000000000000002
+        },
+        {
+          "action": [
+            0.0701263105942802,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.6000000000000003,
+          "event_id": 46,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.6000000000000003
+        },
+        {
+          "actor": "target",
+          "available_at": 1.6000000000000003,
+          "event_id": 47,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.6000000000000003,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.16418152674590428,
+            0.04241901532135746,
+            -0.3306528724928798,
+            0.06477754240639559,
+            -0.11620357193301999,
+            0.054774041526974085,
+            0.08719925011159824,
+            -0.14603163597218305
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.6000000000000003,
+          "event_id": 48,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.6000000000000003
+        },
+        {
+          "action": [
+            0.44999999988959566,
+            -0.4499999999999978
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.7000000000000004,
+          "event_id": 49,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.7000000000000004
+        },
+        {
+          "actor": "target",
+          "available_at": 1.7000000000000004,
+          "event_id": 50,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.7000000000000004,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.19494387989809792,
+            0.05340543658011515,
+            -0.3402338427302477,
+            0.07051622107363932,
+            -0.12518788513526286,
+            0.06253692643324023,
+            0.09441174182901546,
+            -0.14346828702112632
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.7000000000000004,
+          "event_id": 51,
+          "frame": "episode",
+          "key": "episode_end",
+          "kind": "episode_end",
+          "namespace": "episode",
+          "time": 1.7000000000000004
+        }
+      ],
+      "supervision": [
+        {
+          "action": [
+            -0.4499999999999741,
+            0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 11
+        },
+        {
+          "action": [
+            -0.44999999779002814,
+            0.4499999856787666
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 14
+        },
+        {
+          "action": [
+            -0.11105245972199963,
+            0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 17
+        },
+        {
+          "action": [
+            0.2126939784662361,
+            0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 20
+        },
+        {
+          "action": [
+            -0.051102294559448334,
+            0.44999999803783053
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 23
+        },
+        {
+          "action": [
+            -0.1189797594000632,
+            0.44999997985470913
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 26
+        },
+        {
+          "action": [
+            -0.44999999999998974,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 30
+        },
+        {
+          "action": [
+            -0.4499999999998771,
+            -0.44999999999998064
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 33
+        },
+        {
+          "action": [
+            -0.44999999999969026,
+            -0.4499999999999986
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 36
+        },
+        {
+          "action": [
+            -0.4499999999858419,
+            -0.4499999999997856
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 39
+        },
+        {
+          "action": [
+            -0.4499999927844037,
+            -0.44999999978763144
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 42
+        },
+        {
+          "action": [
+            0.0701263105942802,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 45
+        },
+        {
+          "action": [
+            0.44999999988959566,
+            -0.4499999999999978
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 48
+        }
+      ],
+      "world_schema": "trajectory-public-events-v2"
+    },
+    {
+      "case_id": "representative_lag_switch_disturbance",
+      "events": [
+        {
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 0,
+          "frame": "episode",
+          "key": "task_reset",
+          "kind": "reset",
+          "namespace": "episode",
+          "time": 0.0
+        },
+        {
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 1,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.0,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.1263660018026002,
+            -0.07625391692221743,
+            -0.030509376893420082,
+            -0.07682917703055644,
+            -0.03987518418293487,
+            -0.002462199046291809,
+            -0.022429800010407556,
+            -0.006976651848246855
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 2,
+          "frame": "task_sensor",
+          "key": "relative_goal",
+          "kind": "goal",
+          "namespace": "sensor",
+          "time": 0.0,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.04625893375080997,
+            0.00554157820309685,
+            0.0024889452735129755,
+            0.09635722870386217,
+            -0.03011120213870383,
+            -0.015488695013528217,
+            -0.03318430363098313,
+            -0.03616186879226565
+          ]
+        },
+        {
+          "action": [
+            0.08,
+            0.0
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.0,
+          "event_id": 3,
+          "frame": "body_local",
+          "key": "calibration_0",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.0
+        },
+        {
+          "actor": "target",
+          "available_at": 0.1,
+          "event_id": 4,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.1,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.128971756125321,
+            -0.07646071621385589,
+            -0.030386905741691877,
+            -0.07658155195064757,
+            -0.04000069549268319,
+            -0.0031846104304389874,
+            -0.02316460447994873,
+            -0.007407074429405849
+          ]
+        },
+        {
+          "action": [
+            -0.08,
+            0.0
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.1,
+          "event_id": 5,
+          "frame": "body_local",
+          "key": "calibration_0",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.1
+        },
+        {
+          "actor": "target",
+          "available_at": 0.2,
+          "event_id": 6,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.2,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.1283203175446408,
+            -0.07640901639094629,
+            -0.03041752352962393,
+            -0.0766434582206248,
+            -0.03996931766524611,
+            -0.0030040075844021963,
+            -0.022980903362563435,
+            -0.007299468784116104
+          ]
+        },
+        {
+          "action": [
+            0.0,
+            0.08
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.2,
+          "event_id": 7,
+          "frame": "body_local",
+          "key": "calibration_1",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.2
+        },
+        {
+          "actor": "target",
+          "available_at": 0.30000000000000004,
+          "event_id": 8,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.30000000000000004,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.12786195892148625,
+            -0.0761717360478351,
+            -0.030432202464481577,
+            -0.07468161536173455,
+            -0.04055528617686911,
+            -0.0029350277450820514,
+            -0.023290834318758124,
+            -0.007845708911890856
+          ]
+        },
+        {
+          "action": [
+            0.0,
+            -0.08
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.30000000000000004,
+          "event_id": 9,
+          "frame": "body_local",
+          "key": "calibration_1",
+          "kind": "calibration_action",
+          "namespace": "actuator",
+          "time": 0.30000000000000004
+        },
+        {
+          "actor": "target",
+          "available_at": 0.4,
+          "event_id": 10,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "calibration_observation",
+          "namespace": "sensor",
+          "time": 0.4,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.12748796964176473,
+            -0.07619228126643068,
+            -0.030451496071716204,
+            -0.07521850577894001,
+            -0.04038526067838556,
+            -0.0028168205703844873,
+            -0.02307557574167049,
+            -0.0076284446459798615
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.4,
+          "event_id": 11,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.4
+        },
+        {
+          "action": [
+            0.44999999999926676,
+            0.44999999999999957
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.5,
+          "event_id": 12,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.5
+        },
+        {
+          "actor": "target",
+          "available_at": 0.5,
+          "event_id": 13,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.5,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.14203483500425448,
+            -0.0762543428937414,
+            -0.029730466264408062,
+            -0.06293174935963505,
+            -0.0443921907592356,
+            -0.007165635885724456,
+            -0.02956575766758141,
+            -0.01341318550036112
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.5,
+          "event_id": 14,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.5
+        },
+        {
+          "action": [
+            0.44999999997196083,
+            0.4499999999998695
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.6,
+          "event_id": 15,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.6
+        },
+        {
+          "actor": "target",
+          "available_at": 0.6,
+          "event_id": 16,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.6,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.16777234134751323,
+            -0.07634754182751821,
+            -0.02845419389623466,
+            -0.04102725781303507,
+            -0.05153183752454202,
+            -0.014864718068345877,
+            -0.04108501997048973,
+            -0.023699430194813634
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.6,
+          "event_id": 17,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.6
+        },
+        {
+          "action": [
+            -0.2436778825730788,
+            0.449999999999991
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.7,
+          "event_id": 18,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.7
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7,
+          "event_id": 19,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.7,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.1793084016636293,
+            -0.07467094255694945,
+            -0.027823433722458234,
+            -0.014056615434663612,
+            -0.05993271655842079,
+            -0.018812490410407966,
+            -0.05000462244969741,
+            -0.033629619960596276
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7,
+          "event_id": 20,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.7
+        },
+        {
+          "action": [
+            -0.4258369227624284,
+            0.4499999999999909
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.7999999999999999,
+          "event_id": 21,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.7999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7999999999999999,
+          "event_id": 22,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.7999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.1742601061294375,
+            -0.07119611512716278,
+            -0.02795567303760072,
+            0.016149800731498805,
+            -0.06899373204727056,
+            -0.018301858317574207,
+            -0.05530133909989884,
+            -0.04231270147662969
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.7999999999999999,
+          "event_id": 23,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.7999999999999999
+        },
+        {
+          "action": [
+            0.020233977805150127,
+            -0.4499999998813197
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.8999999999999999,
+          "event_id": 24,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.8999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 0.8999999999999999,
+          "event_id": 25,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.8999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.17096295491098334,
+            -0.06975889251009292,
+            -0.028070476326136372,
+            0.02757071020601187,
+            -0.0723927904906293,
+            -0.017727693286418364,
+            -0.056941376087247524,
+            -0.045407315091710795
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.8999999999999999,
+          "event_id": 26,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.8999999999999999
+        },
+        {
+          "action": [
+            0.08844581623466304,
+            -0.4499999999221166
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 27,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 0.9999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 28,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 0.9999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.17120095308992248,
+            -0.07002620050101914,
+            -0.028067777814546606,
+            0.02511362668503676,
+            -0.07165239811432929,
+            -0.017721841159175647,
+            -0.05646543287414865,
+            -0.04467757672528835
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 0.9999999999999999,
+          "event_id": 29,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 0.9999999999999999
+        },
+        {
+          "action": [
+            0.03191995388586309,
+            -0.1543249293118024
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.0999999999999999,
+          "event_id": 30,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.0999999999999999
+        },
+        {
+          "actor": "target",
+          "available_at": 1.0999999999999999,
+          "event_id": 31,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.0999999999999999,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.17236084935226534,
+            -0.07069212358663222,
+            -0.028032869141715926,
+            0.01949553479504206,
+            -0.06997141608627014,
+            -0.01787746463636257,
+            -0.05553800803195397,
+            -0.04309259700839342
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.0999999999999999,
+          "event_id": 32,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.0999999999999999
+        },
+        {
+          "action": [
+            -0.021306637574785417,
+            0.14428509021863503
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.2,
+          "event_id": 33,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.2
+        },
+        {
+          "actor": "target",
+          "available_at": 1.2,
+          "event_id": 34,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.2,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.17259127751816647,
+            -0.07077847117507993,
+            -0.028024364289129605,
+            0.01883806250091214,
+            -0.06977652719114365,
+            -0.01792166728886682,
+            -0.05545420443376612,
+            -0.04291996054391296
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.2,
+          "event_id": 35,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.2
+        },
+        {
+          "action": [
+            -0.006408615792642714,
+            0.035368815240675595
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.3,
+          "event_id": 36,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.3
+        },
+        {
+          "actor": "target",
+          "available_at": 1.3,
+          "event_id": 37,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.3,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.1725273665451304,
+            -0.07046651900661631,
+            -0.02801688331564487,
+            0.021895232852438086,
+            -0.07070223770227128,
+            -0.017992687387825494,
+            -0.05610703562069841,
+            -0.04385943431403923
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.3,
+          "event_id": 38,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.3
+        },
+        {
+          "action": [
+            0.0022873849230267288,
+            -0.10111781971949393
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.4000000000000001,
+          "event_id": 39,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.4000000000000001
+        },
+        {
+          "actor": "target",
+          "available_at": 1.4000000000000001,
+          "event_id": 40,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.4000000000000001,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.17143864029935713,
+            -0.07074605986116865,
+            -0.028080556548129243,
+            0.018138947651075925,
+            -0.06954224502161535,
+            -0.017585034229840188,
+            -0.05500005024936385,
+            -0.04254671461953449
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.4000000000000001,
+          "event_id": 41,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.4000000000000001
+        },
+        {
+          "action": [
+            0.029979132606552,
+            0.10266072914039881
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.5000000000000002,
+          "event_id": 42,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.5000000000000002
+        },
+        {
+          "actor": "target",
+          "available_at": 1.5000000000000002,
+          "event_id": 43,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.5000000000000002,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.16917653897757598,
+            -0.07062314946358245,
+            -0.028188810238819424,
+            0.017358847878293723,
+            -0.06926193592536367,
+            -0.016941524942410316,
+            -0.05423838899863583,
+            -0.04199778781155325
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.5000000000000002,
+          "event_id": 44,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.5000000000000002
+        },
+        {
+          "action": [
+            0.07222052142719357,
+            0.03890264995023015
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.6000000000000003,
+          "event_id": 45,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.6000000000000003
+        },
+        {
+          "actor": "target",
+          "available_at": 1.6000000000000003,
+          "event_id": 46,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.6000000000000003,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.17208157002049235,
+            -0.07045649027385757,
+            -0.028038702003015156,
+            0.021599819643881107,
+            -0.07060403943149572,
+            -0.01786176558202833,
+            -0.05592590609757909,
+            -0.04370731660083691
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.6000000000000003,
+          "event_id": 47,
+          "frame": "task_sensor",
+          "key": "relative_goal",
+          "kind": "goal",
+          "namespace": "sensor",
+          "time": 1.6000000000000003,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.1291362306748125,
+            -0.021753464336945624,
+            0.005676363703870563,
+            -0.10256870541223036,
+            0.02860004965318466,
+            -0.03247453925954778,
+            -0.011265314393384275,
+            0.014285577526589273
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.6000000000000003,
+          "event_id": 48,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.6000000000000003
+        },
+        {
+          "action": [
+            0.44999999999867185,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.7000000000000004,
+          "event_id": 49,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.7000000000000004
+        },
+        {
+          "actor": "target",
+          "available_at": 1.7000000000000004,
+          "event_id": 50,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.7000000000000004,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.1898746632968565,
+            -0.07271977910305444,
+            -0.027231503233225117,
+            0.01479427401380078,
+            -0.06888492578098425,
+            -0.022548537044573144,
+            -0.0590827077387232,
+            -0.044011336791820455
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.7000000000000004,
+          "event_id": 51,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.7000000000000004
+        },
+        {
+          "action": [
+            0.4499999999936343,
+            -0.44999999999996537
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.8000000000000005,
+          "event_id": 52,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.8000000000000005
+        },
+        {
+          "actor": "target",
+          "available_at": 1.8000000000000005,
+          "event_id": 53,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.8000000000000005,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.21587698384999807,
+            -0.07658117193088546,
+            -0.026070809901427718,
+            -0.0006799968627648166,
+            -0.06469629352734467,
+            -0.029237487574201942,
+            -0.06248514608407533,
+            -0.042740915585245454
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.8000000000000005,
+          "event_id": 54,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.8000000000000005
+        },
+        {
+          "action": [
+            0.4499999972365231,
+            -0.449999999997808
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 1.9000000000000006,
+          "event_id": 55,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 1.9000000000000006
+        },
+        {
+          "actor": "target",
+          "available_at": 1.9000000000000006,
+          "event_id": 56,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 1.9000000000000006,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.24708891115697906,
+            -0.08182495500988306,
+            -0.024698368369384473,
+            -0.025331080320234782,
+            -0.057826035402321015,
+            -0.037090550514423296,
+            -0.06523850466677014,
+            -0.03933139974778556
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 1.9000000000000006,
+          "event_id": 57,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 1.9000000000000006
+        },
+        {
+          "action": [
+            0.4499999907556205,
+            -0.44999999999666884
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 2.0000000000000004,
+          "event_id": 58,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 2.0000000000000004
+        },
+        {
+          "actor": "target",
+          "available_at": 2.0000000000000004,
+          "event_id": 59,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 2.0000000000000004,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.28546072671068823,
+            -0.08778749061018608,
+            -0.022994552999287342,
+            -0.05080428920862819,
+            -0.050845073704682095,
+            -0.04688507250247417,
+            -0.06968184586925347,
+            -0.03663857256448862
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 2.0000000000000004,
+          "event_id": 60,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 2.0000000000000004
+        },
+        {
+          "action": [
+            -0.43391645487315306,
+            -0.295699817681102
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 2.1000000000000005,
+          "event_id": 61,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 2.1000000000000005
+        },
+        {
+          "actor": "target",
+          "available_at": 2.1000000000000005,
+          "event_id": 62,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 2.1000000000000005,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.3053394595211355,
+            -0.09218383658325016,
+            -0.022156551065540573,
+            -0.07705136617667964,
+            -0.043271567101895204,
+            -0.05158112036093196,
+            -0.06912566165435369,
+            -0.031196060202523468
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 2.1000000000000005,
+          "event_id": 63,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 2.1000000000000005
+        },
+        {
+          "action": [
+            -0.44232427295074866,
+            0.44999999999997875
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 2.2000000000000006,
+          "event_id": 64,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 2.2000000000000006
+        },
+        {
+          "actor": "target",
+          "available_at": 2.2000000000000006,
+          "event_id": 65,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 2.2000000000000006,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.30563867470410067,
+            -0.09320503763558075,
+            -0.02217656672012419,
+            -0.08697941715828984,
+            -0.040267129508399044,
+            -0.051375646155379234,
+            -0.067029557407875,
+            -0.028157592841861936
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 2.2000000000000006,
+          "event_id": 66,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 2.2000000000000006
+        },
+        {
+          "action": [
+            -0.0851206346088827,
+            0.4499999999529648
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 2.3000000000000007,
+          "event_id": 67,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 2.3000000000000007
+        },
+        {
+          "actor": "target",
+          "available_at": 2.3000000000000007,
+          "event_id": 68,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 2.3000000000000007,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.2983219035105865,
+            -0.09224458847222211,
+            -0.022507481721901784,
+            -0.08388389102604556,
+            -0.04106410188241785,
+            -0.04945698299553608,
+            -0.06579647705174937,
+            -0.02812468346051253
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 2.3000000000000007,
+          "event_id": 69,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 2.3000000000000007
+        },
+        {
+          "action": [
+            0.15379080952321586,
+            0.03778416265825452
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 2.400000000000001,
+          "event_id": 70,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 2.400000000000001
+        },
+        {
+          "actor": "target",
+          "available_at": 2.400000000000001,
+          "event_id": 71,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 2.400000000000001,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.300906055735321,
+            -0.09192175039922001,
+            -0.022367988956169104,
+            -0.0783686479092698,
+            -0.042786359921680575,
+            -0.050326061667712,
+            -0.06767925337488032,
+            -0.030185867046157812
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 2.400000000000001,
+          "event_id": 72,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 2.400000000000001
+        },
+        {
+          "action": [
+            -0.03910316322356281,
+            -0.1630828296445074
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 2.500000000000001,
+          "event_id": 73,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 2.500000000000001
+        },
+        {
+          "actor": "target",
+          "available_at": 2.500000000000001,
+          "event_id": 74,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 2.500000000000001,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.3044527927590884,
+            -0.09252708435987277,
+            -0.022212356165572558,
+            -0.08126429617083848,
+            -0.04197702827046536,
+            -0.05121570084221359,
+            -0.0679714447504498,
+            -0.02976913855187872
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 2.500000000000001,
+          "event_id": 75,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 2.500000000000001
+        },
+        {
+          "action": [
+            -0.09935366595608781,
+            0.0809256762950206
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 2.600000000000001,
+          "event_id": 76,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 2.600000000000001
+        },
+        {
+          "actor": "target",
+          "available_at": 2.600000000000001,
+          "event_id": 77,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 2.600000000000001,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.3032413548386938,
+            -0.09230921101732345,
+            -0.022265135049239205,
+            -0.08016431785835094,
+            -0.04228710101275217,
+            -0.05091504554880576,
+            -0.06789593622617437,
+            -0.0299458813895008
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 2.600000000000001,
+          "event_id": 78,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 2.600000000000001
+        },
+        {
+          "action": [
+            0.004728453869929321,
+            -0.03220350353035455
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 2.700000000000001,
+          "event_id": 79,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 2.700000000000001
+        },
+        {
+          "actor": "target",
+          "available_at": 2.700000000000001,
+          "event_id": 80,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 2.700000000000001,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.30267072017428276,
+            -0.09229156646326908,
+            -0.02229289945877136,
+            -0.08049446946402335,
+            -0.04217595386104691,
+            -0.05074885133531573,
+            -0.06767459356907196,
+            -0.02976604828709086
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 2.700000000000001,
+          "event_id": 81,
+          "frame": "episode",
+          "key": "target_action",
+          "kind": "action_query",
+          "namespace": "episode",
+          "time": 2.700000000000001
+        },
+        {
+          "action": [
+            0.0026659930484273144,
+            0.0021677812298502726
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "actor": "target",
+          "available_at": 2.800000000000001,
+          "event_id": 82,
+          "frame": "body_local",
+          "key": "target_action",
+          "kind": "action_executed",
+          "namespace": "actuator",
+          "time": 2.800000000000001
+        },
+        {
+          "actor": "target",
+          "available_at": 2.800000000000001,
+          "event_id": 83,
+          "frame": "task_sensor",
+          "key": "sensor",
+          "kind": "observation",
+          "namespace": "sensor",
+          "time": 2.800000000000001,
+          "value_valid": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "values": [
+            0.30413043390993855,
+            -0.0923497884514663,
+            -0.022222323730206932,
+            -0.07978055003265869,
+            -0.04242066783057464,
+            -0.051170200868897744,
+            -0.06821219261797515,
+            -0.03018555874845748
+          ]
+        },
+        {
+          "actor": "target",
+          "available_at": 2.800000000000001,
+          "event_id": 84,
+          "frame": "episode",
+          "key": "episode_end",
+          "kind": "episode_end",
+          "namespace": "episode",
+          "time": 2.800000000000001
+        }
+      ],
+      "supervision": [
+        {
+          "action": [
+            0.44999999999926676,
+            0.44999999999999957
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 11
+        },
+        {
+          "action": [
+            0.44999999997196083,
+            0.4499999999998695
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 14
+        },
+        {
+          "action": [
+            -0.2436778825730788,
+            0.449999999999991
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 17
+        },
+        {
+          "action": [
+            -0.4258369227624284,
+            0.4499999999999909
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 20
+        },
+        {
+          "action": [
+            0.020233977805150127,
+            -0.4499999998813197
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 23
+        },
+        {
+          "action": [
+            0.08844581623466304,
+            -0.4499999999221166
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 26
+        },
+        {
+          "action": [
+            0.03191995388586309,
+            -0.1543249293118024
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 29
+        },
+        {
+          "action": [
+            -0.021306637574785417,
+            0.14428509021863503
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 32
+        },
+        {
+          "action": [
+            -0.006408615792642714,
+            0.035368815240675595
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 35
+        },
+        {
+          "action": [
+            0.0022873849230267288,
+            -0.10111781971949393
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 38
+        },
+        {
+          "action": [
+            0.029979132606552,
+            0.10266072914039881
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 41
+        },
+        {
+          "action": [
+            0.07222052142719357,
+            0.03890264995023015
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 44
+        },
+        {
+          "action": [
+            0.44999999999867185,
+            -0.44999999999999996
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 48
+        },
+        {
+          "action": [
+            0.4499999999936343,
+            -0.44999999999996537
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 51
+        },
+        {
+          "action": [
+            0.4499999972365231,
+            -0.449999999997808
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 54
+        },
+        {
+          "action": [
+            0.4499999907556205,
+            -0.44999999999666884
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 57
+        },
+        {
+          "action": [
+            -0.43391645487315306,
+            -0.295699817681102
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 60
+        },
+        {
+          "action": [
+            -0.44232427295074866,
+            0.44999999999997875
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 63
+        },
+        {
+          "action": [
+            -0.0851206346088827,
+            0.4499999999529648
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 66
+        },
+        {
+          "action": [
+            0.15379080952321586,
+            0.03778416265825452
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 69
+        },
+        {
+          "action": [
+            -0.03910316322356281,
+            -0.1630828296445074
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 72
+        },
+        {
+          "action": [
+            -0.09935366595608781,
+            0.0809256762950206
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 75
+        },
+        {
+          "action": [
+            0.004728453869929321,
+            -0.03220350353035455
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 78
+        },
+        {
+          "action": [
+            0.0026659930484273144,
+            0.0021677812298502726
+          ],
+          "action_valid": [
+            true,
+            true
+          ],
+          "query_event_id": 81
+        }
+      ],
+      "world_schema": "trajectory-public-events-v2"
+    }
+  ],
+  "schema_version": "generated-public-episodes-v1"
+}

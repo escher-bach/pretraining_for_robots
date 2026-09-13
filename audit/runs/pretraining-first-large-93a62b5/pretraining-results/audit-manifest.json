@@ -1,0 +1,88 @@
+{
+  "artifacts": [
+    {
+      "path": "compiled-processes-provenance.json",
+      "sha256": "87ceb0439ae24a233f7b4905678866df01537e4904a70340912fa35a3acc4c21",
+      "size": 565
+    },
+    {
+      "path": "compiled-processes.json",
+      "sha256": "b9ada4053262f2d021f07195334a0a2a6fa60c108f6bd661503a98411c75d94f",
+      "size": 62414
+    },
+    {
+      "path": "environment.json",
+      "sha256": "0562500b4c49aa2eb25a3a1ac1fab5e05230408d5d1040323fb98cf933c7c97f",
+      "size": 2978
+    },
+    {
+      "path": "first-training/receipt.json",
+      "sha256": "22b3138de6ab4ab0cc6c1dc309bbbc8faef581fe79613fa52513455b44299201",
+      "size": 3185685
+    },
+    {
+      "path": "first-training/scientific_receipt.json",
+      "sha256": "22b3138de6ab4ab0cc6c1dc309bbbc8faef581fe79613fa52513455b44299201",
+      "size": 3185685
+    },
+    {
+      "path": "logs/first-training.log",
+      "sha256": "7d6f9087d5d76f5cef5009b4bcd54b9c9d658902ff357a6bec639f71d81999ce",
+      "size": 3664927
+    },
+    {
+      "path": "logs/maturin-build.log",
+      "sha256": "17eead9944bdf44bb6c0aff1296b308e01c6a74cf95653e060078c8ac07bd3ae",
+      "size": 6680
+    },
+    {
+      "path": "logs/pip-install.log",
+      "sha256": "f7836d345a276a66403fa62471c1595eb2ff5c28bdd0b766f77d34b951b66f7b",
+      "size": 13288
+    },
+    {
+      "path": "logs/process-export.log",
+      "sha256": "7222a50ffe06923a07052475b43ce44a7cad96024dda9c9cf41cbbd6ab5274cc",
+      "size": 109
+    },
+    {
+      "path": "logs/python-tests.log",
+      "sha256": "e95f4f2b9b5552e2b428bf2c6ea16d22ba862095283367b05f7b32845b9b9376",
+      "size": 26308
+    },
+    {
+      "path": "logs/rust-tests.log",
+      "sha256": "1e4791669e3f9e0b551282098643bb00369d92cbd2d1df6e2d1ee2c1e5756f2d",
+      "size": 37539
+    },
+    {
+      "path": "logs/rust-toolchain.log",
+      "sha256": "eb407fb00aaa6c2362c6109acc534c26432350bc77ddebf3eb3280663466babe",
+      "size": 251
+    },
+    {
+      "path": "logs/rustup-download.log",
+      "sha256": "65ab67427918399433c826dc3d69d1a19dc47a96b0439717ad27931fb699e6ce",
+      "size": 111
+    },
+    {
+      "path": "logs/rustup-install.log",
+      "sha256": "1c9a36dbb24fa254404003fcb0c281633f8f3eaa9eb150e9d8e8e39313b5aeb8",
+      "size": 1644
+    },
+    {
+      "path": "logs/world-wheel-install.log",
+      "sha256": "eeacb1c3d9398a021181ef7732ba4a0596422ca3912d5fd910cdeddc06411841",
+      "size": 353
+    },
+    {
+      "path": "phase_status.json",
+      "sha256": "2ed84c23ea241da9b58d13ebb49d430891e82d8fd7e38fc948afea8bf16b4f86",
+      "size": 1550
+    }
+  ],
+  "config_sha256": "c1fe759f4c4edd7ec64b6f05dfe7788ed579bfda3497ef4cd92a577fbcd14d17",
+  "error": null,
+  "git_sha": "93a62b54ce149de729066e6122860153c443d072",
+  "status": "complete"
+}

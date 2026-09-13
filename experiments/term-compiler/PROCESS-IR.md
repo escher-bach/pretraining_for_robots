@@ -25,8 +25,8 @@ operators, cycling through eight legal compositions:
   `GoalSwitchDisturbance`: each corresponding pair; and
 * `LagGoalSwitchDisturbance`: all three operators together.
 
-The generator selects sensor width, actuator width, and horizon independently
-for each record. These are structural compositions within this explicit
+The run exporter balances sensor and actuator widths across the eight
+compositions and samples horizon per program. These are structural compositions within this explicit
 primitive library; arbitrary DAGs and a general process scheduler remain
 unsupported and are rejected by validation.
 

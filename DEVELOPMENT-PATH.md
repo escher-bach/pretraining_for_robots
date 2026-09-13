@@ -10,7 +10,7 @@ integrated work item. The completed pilot remains evidence, not an approval gate
 
 | Current delivery | State | Required outcome |
 |---|---|---|
-| Compiler-backed procedural GPU system | Eight-composition compiler/runtime and larger GPU path implemented; integrated readiness verification | Validated process compositions produce public trajectories across embodiments through the shared learner; meaningful GPU run with checkpoint, per-process evaluation and an inspected generated episode. |
+| Compiler-backed procedural GPU system | Complete: eight compositions, 4096 GPU updates, verified receipt and final episode review; learned policy is near-inaction | Validated process compositions produce public trajectories across embodiments through the shared learner; meaningful GPU run with checkpoint, per-process evaluation and an inspected generated episode. |
 
 Compiler, trajectory-runtime, and training/platform work proceed concurrently.
 Local work is limited to implementation and correctness checks; optimization runs

@@ -1,5 +1,51 @@
 # Handoff
 
+## Completed integrated run and final review
+
+The corrected larger run `aniruddhavarma/pretraining-first-large-93a62b5/1`
+completed all 4096 updates (batch 8, 32,768 presentations) in 2191.6 seconds.
+The exact source is `93a62b54ce149de729066e6122860153c443d072` and the verified
+receipt is `audit/runs/pretraining-first-large-93a62b5/receipt.json`.
+Checkpoint-4096 remains on Kaggle. No GPU job remains active from this task.
+
+Action loss decreased 0.03442 -> 0.01644, but the final policy is near-inaction:
+13/256 successes versus inaction 12/256 and public teacher 254/256; physical
+error 0.17139 versus inaction 0.17128. Early and post-switch action errors and
+the three ablations also closely match inaction. See
+`artifacts/compiled-system/RESULTS.md`. Astra's post-run implementation review
+found no causality/masking/gradient defect invalidating this negative result;
+the reason for action collapse is not yet isolated.
+
+The final generated-episode review reproduces the two teacher failures and one
+successful full composition using the exact exported programs. Public-only
+episodes and separate reviewer metadata are stored under the run's
+`pretraining-results/first-training/generated-episode-review/`. The teacher's
+two failures are finite-horizon control errors, with no boundary violation.
+The compiler-backed system and substantial run are complete; effective learned
+control, transfer, and grounding are not established. Future work should address
+the measured action collapse rather than describe loss reduction as acquisition.
+
+## Larger GPU execution continuation
+
+The `989d437` large launch failed after tests and compiler export, before any
+training: `phase_update` received `path` both positionally and as metadata.
+Its verified failure receipt is preserved under
+`audit/runs/pretraining-first-large-989d437/`. The runner metadata key is now
+`artifact_path`, covered by a focused regression check.
+
+The same 4096-update configuration was relaunched as
+`aniruddhavarma/pretraining-first-large-93a62b5`, version 1, from pushed source
+`93a62b5`. Status and collection commands:
+
+```powershell
+python tools/kaggle_run.py status --kernel aniruddhavarma/pretraining-first-large-93a62b5
+python tools/kaggle_run.py collect --kernel aniruddhavarma/pretraining-first-large-93a62b5
+```
+
+Wait for this run and inspect its receipt before any further launch. The user
+has authorized completing the system and correcting execution defects; no
+additional approval gate applies. Preserve partial checkpoints remotely.
+
 ## Integrated implementation — 2026-09-13
 
 The continuous compiler extension now exports 32 validated programs covering

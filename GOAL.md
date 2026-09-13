@@ -9,6 +9,14 @@ generated world families.
 
 ## Active objective
 
+The compiler-backed extension and first substantial GPU run are now implemented
+and executed. Eight process compositions share the trajectory/content/Trainer
+path. The 4096-update run ended near inaction despite improved imitation loss;
+it does not demonstrate acquired control. `artifacts/compiled-system/RESULTS.md`
+and the current DEVELOPMENT-PATH row supersede the historical pilot status below.
+The unresolved learning problem is action collapse, with its cause not yet
+isolated. The broader transferable-capability objective remains unchanged.
+
 Build the first coherent abstract robot pretraining system using a bounded
 calibrated goal-reaching family and one shared content-token interface.
 Astra's pre-run review found V1 solvable by a calibration-blind positive-axis

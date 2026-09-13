@@ -1,0 +1,45 @@
+{
+  "capture_environment": {
+    "elapsed_seconds": 0.4501175880432129,
+    "started_at": 1789307538.5150383,
+    "status": "complete",
+    "timestamp": 1789307538.9651558
+  },
+  "correctness_tests": {
+    "elapsed_seconds": 118.0166802406311,
+    "started_at": 1789307614.9738426,
+    "status": "complete",
+    "timestamp": 1789307732.9905229
+  },
+  "first_training": {
+    "elapsed_seconds": 2191.6392991542816,
+    "execution_device": "cuda",
+    "purpose": "source_acquisition",
+    "started_at": 1789307733.1067054,
+    "status": "complete",
+    "timestamp": 1789309924.7460046,
+    "updates": 4096,
+    "visible_cuda_devices": "0",
+    "world_size": 1
+  },
+  "install_and_build": {
+    "elapsed_seconds": 76.00812268257141,
+    "started_at": 1789307538.9653482,
+    "status": "complete",
+    "timestamp": 1789307614.973471,
+    "wheel_sha256": "01a4407dbd047bfcf4122635c69209c3b3057cf12a2639e928740e81e6615331"
+  },
+  "process_export": {
+    "artifact_path": "/kaggle/working/pretraining-results/compiled-processes.json",
+    "config_sha256": "c1fe759f4c4edd7ec64b6f05dfe7788ed579bfda3497ef4cd92a577fbcd14d17",
+    "count": 32,
+    "elapsed_seconds": 0.11539578437805176,
+    "provenance_path": "/kaggle/working/pretraining-results/compiled-processes-provenance.json",
+    "seed": 20260912,
+    "sha256": "b9ada4053262f2d021f07195334a0a2a6fa60c108f6bd661503a98411c75d94f",
+    "source_git_sha": "93a62b54ce149de729066e6122860153c443d072",
+    "started_at": 1789307732.9909875,
+    "status": "complete",
+    "timestamp": 1789307733.1063833
+  }
+}

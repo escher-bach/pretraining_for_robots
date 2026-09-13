@@ -4,6 +4,17 @@ This document describes what the code does and how to run it.
 
 ## Active first-system apparatus
 
+The current integrated path additionally uses the Rust `process-export` compiler
+and `process_runtime.py`: eight validated lag/switch/disturbance combinations,
+graph-derived private execution parameters, physically timed public calibration,
+and the existing shared adapters and Trainer. The registered
+`first-training-system-large` experiment completed 4096 GPU updates from
+`configs/first_training_system_gpu_large.toml`. Its final checkpoint remains on
+Kaggle; the verified receipt and generated episode review are under
+`audit/runs/pretraining-first-large-93a62b5/`. See
+`artifacts/compiled-system/RESULTS.md` for the measured near-inaction outcome.
+The V2-only apparatus below is preserved historical support.
+
 The active implementation route is `CalibratedReachV2`, a small sampled
 trajectory world in
 `python/pretraining_experiments/trajectory_world.py`. It is intentionally

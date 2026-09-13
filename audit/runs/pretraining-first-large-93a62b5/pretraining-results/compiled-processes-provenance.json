@@ -1,0 +1,23 @@
+{
+  "command": [
+    "cargo",
+    "run",
+    "--quiet",
+    "--locked",
+    "-p",
+    "pretraining-term-compiler",
+    "--bin",
+    "process-export",
+    "--",
+    "--seed",
+    "20260912",
+    "--count",
+    "32"
+  ],
+  "config_sha256": "c1fe759f4c4edd7ec64b6f05dfe7788ed579bfda3497ef4cd92a577fbcd14d17",
+  "count": 32,
+  "export_sha256": "b9ada4053262f2d021f07195334a0a2a6fa60c108f6bd661503a98411c75d94f",
+  "path": "/kaggle/working/pretraining-results/compiled-processes.json",
+  "seed": 20260912,
+  "source_git_sha": "93a62b54ce149de729066e6122860153c443d072"
+}
