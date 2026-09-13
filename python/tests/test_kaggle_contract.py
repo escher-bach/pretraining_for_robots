@@ -150,6 +150,24 @@ class KaggleContractTests(unittest.TestCase):
                 ["first-training/scientific_receipt.json"],
             )
 
+    def test_process_export_phase_update_records_artifact_path(self) -> None:
+        from pretraining_experiments.runner import phase_update
+
+        with tempfile.TemporaryDirectory() as temporary:
+            phase_path = Path(temporary) / "phase_status.json"
+            phases: dict[str, object] = {}
+            phase_update(
+                phase_path,
+                phases,
+                "process_export",
+                "complete",
+                artifact_path="/tmp/compiled-processes.json",
+                count=32,
+            )
+            payload = json.loads(phase_path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["process_export"]["artifact_path"], "/tmp/compiled-processes.json")
+            self.assertEqual(payload["process_export"]["count"], 32)
+
     def test_r10_registry_uses_the_fixed_one_t4_seed_gate_contract(self) -> None:
         control = load_control_plane()
         data, experiment = control.experiment("r10-seed-gate")

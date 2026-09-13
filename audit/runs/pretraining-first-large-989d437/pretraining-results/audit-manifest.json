@@ -1,0 +1,73 @@
+{
+  "artifacts": [
+    {
+      "path": "compiled-processes-provenance.json",
+      "sha256": "f398e1efb4a1c9a3c8d462acdcc7578450152c619479d7ca989cf74d5bcb6f09",
+      "size": 565
+    },
+    {
+      "path": "compiled-processes.json",
+      "sha256": "b9ada4053262f2d021f07195334a0a2a6fa60c108f6bd661503a98411c75d94f",
+      "size": 62414
+    },
+    {
+      "path": "environment.json",
+      "sha256": "68f65a64fc3718b2f32a6b46d9cc92eb3cd23df183b721df29717814de1ea888",
+      "size": 2978
+    },
+    {
+      "path": "logs/maturin-build.log",
+      "sha256": "1d8dedec6e9fa04fc0b241e0dd00ebe5f5399a66c2190a56394df18f6568ca08",
+      "size": 6680
+    },
+    {
+      "path": "logs/pip-install.log",
+      "sha256": "be11cf4318c5d449db0714560e7bf85e12061d656939ed864253d4382ecfb2a6",
+      "size": 13287
+    },
+    {
+      "path": "logs/process-export.log",
+      "sha256": "7222a50ffe06923a07052475b43ce44a7cad96024dda9c9cf41cbbd6ab5274cc",
+      "size": 109
+    },
+    {
+      "path": "logs/python-tests.log",
+      "sha256": "3e4da65574c8288c19632f178df6d0efe9f40fe7ba145e33bf742adb3ca81640",
+      "size": 26136
+    },
+    {
+      "path": "logs/rust-tests.log",
+      "sha256": "b3db91654aa4b021572ca23ede63f47166a45aaf100590165911b4a9cf73b7e9",
+      "size": 37539
+    },
+    {
+      "path": "logs/rust-toolchain.log",
+      "sha256": "eb407fb00aaa6c2362c6109acc534c26432350bc77ddebf3eb3280663466babe",
+      "size": 251
+    },
+    {
+      "path": "logs/rustup-download.log",
+      "sha256": "65ab67427918399433c826dc3d69d1a19dc47a96b0439717ad27931fb699e6ce",
+      "size": 111
+    },
+    {
+      "path": "logs/rustup-install.log",
+      "sha256": "1c9a36dbb24fa254404003fcb0c281633f8f3eaa9eb150e9d8e8e39313b5aeb8",
+      "size": 1644
+    },
+    {
+      "path": "logs/world-wheel-install.log",
+      "sha256": "eeacb1c3d9398a021181ef7732ba4a0596422ca3912d5fd910cdeddc06411841",
+      "size": 353
+    },
+    {
+      "path": "phase_status.json",
+      "sha256": "61f4cd4f79d6243909ce6f3a7a6b752c9a2d3ac8fe794439042d61eafde25fea",
+      "size": 732
+    }
+  ],
+  "config_sha256": "c1fe759f4c4edd7ec64b6f05dfe7788ed579bfda3497ef4cd92a577fbcd14d17",
+  "error": "TypeError: phase_update() got multiple values for argument 'path'\nTraceback (most recent call last):\n  File \"/tmp/pretraining-runtime/source/python/pretraining_experiments/runner.py\", line 549, in main\n    phase_update(\nTypeError: phase_update() got multiple values for argument 'path'\n",
+  "git_sha": "989d437d64659a5942c5ed84eaab4cdc5bf58eed",
+  "status": "failed"
+}

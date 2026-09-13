@@ -548,7 +548,7 @@ def main() -> None:
             atomic_json(provenance_path, provenance)
             phase_update(
                 phase_path, phases, "process_export", "complete",
-                path=str(compiled_processes), sha256=export_sha256, count=32,
+                artifact_path=str(compiled_processes), sha256=export_sha256, count=32,
                 seed=provenance["seed"], source_git_sha=provenance["source_git_sha"],
                 config_sha256=provenance["config_sha256"],
                 provenance_path=str(provenance_path),

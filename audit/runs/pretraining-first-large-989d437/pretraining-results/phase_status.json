@@ -1,0 +1,26 @@
+{
+  "capture_environment": {
+    "elapsed_seconds": 0.4397773742675781,
+    "started_at": 1789253703.580158,
+    "status": "complete",
+    "timestamp": 1789253704.0199354
+  },
+  "correctness_tests": {
+    "elapsed_seconds": 133.02795147895813,
+    "started_at": 1789253790.3509693,
+    "status": "complete",
+    "timestamp": 1789253923.3789208
+  },
+  "install_and_build": {
+    "elapsed_seconds": 86.330486536026,
+    "started_at": 1789253704.0201294,
+    "status": "complete",
+    "timestamp": 1789253790.350616,
+    "wheel_sha256": "dd33dd515de741ca4a756237fad02793e0bacdeef596f04c82ec8a084150e3fb"
+  },
+  "process_export": {
+    "started_at": 1789253923.3793132,
+    "status": "running",
+    "timestamp": 1789253923.3793132
+  }
+}
